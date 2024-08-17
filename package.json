@@ -1,0 +1,73 @@
+{
+  "name": "elysiatech",
+  "version": "0.0.3",
+  "type": "module",
+  "files": [
+	"dist"
+  ],
+  "scripts": {
+	"dev:node": "tsx playground/node",
+	"dev:browser": "cd playground/browser && pnpm run dev",
+	"build": "mkdist --src=src --dist=dist --format=esm -d --ext=js",
+	"lint": "pnpm biome check src --write"
+  },
+  "exports": {
+	".": {
+	  "import": "./dist/mod.js",
+	  "types": "./dist/mod.d.ts"
+	},
+	"./actors/*": {
+	  "import": "./dist/actors/*.js",
+	  "types": "./dist/actors/*.d.ts"
+	},
+	"./behaviors/*": {
+	  "import": "./dist/behaviors/*.js",
+	  "types": "./dist/behaviors/*.d.ts"
+	},
+	"./render_pipelines": {
+	  "import": "./dist/render_pipelines.js",
+	  "types": "./dist/render_pipelines.d.ts"
+	},
+	"./logger": {
+	  "import": "./dist/logger.js",
+	  "types": "./dist/logger.d.ts"
+	},
+	"./errors": {
+	  "import": "./dist/errors.js",
+	  "types": "./dist/errors.d.ts"
+	},
+	"./asserts": {
+	  "import": "./dist/asserts.js",
+	  "types": "./dist/asserts.d.ts"
+	},
+	"./assets": {
+	  "import": "./dist/assets.js",
+	  "types": "./dist/assets.d.ts"
+	},
+	"./audio": {
+	  "import": "./dist/audio.js",
+	  "types": "./dist/audio.d.ts"
+	},
+	"./ui": {
+	  "import": "./dist/ui.js",
+	  "types": "./dist/ui.d.ts"
+	},
+	"./input": {
+	  "import": "./dist/input.js",
+	  "types": "./dist/input.d.ts"
+	}
+  },
+  "peerDependencies": {
+	"postprocessing": "^6.35.4",
+	"three": "^0.165.0",
+	"three-stdlib": "^2.32.2"
+  },
+  "devDependencies": {
+	"@biomejs/biome": "1.8.3",
+	"@types/node": "^20.13.0",
+	"@types/three": "^0.165.0",
+	"mkdist": "^1.5.4",
+	"tsx": "^4.17.0",
+	"typescript": "^5.4.5"
+  }
+}
