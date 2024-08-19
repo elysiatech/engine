@@ -1,14 +1,14 @@
-enum EventQueueMode {
+export enum EventQueueMode {
 	Immediate = 0,
 	Queued = 1,
 }
 
-interface Event<T = unknown> {
+export interface Event<T = unknown> {
 	type: string | symbol;
 	data: T;
 }
 
-interface QueuedEvent<T = unknown> extends Event<T> {
+export interface QueuedEvent<T = unknown> extends Event<T> {
 	timestamp: number;
 }
 
