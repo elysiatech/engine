@@ -1,6 +1,6 @@
 {
   "name": "elysiatech",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "files": [
     "dist"
@@ -55,6 +55,10 @@
     "./input": {
       "import": "./dist/input.js",
       "types": "./dist/input.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events.js",
+      "types": "./dist/events.d.ts"
     }
   },
   "peerDependencies": {
