@@ -102,6 +102,8 @@ export abstract class Scene {
 
 		this.input.replay();
 
+		this.game?.UiScheduler.update()
+
 		this.root.update(frametime, elapsedtime);
 
 		this.game!.renderPipeline.render(frametime, elapsedtime);

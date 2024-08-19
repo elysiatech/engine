@@ -45,8 +45,8 @@ export class InputQueue {
 		window.removeEventListener("wheel", this.keydown.bind(this));
 	}
 
-	getCurrentState() {
-		return this.states;
+	getCurrentState(): typeof this.states {
+		return this.stateProxy as typeof this.states;
 	}
 
 	getKey(key: string): KeyState {
@@ -54,6 +54,9 @@ export class InputQueue {
 	}
 
 	onInputDown(key: string | string[], callback: InputCallback): Function {
+
+		console.log("onInputDown", key, callback)
+
 		const keys = Array.isArray(key) ? key : [key];
 		const cleanup: Function[] = [];
 
@@ -102,6 +105,13 @@ export class InputQueue {
 	}
 
 	private states: Record<string, KeyState> = {};
+
+	private stateProxy = new Proxy(this.states, {
+		get: (target, prop) => {
+			const key = prop as string;
+			return target[key] ?? createKeyState();
+		},
+	})
 
 	private inputDownCallbacks = new Map<string, Set<InputCallback>>();
 

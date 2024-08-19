@@ -4,6 +4,7 @@ import { SoundManager } from "./audio";
 import { InputQueue } from "./input";
 import type { RenderPipeline } from "./render_pipeline";
 import type { Scene } from "./scene";
+import { Scheduler } from "./ui";
 
 export class Game {
 	public currentScene: Scene | null = null;
@@ -19,6 +20,8 @@ export class Game {
 	public pointer = new Three.Vector2();
 
 	public renderPipeline: RenderPipeline;
+
+	public UiScheduler = new Scheduler;
 
 	constructor(args: { renderPipeline: RenderPipeline }) {
 		this.loadScene = this.loadScene.bind(this);

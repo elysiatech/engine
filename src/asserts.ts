@@ -241,7 +241,7 @@ export function isDev() {
 // engine
 
 export function isActor(obj: any): obj is Actor {
-	return "isActor" in obj;
+	return obj && typeof obj === "object" && "isActor" in obj;
 }
 
 export function isBehavior(obj: any): obj is Behavior {

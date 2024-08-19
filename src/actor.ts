@@ -3,8 +3,13 @@ import { isActor, isBehavior } from "./asserts";
 import type { Behavior } from "./behavior";
 import { destroy } from "./destroy";
 import type { Scene } from "./scene";
+import { CSSResult, TemplateResult, css } from "lit";
+import { ElysiaElement, Scheduler, defineComponent} from "./ui";
 
 export class Actor<T extends Three.Object3D = Three.Object3D> {
+
+	public static GUIStylesheet?: CSSResult
+
 	get isActor() {
 		return true;
 	}
@@ -61,11 +66,13 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 	}
 
 	addChild<T extends Actor | Behavior>(child: T): this {
+
 		if (this.destroyed) return this;
 
 		if (isActor(child.parent)) {
-			child.parent.removeChild(child);
+			child.parent?.removeChild(child);
 		}
+
 
 		this.children.add(child);
 
@@ -155,13 +162,35 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 	}
 
 	create() {
-		if (this.initialized || this.destroyed) return;
+		if (this.initialized || this.destroyed || !this.scene || !this.scene.game) return;
 
 		this.object3d.userData.owner = this;
 
 		this.onCreate();
 
 		this.initialized = true;
+
+		if(this.gui){
+			const renderFn = this.gui.bind(this);
+
+			const guiStylesheet = this.constructor.GUIStylesheet ?? css``
+
+			const scheduler = this.scene.game.UiScheduler;
+
+			const ui = class extends ElysiaElement {
+				static Tag = "actor-id" + Math.random().toString(36).substring(7);
+
+				static styles = guiStylesheet;
+
+				scheduler: Scheduler = scheduler;
+
+				render(){
+					return renderFn()
+				}
+			}
+			defineComponent(ui)
+			this.uiElement = document.createElement(ui.Tag);
+		}
 
 		for (const child of this.children) {
 			child.scene = this.scene;
@@ -174,6 +203,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		this.onSpawn();
 		this.spawned = true;
 		this.parent?.object3d.add(this.object3d);
+		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
+			.domElement.parentNode!.appendChild(this.uiElement)
 		for (const child of this.children) {
 			child.spawn();
 		}
@@ -191,6 +222,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		if (!this.spawned || this.destroyed) return;
 		this.onDespawn();
 		this.parent?.object3d.remove(this.object3d);
+		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
+			.domElement.removeChild(this.uiElement)
 		for (const child of this.children) {
 			child.despawn();
 		}
@@ -219,7 +252,26 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 	onUpdate(frametime: number, elapsedtime: number): void {}
 	onDespawn(): void {}
 	onResize(bounds: DOMRect): void {}
-	destructor(): void {}
+	gui?(): TemplateResult;
+	destructor(): void {
+		this.disposables.forEach((fn) => fn());
+		for (const child of this.children) {
+			child.destroy();
+		}
+		this.children.clear();
+		this.scene = null;
+		this.parent = null;
+		this.initialized = false;
+		this.spawned = false;
+		this.destroyed = true;
+		this.tags.clear();
+		this.disposables.forEach((fn) => fn());
+		this.disposables = [];
+	}
+
+	dispose(...callbacks: (() => void)[]) {
+		this.disposables.push(...callbacks);
+	}
 
 	getChildrenByTag(tag: string | symbol): (Actor | Behavior)[] {
 		const children: (Actor | Behavior)[] = [];
@@ -301,4 +353,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 			yield child;
 		}
 	}
+
+	private disposables: (() => void)[] = [];
+
+	private uiElement?: HTMLElement;
 }
