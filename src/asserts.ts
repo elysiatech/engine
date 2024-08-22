@@ -44,8 +44,8 @@ export class DebugAssertionError extends AssertionError {
 	}
 }
 
-export function ASSERT(
-	condition: any,
+export function ASSERT<T>(
+	condition: T,
 	message?: string | Function | Error,
 ): asserts condition {
 	if (!ASSERT.enabled) return;

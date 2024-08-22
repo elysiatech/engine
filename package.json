@@ -1,6 +1,6 @@
 {
   "name": "elysiatech",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "files": [
     "dist"
@@ -24,9 +24,9 @@
       "import": "./dist/behaviors/*.js",
       "types": "./dist/behaviors/*.d.ts"
     },
-    "./render_pipelines": {
-      "import": "./dist/render_pipelines.js",
-      "types": "./dist/render_pipelines.d.ts"
+    "./render_pipelines/*": {
+      "import": "./dist/render_pipelines/*.js",
+      "types": "./dist/render_pipelines/*.d.ts"
     },
     "./logger": {
       "import": "./dist/logger.js",
