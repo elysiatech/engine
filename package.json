@@ -6,8 +6,7 @@
     "dist"
   ],
   "scripts": {
-    "dev:node": "tsx playground/node",
-    "dev:browser": "cd playground/browser && pnpm run dev",
+    "dev": "cd playground/browser && pnpm run dev",
     "build": "mkdist --src=src --dist=dist --format=esm -d --ext=js",
     "lint": "pnpm biome check src --write"
   },
