@@ -199,7 +199,7 @@ export class EnvironmentActor extends Actor {
 	}
 
 	#set() {
-		const renderer = this.scene?.game?.renderPipeline.getRenderer();
+		const renderer = this.app?.getRenderer().getGl();
 
 		if (!this.scene || !renderer)
 			throw new Error("Scene or renderer not found");

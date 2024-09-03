@@ -2,172 +2,88 @@ import * as Three from "three";
 import type { Actor } from "./actor";
 import { SceneActor } from "./actors/SceneActor";
 import type { Behavior } from "./behavior";
-import type { Game } from "./game";
 import { ActiveCameraTag } from "./tags";
-
-class PointerController {
-	#raycaster = new Three.Raycaster();
-
-	intersections = new Set<Actor>();
-
-	cast(pointer: Three.Vector2, camera: Three.Camera, scene: SceneActor) {
-		this.#raycaster.setFromCamera(pointer, camera);
-		for (const i of this.#raycaster.intersectObjects(scene.object3d.children)) {
-			if (i.object.userData.owner)
-				this.intersections.add(i.object.userData.owner);
-		}
-	}
-}
+import { Application } from "./application";
+import { RenderPipeline } from "./render_pipeline";
+import { PointerIntersections } from "./pointer_intersections";
 
 export abstract class Scene {
-	game?: Game;
 
-	root: SceneActor;
+	public app: Application;
 
-	behaviorsById = new Map<string | symbol, Behavior>();
+	public root = new SceneActor;	
 
-	behaviorsByTag = new Map<string | symbol, Set<Behavior>>();
+	public getPointerIntersections(){ return this.pointer.intersections; }
 
-	gameObjectsById = new Map<string | symbol, Actor>();
-
-	gameObjectsByTag = new Map<string | symbol, Set<Actor>>();
-
-	get sound() {
-		return this.game!.sound;
-	}
-
-	get input() {
-		return this.game!.input;
-	}
-
-	get clock() {
-		return this.game!.clock;
-	}
-
-	get pointerIntersections() {
-		return this.#pointerController.intersections;
-	}
-
-	get isLoading() {
-		return this.#isLoading;
-	}
-
-	get hasLoaded() {
-		return this.#hasLoaded;
-	}
-
-	get hasStarted() {
-		return this.#hasStarted;
-	}
-
-	get isPlaying() {
-		return this.#isPlaying;
-	}
-
-	get isEnding() {
-		return this.#isEnding;
-	}
-
-	get isDestroyed() {
-		return this.#isDestroyed;
-	}
-
-	constructor() {
-		this.root = new SceneActor();
+	constructor(app: Application){
+		this.app = app;
+		this.root.app = app;
 		this.root.scene = this;
 	}
 
-	async setup(): Promise<void> {}
-
-	play() {
-		this.#isPlaying = true;
-		this.root.create();
-		this.root.spawn();
+	public async init(){
+		// handle initialization of scene
 	}
 
-	update(frametime: number, elapsedtime: number) {
-		const camera = this.getGameObjectsByTag(ActiveCameraTag)
-			.values()
-			.next().value;
-
-		this.#pointerController.intersections.clear();
-
-		if (camera) {
-			this.#pointerController.cast(
-				this.game!.pointer,
-				camera.object3d as Three.Camera,
-				this.root,
-			);
-		}
-
-		this.input.replay();
-
-		this.game?.UiScheduler.update()
-
-		this.root.update(frametime, elapsedtime);
-
-		this.game!.renderPipeline.render(frametime, elapsedtime);
+	public onPlay(){
+		// handle onPlay
+		this.root.onCreate();
+		this.root.onSpawn();
 	}
 
-	endPlay() {
-		this.#isPlaying = false;
-		this.#isEnding = true;
+	public onUpdate(delta: number, elapsed: number){
+
+		this.pointer.cast(
+			this.app.getPointerPosition(), 
+			this.getActiveCamera()?.getComponent(Three.Camera)!, 
+			this.root
+		);
+
+		this.root.onUpdate(delta, elapsed);
+	}
+
+	// user needs to run this
+	public abstract render(renderer: RenderPipeline, delta: number, elapsed: number): Promise<void>;
+
+	public destructor(){
+		// handle destruction of scene
+		this.destroyed = true;
+		for(const destroyable of this.destroyables) destroyable();
 		this.root.despawn();
 		this.root.destroy();
 	}
 
-	destructor() {
-		this.#isDestroyed = true;
-		this.root.despawn();
-		this.root.destroy();
-		this.sound.destructor();
+	public findByTag(tag: string | symbol | number): Set<Actor | Behavior> {
+		return this.tagCollections.get(tag) ?? new Set;
 	}
 
-	getBehaviorById(id: string | symbol): Behavior | undefined {
-		return this.behaviorsById.get(id);
+	public findById(id: string | symbol | number): Actor | Behavior | undefined {
+		return this.idCollection.get(id);
 	}
 
-	getBehaviorsByTag(tag: string | symbol): Set<Behavior> {
-		if (!this.behaviorsByTag.get(tag)) {
-			this.behaviorsByTag.set(tag, new Set());
-		}
-		return this.behaviorsByTag.get(tag)!;
+	public getActiveCamera(): Actor<Three.Camera> | undefined {
+		return this.findByTag(ActiveCameraTag).values().next().value;
 	}
 
-	getGameObjectById(id: string | symbol): Actor | undefined {
-		return this.gameObjectsById.get(id);
-	}
-
-	getGameObjectsByTag(tag: string | symbol): Set<Actor> {
-		if (!this.gameObjectsByTag.get(tag)) {
-			this.gameObjectsByTag.set(tag, new Set());
-		}
-		return this.gameObjectsByTag.get(tag)!;
-	}
-
-	getActiveCamera(): Actor<Three.Camera> | undefined {
-		return this.getGameObjectsByTag(ActiveCameraTag).values().next().value;
-	}
-
-	setActiveCamera(gameObject: Actor): void {
+	public setActiveCamera(actor: Actor): void {
 		const current = this.getActiveCamera();
 		if (current) {
 			current.removeTag(ActiveCameraTag);
 		}
-		gameObject.addTag(ActiveCameraTag);
+		actor.addTag(ActiveCameraTag);
 	}
 
-	#pointerController = new PointerController();
+	protected destroyOnUnload(...fn: Function[]){
+		for(const f of fn) this.destroyables.add(f);
+	}
 
-	#isLoading = false;
+	private tagCollections = new Map<string | number | symbol, Set<Actor | Behavior>>
 
-	#hasLoaded = false;
+	private idCollection = new Map<string | number | symbol, Actor | Behavior>
 
-	#hasStarted = false;
+	private pointer = new PointerIntersections;
 
-	#isPlaying = false;
+	private destroyed = false;
 
-	#isEnding = false;
-
-	#isDestroyed = false;
+	private destroyables = new Set<Function>();
 }

@@ -1,58 +1,41 @@
 ﻿import * as Three from "three";
 import { isActor, isBehavior } from "./asserts";
-import type { Behavior } from "./behavior";
+import { Behavior } from "./behavior";
 import { destroy } from "./destroy";
 import type { Scene } from "./scene";
-import { CSSResult, TemplateResult, css } from "lit";
-import { ElysiaElement, Scheduler, defineComponent} from "./ui";
+import { Application } from "./application";
 
 export class Actor<T extends Three.Object3D = Three.Object3D> {
 
-	public static GUIStylesheet?: CSSResult
+	public get isActor() { return true; }
 
-	get isActor() {
-		return true;
-	}
+	public id?: string | symbol | number;
 
-	public id?: string | symbol;
-
-	public tags = new Set<string | symbol>();
+	public tags = new Set<string | symbol | number>();
 
 	public object3d: T;
 
-	public scene: Scene | null = null;
-
 	public parent: Actor | null = null;
 
-	get position() {
-		return this.object3d.position;
-	}
+	public scene: Scene | null = null;
 
-	get rotation() {
-		return this.object3d.rotation;
-	}
+	public app: Application | null = null;
 
-	get scale() {
-		return this.object3d.scale;
-	}
+	public get position() { return this.object3d.position; }
 
-	get quaternion() {
-		return this.object3d.quaternion;
-	}
+	public get rotation() { return this.object3d.rotation; }
 
-	get matrix() {
-		return this.object3d.matrix;
-	}
+	public get scale() { return this.object3d.scale; }
 
-	get visible() {
-		return this.object3d.visible;
-	}
+	public get quaternion() { return this.object3d.quaternion; }
 
-	set visible(value: boolean) {
-		this.object3d.visible = value;
-	}
+	public get matrix() { return this.object3d.matrix; }
 
-	public readonly children: Set<Actor | Behavior> = new Set();
+	public get visible() { return this.object3d.visible; }
+
+	public set visible(value: boolean) { this.object3d.visible = value; }
+
+	public readonly components: Set<Actor | Behavior> = new Set();
 
 	public initialized = false;
 
@@ -65,104 +48,93 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		this.object3d.userData.owner = this;
 	}
 
-	addChild<T extends Actor | Behavior>(child: T): this {
+	addComponent<T extends Actor | Behavior>(component: T): this {
 
 		if (this.destroyed) return this;
 
-		if (isActor(child.parent)) {
-			child.parent?.removeChild(child);
+		if (isActor(component.parent)) {
+			component.parent.removeComponent(component);
 		}
 
 
-		this.children.add(child);
+		this.components.add(component);
 
-		child.parent = this;
-		child.scene = this.scene;
+		component.parent = this;
+		component.scene = this.scene;
 
-		if (isActor(child)) {
-			this.object3d.add(child.object3d);
+		if (isActor(component)) {
+			this.object3d.add(component.object3d);
 
-			if (child.id) {
-				this.scene?.gameObjectsById.set(child.id, child);
+			if (component.id) {
+				// handle id in scene
 			}
 
-			if (child.tags) {
-				for (const tag of child.tags) {
-					if (!this.scene?.gameObjectsByTag.has(tag)) {
-						this.scene?.gameObjectsByTag.set(tag, new Set());
-					}
-					this.scene?.gameObjectsByTag.get(tag)?.add(child);
-				}
+			if (component.tags) {
+				// handle tags in scene
 			}
 		}
 
-		if (isBehavior(child)) {
-			if (child.id) {
-				this.scene?.behaviorsById.set(child.id, child);
+		if (isBehavior(component)) {
+			if (component.id) {
+				// handle id in scene
 			}
 
-			if (child.tags) {
-				for (const tag of child.tags) {
-					if (!this.scene?.behaviorsByTag.has(tag)) {
-						this.scene?.behaviorsByTag.set(tag, new Set());
-					}
-					this.scene?.behaviorsByTag.get(tag)?.add(child);
+			if (component.tags) {
+				for (const tag of component.tags) {
+					// handle tags in scene
 				}
 			}
 		}
 
 		if (this.initialized) {
-			child.create();
+			component.create();
 		}
 
 		if (this.spawned) {
-			child.spawn();
+			component.spawn();
 		}
 
 		return this;
 	}
 
-	removeChild<T extends Actor | Behavior>(child: T): T {
-		if (this.destroyed) return child;
+	removeComponent<T extends Actor | Behavior>(component: T): T {
+		if (this.destroyed) return component;
 
-		child.parent = null;
+		component.parent = null;
 
-		this.children.delete(child);
+		this.components.delete(component);
 
-		if (isActor(child)) {
-			this.object3d.remove(child.object3d);
+		if (isActor(component)) {
+			this.object3d.remove(component.object3d);
 
-			if (child.id) {
-				this.scene?.gameObjectsById.delete(child.id);
+			if (component.id) {
+				// handle scene id
 			}
 
-			if (child.tags) {
-				for (const tag of child.tags) {
-					this.scene?.gameObjectsByTag.get(tag)?.delete(child);
+			if (component.tags) {
+				for (const tag of component.tags) {
+					// handle scene tags
 				}
 			}
 		}
 
-		return child;
+		return component;
 	}
 
 	addTag(tag: string | symbol): this {
 		this.tags.add(tag);
-		if (!this.scene?.gameObjectsByTag.has(tag)) {
-			this.scene?.gameObjectsByTag.set(tag, new Set());
-		}
-		this.scene?.gameObjectsByTag.get(tag)!.add(this);
+		// handle scene tags
 		return this;
 	}
 
 	removeTag(tag: string | symbol): this {
 		this.tags.delete(tag);
-		this.scene?.gameObjectsByTag.get(tag)?.delete(this);
+		// handle scene tags
 		return this;
 	}
 
 	create() {
-		if (this.initialized || this.destroyed || !this.scene || !this.scene.game) return;
+		if (this.initialized || this.destroyed || !this.scene || !this.scene.app) return;
 
 		this.object3d.userData.owner = this;
 
@@ -170,31 +142,9 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 
 		this.initialized = true;
 
-		if(this.gui){
-			const renderFn = this.gui.bind(this);
-
-			const guiStylesheet = this.constructor.GUIStylesheet ?? css``
-
-			const scheduler = this.scene.game.UiScheduler;
-
-			const ui = class extends ElysiaElement {
-				static Tag = "actor-id" + Math.random().toString(36).substring(7);
-
-				static styles = guiStylesheet;
-
-				scheduler: Scheduler = scheduler;
-
-				render(){
-					return renderFn()
-				}
-			}
-			defineComponent(ui)
-			this.uiElement = document.createElement(ui.Tag);
-		}
-
-		for (const child of this.children) {
-			child.scene = this.scene;
-			child.create();
+		for (const component of this.components) {
+			component.scene = this.scene;
+			component.create();
 		}
 	}
 
@@ -203,18 +153,16 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		this.onSpawn();
 		this.spawned = true;
 		this.parent?.object3d.add(this.object3d);
-		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
-			.domElement.parentNode!.appendChild(this.uiElement)
-		for (const child of this.children) {
-			child.spawn();
+		for (const component of this.components) {
+			component.spawn();
 		}
 	}
 
 	update(frametime: number, elapsedtime: number) {
 		if (!this.spawned || this.destroyed) return;
 		this.onUpdate(frametime, elapsedtime);
-		for (const child of this.children) {
-			child.update(frametime, elapsedtime);
+		for (const component of this.components) {
+			component.update(frametime, elapsedtime);
 		}
 	}
 
@@ -222,10 +170,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		if (!this.spawned || this.destroyed) return;
 		this.onDespawn();
 		this.parent?.object3d.remove(this.object3d);
-		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
-			.domElement.removeChild(this.uiElement)
-		for (const child of this.children) {
-			child.despawn();
+		for (const component of this.components) {
+			component.despawn();
 		}
 	}
 
@@ -234,31 +180,37 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		this.destructor();
 		this.destroyed = true;
 		destroy(this.object3d);
-		for (const child of this.children) {
-			child.despawn();
+		for (const component of this.components) {
+			component.despawn();
+			component.destroy();
 		}
 	}
 
 	resize(bounds: DOMRect) {
 		if (!this.initialized || this.destroyed) return;
 		this.onResize(bounds);
-		for (const child of this.children) {
-			child.resize(bounds);
+		for (const component of this.components) {
+			component.resize(bounds);
 		}
 	}
 
 	onCreate(): void {}
+
 	onSpawn(): void {}
+
 	onUpdate(frametime: number, elapsedtime: number): void {}
+
 	onDespawn(): void {}
+
 	onResize(bounds: DOMRect): void {}
-	gui?(): TemplateResult;
+
 	destructor(): void {
 		this.disposables.forEach((fn) => fn());
-		for (const child of this.children) {
-			child.destroy();
+
+		for (const component of this.components) {
+			component.destroy();
 		}
-		this.children.clear();
+		this.components.clear();
 		this.scene = null;
 		this.parent = null;
 		this.initialized = false;
@@ -266,95 +218,60 @@ export class Actor<T extends Three.Object3D = Three.Object3D> {
 		this.destroyed = true;
 		this.tags.clear();
 		this.disposables.forEach((fn) => fn());
-		this.disposables = [];
+		this.disposables.length = 0;
 	}
 
 	dispose(...callbacks: (() => void)[]) {
 		this.disposables.push(...callbacks);
 	}
 
-	getChildrenByTag(tag: string | symbol): (Actor | Behavior)[] {
-		const children: (Actor | Behavior)[] = [];
-		for (const child of this.children) {
-			if (child.tags.has(tag)) {
-				children.push(child);
-			}
+	*componentIterator(): IterableIterator<Actor | Behavior> {
+		for (const component of this.components) {
+			yield component;
 		}
-		return children;
 	}
 
-	getChildById(id: string | symbol): Actor | Behavior | null {
-		for (const child of this.children) {
-			if (child.id === id) {
-				return child;
+	getComponentsByTag(tag: string | symbol): Set<Actor | Behavior> {
+		// todo: make readonly
+
+		if(!this.tagSetCache.has(tag)) {
+			this.tagSetCache.set(tag, new Set());
+		}
+
+		const container = this.tagSetCache.get(tag)!;
+
+		container.clear();
+
+		for (const component of this.components) {
+			if (component.tags.has(tag)) {
+				container.add(component);
 			}
 		}
-		return null;
+
+		return container;
 	}
 
-	getBehaviorsByType<T extends string | symbol>(type: new () => T): T | null {
-		for (const child of this.children) {
-			if (isBehavior(child) && child instanceof type) {
-				return child;
+	getComponents<T extends Actor | Behavior>(type: new () => T): Set<T> {
+		if(!this.typeSetCache.has(type)) {
+			this.typeSetCache.set(type, new Set());
+		}
+
+		const container = this.typeSetCache.get(type)!;
+
+		container.clear();
+
+		for (const component of this.components) {
+			if (component instanceof type) {
+				container.add(component as T);
 			}
 		}
-		return null;
+
+		return container;
 	}
 
-	getBehaviorsByTag(tag: string | symbol): Behavior[] {
-		const behaviors: Behavior[] = [];
-		for (const child of this.children) {
-			if (isBehavior(child) && child.tags.has(tag)) {
-				behaviors.push(child);
-			}
-		}
-		return behaviors;
-	}
+	private tagSetCache = new Map<string | number | symbol, Set<Actor | Behavior>>;
 
-	getBehaviorById(id: string): Behavior | null {
-		for (const child of this.children) {
-			if (isBehavior(child) && child.id === id) {
-				return child;
-			}
-		}
-		return null;
-	}
-
-	getGameObjectByType<T extends Actor>(type: new () => T): T | null {
-		for (const child of this.children) {
-			if (isActor(child) && child instanceof type) {
-				return child;
-			}
-		}
-		return null;
-	}
-
-	getGameObjectById(id: string): Actor | null {
-		for (const child of this.children) {
-			if (isActor(child) && child.id === id) {
-				return child;
-			}
-		}
-		return null;
-	}
-
-	getGameObjectsByTag(tag: string): Actor[] {
-		const gameObjects: Actor[] = [];
-		for (const child of this.children) {
-			if (isActor(child) && child.tags.has(tag)) {
-				gameObjects.push(child);
-			}
-		}
-		return gameObjects;
-	}
-
-	*childs(): IterableIterator<Actor | Behavior> {
-		for (const child of this.children) {
-			yield child;
-		}
-	}
+	private typeSetCache = new Map<new () => Actor | Behavior, Set<Actor | Behavior>>;
 
 	private disposables: (() => void)[] = [];
-
-	private uiElement?: HTMLElement;
 }

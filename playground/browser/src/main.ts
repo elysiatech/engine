@@ -9,6 +9,7 @@ import { PrimitiveCubeActor } from "../../../src/actors/Primitives.ts"
 import { SpinBehavior } from "../../../src/behaviors/SpinBehavior.ts";
 import * as Three from "three";
 import { css, html } from "../../../src/ui.ts"
+import { Asset, AssetLoader } from "../../../src/assets.ts"
 
 const hdRP = new HighDefinitionRenderPipeline({
 	canvas: document.getElementById("game") as HTMLCanvasElement,
@@ -29,6 +30,16 @@ const hdRP = new HighDefinitionRenderPipeline({
 		),
 	],
 });
+
+class UndefinedAsset extends Asset<any> {
+	async loader(){
+		return undefined;
+	}
+}
+
+const assetLoader = new AssetLoader({
+	undef: new UndefinedAsset
+})
 
 const game = new Game({ renderPipeline: hdRP });
 
@@ -116,6 +127,8 @@ class TestScene extends Scene {
 
 	override async setup() {
 		await super.setup();
+
+		await assetLoader.load()
 
 		this.camera
 			.addChild(new CameraOrbitBehavior)

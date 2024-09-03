@@ -1,56 +1,32 @@
-﻿import { CSSResult, TemplateResult, css } from "lit";
-import type { Actor } from "./actor";
+﻿import type { Application } from "./application";
+import type { Actor } from "./actor"
 import type { Scene } from "./scene";
-import { ElysiaElement, defineComponent } from "./ui";
 
 export class Behavior {
 
-	public static GUIStylesheet?: CSSResult
-
-	get isBehavior() {
+	public get isBehavior() {
 		return true;
 	}
 
-	public id?: string | symbol;
+	public id?: string | symbol | number;
 
-	public tags = new Set<string | symbol>();
+	public tags = new Set<string | symbol | number>();
 
-	parent: Actor | null = null;
+	public parent: Actor | null = null;
 
-	scene: Scene | null = null;
+	public scene: Scene | null = null;
 
-	initialized = false;
+	public app: Application | null = null;
 
-	spawned = false;
+	public initialized = false;
 
-	destroyed = false;
+	public spawned = false;
+
+	public destroyed = false;
 
 	create() {
-		if (this.initialized || this.destroyed || !this.scene || !this.scene.game) return;
+		if (this.initialized || this.destroyed || !this.scene || !this.scene.app) return;
 		this.onCreate();
-
-		if(this.gui){
-			const renderFn = this.gui.bind(this);
-
-			const guiStylesheet = this.constructor.GUIStylesheet ?? css``
-
-			const scheduler = this.scene.game.UiScheduler;
-
-			const ui = class extends ElysiaElement {
-				static Tag = "actor-id" + Math.random().toString(36).substring(7);
-
-				static styles = guiStylesheet;
-
-				scheduler = scheduler;
-
-				render(){
-					return renderFn()
-				}
-			}
-			defineComponent(ui)
-			this.uiElement = document.createElement(ui.Tag);
-		}
-
 		this.initialized = true;
 	}
 
@@ -58,8 +34,6 @@ export class Behavior {
 		if (!this.initialized || this.spawned || this.destroyed) return;
 		this.onSpawn();
 		this.spawned = true;
-		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
-			.domElement.parentNode!.appendChild(this.uiElement)
 	}
 
 	update(frametime: number, elapsed: number) {
@@ -70,8 +44,6 @@ export class Behavior {
 	despawn() {
 		if (!this.spawned || this.destroyed) return;
 		this.onDespawn();
-		this.uiElement && this.scene?.game?.renderPipeline.getRenderer()
-			.domElement.removeChild(this.uiElement)
 	}
 
 	destroy() {
@@ -89,11 +61,15 @@ export class Behavior {
 	}
 
 	onCreate(): void {}
+
 	onSpawn(): void {}
+
 	onUpdate(frametime: number, elapsedtime: number): void {}
+
 	onDespawn(): void {}
+
 	onResize(bounds: DOMRect): void {}
-	gui?(): TemplateResult;
+
 	destructor(): void {
 		this.disposables.forEach((fn) => fn());
 		this.disposables = [];
@@ -101,6 +77,4 @@ export class Behavior {
 	}
 
 	private disposables: (() => void)[] = [];
-
-	private uiElement?: HTMLElement;
 }

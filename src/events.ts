@@ -21,27 +21,30 @@ export class EventQueue {
 
 	readonly queue: Array<QueuedEvent> = [];
 
-	public emit<T extends Event>(type: T["type"], data: T["data"]): void {
+	public emit<T extends Event>(type: T | T["type"], data: T["data"]): void {
+		const t = typeof type === "string" || typeof type === "symbol" ? type : type.type;
 		if (this.mode === EventQueueMode.Queued) {
-			this.queue.push({ type, data, timestamp: Date.now() });
+			this.queue.push({ type: t, data, timestamp: Date.now() });
 		} else {
-			this.emitSync(type, data);
+			this.emitSync(t, data);
 		}
 	}
 
-	public emitSync<T extends Event>(type: T["type"], data: T["data"]): void {
-		this.subscribers.get(type)?.forEach((handler) => handler(data, this));
+	public emitSync<T extends Event>(type: T | T["type"], data: T["data"]): void {
+		const t = typeof type === "string" || typeof type === "symbol" ? type : type.type;
+		this.subscribers.get(t)?.forEach((handler) => handler(data, this));
 	}
 
 	public subscribe<T extends Event>(
-		type: T["type"],
+		type: T | T["type"],
 		handler: Callback<T["data"]>,
 	): Unlisten {
-		if (!this.subscribers.has(type)) {
-			this.subscribers.set(type, new Set());
+		const t = typeof type === "string" || typeof type === "symbol" ? type : type.type;
+		if (!this.subscribers.has(t)) {
+			this.subscribers.set(t, new Set());
 		}
-		this.subscribers.get(type)!.add(handler);
-		return () => void this.subscribers.get(type)?.delete(handler);
+		this.subscribers.get(t)!.add(handler);
+		return () => void this.subscribers.get(t)?.delete(handler);
 	}
 
 	public once<T extends Event>(
@@ -71,3 +74,5 @@ export class EventQueue {
 
 	private subscribers = new Map<string | symbol, Set<Callback>>();
 }
+
+const eq = new EventQueue; 

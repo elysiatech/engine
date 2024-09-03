@@ -57,6 +57,7 @@ class ResolvablePromise<T> implements Promise<T> {
 	[Symbol.toStringTag] = "ResolvablePromise";
 }
 
+
 type UnwrapAsset<T extends Asset<any>> = T extends Asset<infer U> ? U : never;
 
 type UnwrapAssetMap<T extends Record<string, Asset<any>>> = {
@@ -64,6 +65,7 @@ type UnwrapAssetMap<T extends Record<string, Asset<any>>> = {
 };
 
 export abstract class Asset<AssetData> implements PromiseLike<AssetData> {
+	
 	#data?: AssetData;
 
 	#progress = 0;
@@ -72,12 +74,14 @@ export abstract class Asset<AssetData> implements PromiseLike<AssetData> {
 
 	#loading = false;
 
+	#complete = false;
+
 	#promise = new ResolvablePromise<AssetData>();
 
 	#subscribers = new Set<(status: StatusUpdateEvent) => void>();
 
 	get data(): AssetData | undefined {
-		if (this.#data === undefined && !this.#loading) {
+		if (this.state === State.Idle) {
 			this.load();
 		}
 		return this.#data;
@@ -196,8 +200,6 @@ export abstract class Asset<AssetData> implements PromiseLike<AssetData> {
 				callback(StatusUpdateEvent.Error),
 			);
 		}
-
-		this.#loading = false;
 		this.#progress = 1;
 		this.#subscribers.forEach((callback) => callback(StatusUpdateEvent.Loaded));
 
@@ -264,6 +266,7 @@ export class AssetLoader<Assets extends Record<string, Asset<any>>> {
 		}
 
 		this.#loading = true;
+
 		this.#subscribers.forEach((callback) =>
 			callback(StatusUpdateEvent.Loading),
 		);
@@ -289,6 +292,7 @@ export class AssetLoader<Assets extends Record<string, Asset<any>>> {
 					);
 				}
 			});
+
 			promises.push(asset.load());
 		}
 

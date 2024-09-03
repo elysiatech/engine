@@ -1,5 +1,5 @@
 import * as Three from "three";
-import { EXRLoader, GLTFLoader, RGBELoader } from "three-stdlib";
+import { EXRLoader, GLTF, GLTFLoader, RGBELoader } from "three-stdlib";
 import { Asset } from "./assets";
 
 export class EnvironmentAsset extends Asset<Three.Texture | Three.CubeTexture> {
@@ -62,7 +62,7 @@ export class TextureAsset extends Asset<Three.Texture> {
 	}
 }
 
-export class GltfAsset extends Asset<Three.Group> {
+export class GltfAsset extends Asset<{gltf: GLTF, scene: Three.Group, clone: () => Three.Group}> {
 	constructor(public readonly path: string) {
 		super();
 	}
@@ -72,6 +72,10 @@ export class GltfAsset extends Asset<Three.Group> {
 		const gltf = await loader.loadAsync(this.path, (e) =>
 			this.updateProgress(e.loaded / e.total),
 		);
-		return gltf.scene;
+		return {
+			gltf,
+			scene: gltf.scene,
+			clone: () => gltf.scene.clone(true),
+		}
 	}
 }
