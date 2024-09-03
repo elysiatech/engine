@@ -1688,7 +1688,7 @@ var DracoDecoderModule = (() => {
 		a.NULL = B(0);
 		a.destroy = (b) => {
 			if (!b.__destroy__) {
-				throw "Error: Cannot destroy object. (Did you create it yourself?)";
+				throw "Error: Cannot destroyObject3D object. (Did you create it yourself?)";
 			}
 			b.__destroy__();
 			delete w(b.__class__)[b.ptr];

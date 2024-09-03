@@ -1,15 +1,16 @@
 import "./styles.css";
 import { ChromaticAberrationEffect, EffectPass, RenderPass, SMAAEffect, SMAAPreset, ToneMappingEffect, ToneMappingMode } from "postprocessing";
-import { HighDefinitionRenderPipeline } from "../../../src/render_pipelines/HighDefinitionRenderPipeline.ts";
+import { HighDefinitionRenderPipeline } from "../../../src/RenderPipelines/HighDefinitionRenderPipeline.ts";
 import { Game, Scene, ActiveCameraTag, Behavior, Actor } from "../../../src/mod.ts";
-import { EnvironmentActor } from "../../../src/actors/EnvironmentActor.ts";
-import { PerspectiveCameraActor } from "../../../src/actors/PerspectiveCameraActor.ts";
-import { CameraOrbitBehavior } from "../../../src/behaviors/CameraOrbitBehavior.ts";
-import { PrimitiveCubeActor } from "../../../src/actors/Primitives.ts"
-import { SpinBehavior } from "../../../src/behaviors/SpinBehavior.ts";
+import { EnvironmentActor } from "../../../src/Actors/EnvironmentActor.ts";
+import { PerspectiveCameraActor } from "../../../src/Actors/PerspectiveCameraActor.ts";
+import { CameraOrbitBehavior } from "../../../src/Behaviors/CameraOrbitBehavior.ts";
+import { PrimitiveCubeActor } from "../../../src/Actors/Primitives.ts"
+import { SpinBehavior } from "../../../src/Behaviors/SpinBehavior.ts";
 import * as Three from "three";
-import { css, html } from "../../../src/ui.ts"
-import { Asset, AssetLoader } from "../../../src/assets.ts"
+import { css, html } from "../../../src/UI/UI.ts"
+import { Asset } from "../../../src/Assets"
+import { AssetLoader } from "../../../src/Assets/AssetLoader.ts";
 
 const hdRP = new HighDefinitionRenderPipeline({
 	canvas: document.getElementById("game") as HTMLCanvasElement,
