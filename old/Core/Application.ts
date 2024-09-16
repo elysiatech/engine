@@ -5,6 +5,9 @@ import { InputQueue } from "./Input";
 import { Scheduler } from "../UI/UI";
 import { Scene } from "../Scene/Scene";
 import { Profiler } from "./Profiler";
+import { LogLevel } from "../Logger/Logger";
+import { SET_ELYSIA_LOGGER_LEVEL } from "./Logger";
+import { isDev } from "./Assert";
 
 type ApplicationConstructorArgs = {
 	renderPipeline: RenderPipeline,
@@ -33,7 +36,9 @@ export class Application {
 
 	getGameLoop(){ return this.gameLoop; }
 
-	constructor(config: { renderer: RenderPipeline, canvas?: HTMLCanvasElement }){
+	constructor(config: { renderer: RenderPipeline, canvas?: HTMLCanvasElement, logLevel?: LogLevel }){
+		SET_ELYSIA_LOGGER_LEVEL(config.logLevel ?? isDev() ? LogLevel.Debug : LogLevel.Production);
+
 		this.renderer = config.renderer;
 
 		this.canvas = this.renderer.getGl().domElement;

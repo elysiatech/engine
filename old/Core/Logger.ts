@@ -1,6 +1,11 @@
 ﻿import { gradients } from "../Logger/Gradients";
-import { createLogger } from "../Logger/Logger";
+import { createLogger, LogLevel } from "../Logger/Logger";
 
-export const ELYSIA_LOGGER = createLogger("ELYSIATECH", {
-	color: gradients.sunset
+export function SET_ELYSIA_LOGGER_LEVEL(level: LogLevel) {
+	ELYSIA_LOGGER.level = level;
+}
+
+export const ELYSIA_LOGGER = createLogger("ELYSIA", {
+	level: LogLevel.Debug,
+	color: gradients.purple
 })
