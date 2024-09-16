@@ -105,4 +105,6 @@ export enum KeyCode {
 
 	Key_Num_Lock = 136,
 	Key_Scroll_Lock = 137,
+
+	None = 0,
 }

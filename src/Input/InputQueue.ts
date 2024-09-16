@@ -1,20 +1,6 @@
 import { KeyCode } from "./KeyCode";
 import { ObjectPool } from "../Containers/ObjectPool";
-
-type QueuedEvent = {
-	key: KeyCode,
-	timestamp: number,
-	ctrlDown: boolean,
-	shiftDown: boolean,
-	spaceDown: boolean,
-	altDown: boolean,
-	metaDown: boolean,
-	mouseLeftDown: boolean,
-	mouseMidDown: boolean,
-	mouseRightDown: boolean,
-	mouseX: number,
-	mouseY: number,
-}
+import { QueuedEvent } from "./QueuedEvent";
 
 export class InputQueue {
 
@@ -38,13 +24,11 @@ export class InputQueue {
 		return this.currentlyPressed.has(key);
 	}
 
-	public flush() {
-
-	}
+	public flush() {}
 
 	public clear() { this.queue.clear(); }
 
-	private pool = new ObjectPool<QueuedEvent>(() => ({ key: KeyCode.Key_1, timestamp: 0 }), 30)
+	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 30)
 
 	private callbacks = new Map<KeyCode, Set<(key: QueuedEvent) => void>>
 
