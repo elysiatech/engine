@@ -1,0 +1,138 @@
+import { isBrowser } from "../Core/Asserts";
+import { Audio } from "../../old/Audio/Audio";
+import { ASSERT } from "../Core/Asserts";
+
+declare global {
+	var ELYSIA_AUDIO_CTX: AudioContext;
+}
+
+export class AudioPlayer
+{
+
+	static GetContext()
+	{
+		return window.ELYSIA_AUDIO_CTX;
+	}
+
+	static {
+		if(isBrowser())
+		{
+			if(!window.ELYSIA_AUDIO_CTX)
+			{
+				window.ELYSIA_AUDIO_CTX = new AudioContext();
+			}
+
+			const unlock = () => {
+				document.removeEventListener("click", unlock);
+				const source = AudioPlayer.GetContext().createBufferSource();
+				source.buffer = AudioPlayer.GetContext().createBuffer(1, 1, 22050);
+				source.connect(AudioPlayer.GetContext().destination);
+				source.start();
+				source.stop();
+				source.disconnect();
+			};
+
+			document.addEventListener("click", unlock);
+		}
+	}
+
+	readonly instances = new Set<WeakRef<Audio>>();
+
+	readonly cache = new Map<string | ArrayBuffer, Promise<AudioBuffer>>();
+
+	debug = false;
+
+	get muteOnBlur() {
+		return this.#muteOnBlur;
+	}
+
+	set muteOnBlur(value: boolean) {
+		this.#muteOnBlur = value;
+
+		if (!isBrowser()) return;
+
+		if (value) {
+			window.addEventListener("blur", this.muteAll);
+			window.addEventListener("focus", this.unmuteAll);
+		} else {
+			window.removeEventListener("blur", this.muteAll);
+			window.removeEventListener("focus", this.unmuteAll);
+		}
+	}
+
+	muteAll() {
+		if (!isBrowser()) return;
+		this.instances.forEach((ref) => {
+			const player = ref.deref();
+			if (player) {
+				player.mute();
+			}
+		});
+	}
+
+	unmuteAll() {
+		if (!isBrowser()) return;
+		this.instances.forEach((ref) => {
+			const player = ref.deref();
+			if (player) {
+				player.unmute();
+			}
+		});
+	}
+
+	pauseAll() {
+		if (!isBrowser()) return;
+		this.instances.forEach((ref) => {
+			const player = ref.deref();
+			if (player) {
+				player.pause();
+			}
+		});
+	}
+
+	stopAll() {
+		if (!isBrowser()) return;
+		this.instances.forEach((ref) => {
+			const player = ref.deref();
+			if (player) {
+				player.stop();
+			}
+		});
+	}
+
+	createAudioBuffer(
+		input: ArrayBuffer,
+	): Promise<AudioBuffer | undefined> {
+		if (!isBrowser()) {
+			return Promise.resolve(undefined);
+		}
+
+		ASSERT(AudioPlayer.GetContext(), "AudioContext is not initialized");
+
+		if (this.cache.has(input)) {
+			return this.cache.get(input)!;
+		}
+
+		this.cache.set(input, AudioPlayer.GetContext().decodeAudioData(input));
+
+		return this.cache.get(input)!;
+	}
+
+	constructor() {
+		if(!isBrowser())
+			return;
+
+		setInterval(() => {
+			requestIdleCallback(() => {
+				for (const ref of this.instances) {
+					if (!ref.deref()) {
+						this.instances.delete(ref);
+					}
+				}
+			})
+		}, 10000);
+	}
+
+	#muteOnBlur = false;
+}
+
