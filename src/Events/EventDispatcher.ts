@@ -1,8 +1,6 @@
 import { ElysiaEvent } from "./Event";
 import { Constructor } from "../Core/Utilities";
 
-
-
 /**
  * Sync event dispatcher.
  */
@@ -24,11 +22,41 @@ export class ElysiaEventDispatcher
 	}
 
 	/**
+	 * Add an event listener.
+	 * @param type
+	 * @param listener
+	 */
+	addEventListener<T extends Constructor<ElysiaEvent<any>>>(type: T, listener: (value: InstanceType<T>['value']) => void)
+	{
+		const listeners = this.listeners.get(type) ?? new Set();
+		listeners.add(listener);
+		this.listeners.set(type, listeners);
+
+		return () => this.removeEventListener(type, listener);
+	}
+
+	/**
 	 * Remove an event listener.
 	 * @param type
 	 * @param listener
 	 */
 	static removeEventListener<T extends Constructor<ElysiaEvent<any>>>(type: T, listener: (value: InstanceType<T>['value']) => void)
+	{
+		const listeners = this.listeners.get(type);
+		if(!listeners)
+		{
+			return;
+		}
+
+		listeners.delete(listener);
+	}
+
+	/**
+	 * Remove an event listener.
+	 * @param type
+	 * @param listener
+	 */
+	removeEventListener<T extends Constructor<ElysiaEvent<any>>>(type: T, listener: (value: InstanceType<T>['value']) => void)
 	{
 		const listeners = this.listeners.get(type);
 		if(!listeners)
@@ -65,5 +93,32 @@ export class ElysiaEventDispatcher
 		}
 	}
 
+	/**
+	 * Dispatch an event.
+	 * @param event
+	 */
+	dispatchEvent<T extends Constructor<ElysiaEvent<any>>>(event: InstanceType<T>)
+	{
+		const listeners = this.listeners.get(event.constructor as T);
+
+		if(!listeners)
+		{
+			return;
+		}
+
+		for(const listener of listeners)
+		{
+			try
+			{
+				listener(event.value);
+			}
+			catch (e)
+			{
+				console.error(e);
+			}
+		}
+	}
+
 	private static listeners = new Map<Constructor<ElysiaEvent<any>>, Set<Function>>;
+	private listeners = new Map<Constructor<ElysiaEvent<any>>, Set<Function>>;
 }
