@@ -4,45 +4,30 @@
 export class Queue<T>
 {
 	/**
+	 * Return the number of items in the queue.
+	 */
+	get size() { return this.#items.length; }
+
+	/**
 	 * Add an item to the queue.
 	 * @param item
 	 */
-	enqueue(item: T)
-	{
-		this.#items.push(item);
-	}
+	enqueue(item: T){ this.#items.push(item); }
 
 	/**
 	 * Remove and return the first item in the queue.
 	 */
-	dequeue()
-	{
-		return this.#items.shift();
-	}
+	dequeue(){ return this.#items.shift(); }
 
 	/**
 	 * Return the first item in the queue without removing it.
 	 */
-	peek()
-	{
-		return this.#items[0];
-	}
+	peek(){ return this.#items[0]; }
 
 	/**
 	 * Check if the queue is empty.
 	 */
-	isEmpty()
-	{
-		return this.#items.length === 0;
-	}
-
-	/**
-	 * Return the number of items in the queue.
-	 */
-	get length()
-	{
-		return this.#items.length;
-	}
+	isEmpty(){ return this.#items.length === 0; }
 
 	/**
 	 * Remove all items from the queue, calling the provided callback for each item.

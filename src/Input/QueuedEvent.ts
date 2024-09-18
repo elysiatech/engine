@@ -2,6 +2,7 @@ import { KeyCode } from "./KeyCode";
 
 export class QueuedEvent {
 	key: KeyCode;
+	type: "down" | "up";
 	timestamp: number;
 	ctrlDown: boolean;
 	shiftDown: boolean;
@@ -16,6 +17,7 @@ export class QueuedEvent {
 
 	constructor(
 		key: KeyCode = KeyCode.None,
+		type: "down" | "up" = "down",
 		timestamp: number = performance.now(),
 		ctrlDown: boolean = false,
 		shiftDown: boolean = false,
@@ -29,6 +31,7 @@ export class QueuedEvent {
 		mouseY: number = 0,
 	) {
 		this.key = key;
+		this.type = type;
 		this.timestamp = timestamp;
 		this.ctrlDown = ctrlDown;
 		this.shiftDown = shiftDown;

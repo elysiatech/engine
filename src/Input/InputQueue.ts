@@ -4,13 +4,38 @@ import { QueuedEvent } from "./QueuedEvent";
 
 export class InputQueue {
 
-	constructor() {
+	constructor(mouse?: { x: number, y: number }) {
 		for(const value in KeyCode) {
 			if (isNaN(Number(value))) {
 				return;
 			}
 			// @ts-ignore
 			this.queue.set(value, new Set)
+		}
+
+		window.addEventListener("keydown", (e) => {
+			const key = e.key;
+			this.currentlyPressed.add(key);
+			// add to queue
+			const event = this.pool.alloc()
+			event.key = key;
+			event.type = "down";
+			this.queue.get(key)!.add(event);
+		})
+
+		window.addEventListener("keyup", (e) => {
+			// handle keyup
+			const key = e.key;
+			this.currentlyPressed.delete(key);
+		})
+
+		if(!mouse){
+			window.addEventListener("mousemove", (e) => {
+				this.mouse.x = e.clientX;
+				this.mouse.y = e.clientY;
+			})
+		} else {
+			this.mouse = mouse;
 		}
 	}
 
@@ -26,7 +51,14 @@ export class InputQueue {
 
 	public flush() {}
 
-	public clear() { this.queue.clear(); }
+	public clear() {
+		for(const set of this.queue.values()) {
+			for(const event of set) {
+				this.pool.free(event);
+			}
+			set.clear()
+		}
+	}
 
 	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 30)
 
@@ -35,4 +67,9 @@ export class InputQueue {
 	private queue = new Map<KeyCode, Set<QueuedEvent>>()
 
 	private currentlyPressed = new Set<KeyCode>();
+
+	public readonly mouse = {
+		x: 0,
+		y: 0,
+	}
 }
