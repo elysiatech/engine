@@ -5,7 +5,7 @@ import * as Events from "./AudioEvents";
 import { ASSERT } from "../../old/Core/Assert";
 import { isBrowser } from "../Core/Asserts";
 
-interface AudioConstructorArguments {
+export interface AudioConstructorArguments {
 	bytes: ArrayBuffer;
 	player: AudioPlayer;
 	loop?: boolean;
