@@ -12,6 +12,8 @@ import { RenderPipeline } from "../RPipeline/RenderPipeline";
 import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline";
 import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger";
+import { ResizeController, ResizeEvent } from "./Resize";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 
 interface ApplicationConstructorArguments
 {
@@ -36,6 +38,8 @@ export class Application {
 	public readonly profiler: Profiler;
 
 	public readonly audio: AudioPlayer;
+
+	public get renderPipeline() { return this.#renderPipeline!; }
 
 	constructor(config: ApplicationConstructorArguments = {})
 	{
@@ -64,6 +68,8 @@ export class Application {
 			this.#output.style.padding = "0";
 		}
 
+		this.#resizeController = new ResizeController();
+
 		this.mouse.register(this.#output)
 	}
 
@@ -81,6 +87,7 @@ export class Application {
 		await this.#scene?._load();
 		ELYSIA_LOGGER.debug("Scene loaded", scene)
 		this.#renderPipeline!.onCreate(this.#scene, this.#output);
+		this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
 		this.#scene._create();
 		this.#scene._start();
 		ELYSIA_LOGGER.debug("Scene started", scene)
@@ -149,6 +156,7 @@ export class Application {
 
 	private mouseIntersectionController = new MouseIntersections;
 
+	#resizeController: ResizeController;
 	#stats = false;
 	#clock = new Three.Clock;
 	#renderPipeline?: RenderPipeline;
