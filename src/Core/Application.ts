@@ -76,6 +76,7 @@ export class Application {
 	public async loadScene(scene: Scene)
 	{
 		ELYSIA_LOGGER.debug("Loading scene", scene)
+		scene.app = this;
 		this.#rendering = false;
 		if(this.#scene)
 		{

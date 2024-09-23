@@ -8,7 +8,7 @@ import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
 import { ActiveCameraTag } from "../Core/Tags";
 import { ResizeEvent } from "../Core/Resize";
-import { Component, isActor } from "./Component";
+import { isActor } from "./Component";
 import { Application } from "../Core/Application";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
@@ -22,6 +22,35 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		super();
 		this.object3d.actor = this;
 
+	}
+
+	public getByTag(tag: any): Set<Actor | Behavior>
+	{
+		return this.byTag.get(tag) || new Set();
+	}
+
+	public getByType(type: any): Set<Actor | Behavior>
+	{
+		return this.byType.get(type) || new Set();
+	}
+
+	public getByObject3d(object3d: string): Set<Actor>
+	{
+		return this.byObject3d.get(object3d) || new Set();
+	}
+
+	public getActiveCamera(): Three.Camera | null
+	{
+		return this.getByTag(ActiveCameraTag).values().next().value.object3d || null;
+	}
+
+	onDestroy(): void
+	{
+		this.byTag.clear();
+		this.byType.clear();
+	}
+
+	onLoad(): void | Promise<void> {
 		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, (e) => {
 			const type = e.child.constructor;
 
@@ -87,34 +116,6 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 			})
 		})
 	}
-
-	public getByTag(tag: any): Set<Actor | Behavior>
-	{
-		return this.byTag.get(tag) || new Set();
-	}
-
-	public getByType(type: any): Set<Actor | Behavior>
-	{
-		return this.byType.get(type) || new Set();
-	}
-
-	public getByObject3d(object3d: string): Set<Actor>
-	{
-		return this.byObject3d.get(object3d) || new Set();
-	}
-
-	public getActiveCamera(): Three.Camera | null
-	{
-		return this.getByTag(ActiveCameraTag).values().next().value.object3d || null;
-	}
-
-	onDestroy(): void
-	{
-		this.byTag.clear();
-		this.byType.clear();
-	}
-
-	onLoad(): void | Promise<void> {}
 
 	async _load()
 	{

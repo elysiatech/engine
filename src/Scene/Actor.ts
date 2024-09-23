@@ -17,7 +17,16 @@ declare module 'three'
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
-	readonly object3d: T = new Three.Object3D as T;
+	get object3d() { return this.#object3d; }
+
+	set object3d(object3d: T)
+	{
+		if(this.#object3d === object3d) return;
+		this.#object3d.parent?.remove(this.#object3d);
+		this.#object3d.children.forEach(child => object3d.add(child));
+		this.#object3d.actor = undefined;
+		this.#object3d = object3d;
+	}
 
 	get created() { return this.#created; }
 
@@ -31,7 +40,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	constructor()
 	{
-		this.object3d.actor = this;
+		this.#object3d.actor = this;
 	}
 
 	onCreate() { }
@@ -112,7 +121,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return;
 		}
 		this.#enabled = true;
-		this.object3d.visible = true;
+		this.#object3d.visible = true;
 		this.onEnable();
 		for(const component of this.components)
 		{
@@ -142,7 +151,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return;
 		}
 		this.#enabled = false;
-		this.object3d.visible = false;
+		this.#object3d.visible = false;
 		this.onDisable();
 		for(const component of this.components)
 		{
@@ -208,10 +217,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		if(this.parent)
 		{
-			this.parent.object3d.remove(this.object3d);
+			this.parent.#object3d.remove(this.#object3d);
 		}
 		this.parent = newParent;
-		this.parent?.object3d.add(this.object3d);
+		this.parent?.object3d.add(this.#object3d);
 		this.onReparent(newParent);
 	}
 
@@ -223,8 +232,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return;
 		}
 		this.#destroyed = true;
-		this.object3d.actor = undefined;
-		this.object3d.parent?.remove(this.object3d);
+		this.#object3d.actor = undefined;
+		this.#object3d.parent?.remove(this.#object3d);
 		this.disable();
 		for(const component of this.components)
 		{
@@ -232,6 +241,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
+	#object3d: T = new Three.Object3D as T;
 	#created: boolean = false;
 	#started: boolean = false;
 	#enabled: boolean = true;
