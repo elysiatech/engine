@@ -144,6 +144,10 @@ export function isFunction(value: any): value is Function {
 	return typeof value === "function";
 }
 
+export function isDestroyable(value: any): value is { destructor(): void } {
+	return value && isObject(value) && isFunction(value.destructor);
+}
+
 export function isObject(value: any): value is Object {
 	return typeof value === "object" && value !== null;
 }

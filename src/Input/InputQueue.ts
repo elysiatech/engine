@@ -1,10 +1,11 @@
 import { KeyCode } from "./KeyCode";
 import { ObjectPool } from "../Containers/ObjectPool";
 import { QueuedEvent } from "./QueuedEvent";
+import { Destroyable } from "../Core/Lifecycle";
 
-export class InputQueue {
+export class InputQueue implements Destroyable {
 
-	constructor(mouse?: { x: number, y: number }) {
+	constructor() {
 		for(const value in KeyCode) {
 			if (isNaN(Number(value))) {
 				return;
@@ -29,14 +30,6 @@ export class InputQueue {
 			this.currentlyPressed.delete(key);
 		})
 
-		if(!mouse){
-			window.addEventListener("mousemove", (e) => {
-				this.mouse.x = e.clientX;
-				this.mouse.y = e.clientY;
-			})
-		} else {
-			this.mouse = mouse;
-		}
 	}
 
 	public onKey(key: KeyCode, callback: Function) {}
@@ -58,6 +51,11 @@ export class InputQueue {
 			}
 			set.clear()
 		}
+	}
+
+	public destructor() {
+		this.clear()
+		// kill listeners
 	}
 
 	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 30)

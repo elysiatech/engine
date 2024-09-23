@@ -1,6 +1,6 @@
 import { isBrowser } from "../Core/Asserts";
-import { Audio } from "../../old/Audio/Audio";
 import { ASSERT } from "../Core/Asserts";
+import { Audio, AudioConstructorArguments } from "./Audio";
 
 declare global {
 	var ELYSIA_AUDIO_CTX: AudioContext;
@@ -58,6 +58,16 @@ export class AudioPlayer
 			window.removeEventListener("blur", this.muteAll);
 			window.removeEventListener("focus", this.unmuteAll);
 		}
+	}
+
+	createAudio(args: AudioConstructorArguments): Audio
+	{
+		if(!isBrowser())
+		{
+			return new Audio(args);
+		}
+
+		return new Audio(Object.assign(args, { player: this }));
 	}
 
 	muteAll() {

@@ -18,6 +18,7 @@ export function toError(err: unknown)
 	return new Error(String(err))
 }
 
+export function noop() {}
 
 export type Constructor<T> = new (...args: any[]) => T
 

@@ -88,6 +88,8 @@ export class Audio
 		this.addEventListener = this.#eventDispatcher.addEventListener.bind(this.#eventDispatcher);
 		this.removeEventListener = this.#eventDispatcher.removeEventListener.bind(this.#eventDispatcher);
 
+		this.#player.instances.add(new WeakRef(this));
+
 		this.#player.createAudioBuffer(this.#buffer).then(
 			(buffer) =>
 			{

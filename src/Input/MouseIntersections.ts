@@ -1,4 +1,6 @@
 import { ActiveCameraTag } from "../Core/Tags";
+import * as Three from "three";
+import { Scene } from "../Scene/Scene";
 
 /**
  * @internal
@@ -15,11 +17,27 @@ export class MouseIntersections {
 	 * Cast a ray from the mouse position and get intersections with actors
 	 * @param scene
 	 */
-	public cast(scene: any, x: number, y: number)
+	public cast(camera: Three.Camera, scene: Three.Scene, x: number, y: number)
 	{
 		this.intersections.clear()
-		const camera = scene.getByTag(ActiveCameraTag)[0]
-		if(!camera) return
-		// todo: raycast and get intersections
+
+		this.vec2.x = x
+		this.vec2.y = y
+
+		this.raycaster.setFromCamera(this.vec2, camera)
+
+		const intersects = this.raycaster.intersectObjects(scene.children, true)
+
+		for(const intersection of intersects)
+		{
+			const actor = intersection.object.actor
+			if(actor)
+			{
+				this.intersections.add(actor)
+			}
+		}
 	}
+
+	private vec2 = new Three.Vector2;
+	private raycaster = new Three.Raycaster;
 }
