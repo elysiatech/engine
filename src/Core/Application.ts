@@ -52,9 +52,9 @@ export class Application {
 		this.events = config.eventQueue ?? new ElysiaEventQueue
 		this.profiler = config.profiler ?? new Profiler
 		this.audio = config.audio ?? new AudioPlayer
+
 		this.#renderPipeline = config.renderPipeline ?? new BasicRenderPipeline;
 		this.#stats = config.stats ?? false;
-
 		this.#output = config.output ?? document.createElement("canvas");
 
 		if(!config.output)

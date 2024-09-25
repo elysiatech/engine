@@ -1,6 +1,5 @@
 import * as Three from "three";
 import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
-import { Behavior } from "./Behavior";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent } from "../Core/ElysiaEvents";
@@ -13,7 +12,6 @@ declare module 'three'
 		actor?: Actor<any>;
 	}
 }
-
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
@@ -30,6 +28,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	get created() { return this.#created; }
 
+	get enabled() { return this.#enabled; }
+
 	get destroyed() { return this.#destroyed; }
 
 	parent: Actor<any> | null = null;
@@ -38,24 +38,48 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	readonly tags = new Set<any>;
 
+	get position() { return this.#object3d.position; }
+	set position(position: Three.Vector3) { this.#object3d.position.copy(position); }
+
+	get rotation() { return this.#object3d.rotation; }
+	set rotation(rotation: Three.Euler) { this.#object3d.rotation.copy(rotation); }
+
+	get scale() { return this.#object3d.scale; }
+	set scale(scale: Three.Vector3) { this.#object3d.scale.copy(scale); }
+
+	get quaternion() { return this.#object3d.quaternion; }
+	set quaternion(quaternion: Three.Quaternion) { this.#object3d.quaternion.copy(quaternion); }
+
 	constructor()
 	{
 		this.#object3d.actor = this;
 	}
 
-	onCreate() { }
+	/* **********************************************************
+	    Lifecycle methods
+	************************************************************/
 
-	onEnable() { }
+	onCreate() {}
 
-	onStart() { }
+	onEnable() {}
 
-	onUpdate(delta: number, elapsed: number) { }
+	onStart() {}
 
-	onDisable() { }
+	onEnterScene() {}
 
-	onReparent(parent: Actor | null) { }
+	onUpdate(delta: number, elapsed: number) {}
 
-	get enabled() { return this.#enabled; }
+	onLeaveScene() {}
+
+	onDisable() {}
+
+	onDestroy() {}
+
+	onReparent(parent: Actor | null) {}
+
+	/* **********************************************************
+	    Public methods
+	************************************************************/
 
 	enable() { this._enable(); }
 
@@ -77,7 +101,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	{
 		if(this.destroyed)
 		{
-			ELYSIA_LOGGER.warn("Cannot add component to destroyed actor");
 			return component;
 		}
 		this.components.add(component);
@@ -102,7 +125,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	{
 		if(this.destroyed)
 		{
-			ELYSIA_LOGGER.warn("Cannot remove component from destroyed actor");
 			return component;
 		}
 		this.components.delete(component);
@@ -113,11 +135,31 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		return component;
 	}
 
-	_enable()
+	destructor()
+	{
+		if(this.#destroyed)
+		{
+			ELYSIA_LOGGER.warn("Actor already destroyed");
+			return;
+		}
+		this.#destroyed = true;
+		this.#object3d.actor = undefined;
+		this.#object3d.parent?.remove(this.#object3d);
+		this.disable();
+		for(const component of this.components)
+		{
+			component.destructor();
+		}
+	}
+
+	/* **********************************************************
+	    Internal methods
+	************************************************************/
+
+	/** @internal */ _enable()
 	{
 		if(this.enabled || this.#destroyed)
 		{
-			ELYSIA_LOGGER.warn("Actor already enabled or destroyed");
 			return;
 		}
 		this.#enabled = true;
@@ -143,11 +185,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	_disable()
+	/** @internal */ _disable()
 	{
 		if(!this.enabled || this.#destroyed)
 		{
-			ELYSIA_LOGGER.warn("Actor already disabled or destroyed");
 			return;
 		}
 		this.#enabled = false;
@@ -159,11 +200,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	_create()
+	/** @internal */ _create()
 	{
 		if(this.#created || this.#destroyed)
 		{
-			ELYSIA_LOGGER.warn("Actor already created or destroyed");
 			return;
 		}
 		this.#created = true;
@@ -174,11 +214,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	_start()
+	/** @internal */ _start()
 	{
 		if(!this.#enabled || !this.#created || this.#started || this.#destroyed)
 		{
-			ELYSIA_LOGGER.warn("Actor not enabled, created, or destroyed");
 			return;
 		}
 		this.#started = true;
@@ -189,11 +228,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	_update(delta: number, elapsed: number)
+	/** @internal */ _update(delta: number, elapsed: number)
 	{
 		if(!this.#enabled || !this.#started || this.#destroyed)
 		{
-			ELYSIA_LOGGER.warn("Actor not enabled, started, or destroyed");
 			return;
 		}
 		this.onUpdate(delta, elapsed);
@@ -203,7 +241,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	_reparent(newParent: Actor | null)
+	/** @internal */ _reparent(newParent: Actor | null)
 	{
 		if(this.#destroyed)
 		{
@@ -222,23 +260,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.parent = newParent;
 		this.parent?.object3d.add(this.#object3d);
 		this.onReparent(newParent);
-	}
-
-	destructor()
-	{
-		if(this.#destroyed)
-		{
-			ELYSIA_LOGGER.warn("Actor already destroyed");
-			return;
-		}
-		this.#destroyed = true;
-		this.#object3d.actor = undefined;
-		this.#object3d.parent?.remove(this.#object3d);
-		this.disable();
-		for(const component of this.components)
-		{
-			component.destructor();
-		}
 	}
 
 	#object3d: T = new Three.Object3D as T;

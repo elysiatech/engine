@@ -44,7 +44,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		return this.getByTag(ActiveCameraTag).values().next().value.object3d || null;
 	}
 
-	onDestroy(): void
+	onEnd(): void
 	{
 		this.byTag.clear();
 		this.byType.clear();
