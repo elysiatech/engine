@@ -12,8 +12,18 @@ import { RenderPipeline } from "../RPipeline/RenderPipeline";
 import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline";
 import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger";
-import { ResizeController, ResizeEvent } from "./Resize";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
+import { ResizeController } from "./Resize";
+
+class UnhandledUpdateLoopError extends Error
+{
+	constructor(message: string)
+	{
+		super(message)
+		this.stack = this.stack?.split("\n").filter(
+			(line) => !line.startsWith("FrameRequestCallback*update")).filter(
+				(line) => !line.startsWith("UnhandledUpdateLoopError"))?.join("\n")
+	}
+}
 
 interface ApplicationConstructorArguments
 {
@@ -39,13 +49,21 @@ export class Application {
 
 	public readonly audio: AudioPlayer;
 
+	/**
+	 * The maximum number of consecutive errors that can occur inside update() before stopping.
+	 */
+	public maxErrorCount = 10;
+
+	/**
+	 * The active render pipeline.
+	 */
 	public get renderPipeline() { return this.#renderPipeline!; }
 
 	constructor(config: ApplicationConstructorArguments = {})
 	{
 		this.loadScene = this.loadScene.bind(this)
 		this.destructor = this.destructor.bind(this)
-		this.render = this.render.bind(this)
+		this.update = this.update.bind(this)
 
 		SET_ELYSIA_LOGLEVEL(config.logLevel ?? isDev() ? LogLevel.Debug : LogLevel.Production)
 
@@ -59,7 +77,7 @@ export class Application {
 
 		if(!config.output)
 		{
-			ELYSIA_LOGGER.debug("No output element provided, creating a new one")
+			ELYSIA_LOGGER.debug("No output canvas element provided, creating a new fullscreen one.")
 			document.body.appendChild(this.#output)
 			this.#output.style.width = "100%";
 			this.#output.style.height = "100vh";
@@ -89,11 +107,12 @@ export class Application {
 		ELYSIA_LOGGER.debug("Scene loaded", scene)
 		this.#renderPipeline!.onCreate(this.#scene, this.#output);
 		this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
-		this.#scene._create();
-		this.#scene._start();
+		this.#scene._onCreate();
+		this.#scene._onStart();
+		this.#scene._onEnterScene();
 		ELYSIA_LOGGER.debug("Scene started", scene)
 		this.#rendering = true;
-		this.render();
+		this.update();
 	}
 
 	public destructor()
@@ -109,54 +128,70 @@ export class Application {
 		}
 	}
 
-	private render()
+	private update()
 	{
-		if(!this.#scene || !this.#rendering)
-		{
-			ELYSIA_LOGGER.error("No scene loaded, or rendering disabled")
-			return;
+		try {
+			if(!this.#scene || !this.#rendering)
+			{
+				throw Error("No scene loaded")
+			}
+
+			if(this.#errorCount <= this.maxErrorCount)
+			{
+				requestAnimationFrame(this.update);
+			}
+			else
+			{
+				ELYSIA_LOGGER.critical("Too many consecutive errors, stopping update loop.")
+				return;
+			}
+
+			const camera = this.#scene.getActiveCamera();
+
+			if(!camera)
+			{
+				throw Error("No active camera in scene")
+			}
+
+			const delta = this.#clock.getDelta();
+			const elapsed = this.#clock.getElapsedTime();
+
+			// update mouse intersection
+			this.mouseIntersectionController.cast(
+				camera,
+				this.#scene.object3d,
+				this.mouse.x / this.#output.clientWidth * 2 -1,
+				this.mouse.y / this.#output.clientHeight * 2 -1
+			);
+
+			// flush input and event queue callbacks
+			this.input.flush();
+			this.events.flush();
+
+			// update stats
+
+			// scene update
+			this.#scene._onUpdate(delta, elapsed);
+
+			// scene update
+			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera()!);
+
+			// clear input and event queues
+			this.input.clear();
+			this.events.clear();
+
+			this.#errorCount = 0;
 		}
-
-		requestAnimationFrame(this.render);
-
-		const camera = this.#scene.getActiveCamera();
-
-		if(!camera)
+		catch(e)
 		{
-			ELYSIA_LOGGER.error("No active camera found in scene");
-			return;
+			ELYSIA_LOGGER.error("in update loop:", new UnhandledUpdateLoopError(e instanceof Error ? e.message : String(e)))
+			this.#errorCount++;
 		}
-
-		const delta = this.#clock.getDelta();
-		const elapsed = this.#clock.getElapsedTime();
-
-		// update mouse intersection
-		this.mouseIntersectionController.cast(
-			camera,
-			this.#scene.object3d,
-			this.mouse.x / this.#output.clientWidth * 2 -1,
-			this.mouse.y / this.#output.clientHeight * 2 -1
-		);
-
-		// flush input and event queue callbacks
-		this.input.flush();
-		this.events.flush();
-
-		// update stats
-
-		// scene update
-		this.#scene._update(delta, elapsed);
-
-		// scene render
-		this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera()!);
-
-		// clear input and event queues
-		this.input.clear();
-		this.events.clear();
 	}
 
 	private mouseIntersectionController = new MouseIntersections;
 
+	#errorCount = 0;
 	#resizeController: ResizeController;
 	#stats = false;
 	#clock = new Three.Clock;

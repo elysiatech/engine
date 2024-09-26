@@ -15,6 +15,9 @@ type HighDef = Three.WebGLRendererParameters & {
 	multisampling?: number;
 };
 
+/**
+ * A high definition render pipeline that uses pmndr's Postprocesing to render the scene.
+ */
 export class HighDefRenderPipeline extends RenderPipeline
 {
 	constructor(args: HighDef)
@@ -43,7 +46,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 	{
 		this.scene = scene;
 		this.output = output;
-		const camera = scene.getByTag(ActiveCameraTag)[0];
+		const camera = scene.getComponentByTag(ActiveCameraTag)[0];
 		if (camera) { this.effectComposer.setMainCamera(camera.object3d as Three.Camera); }
 	}
 

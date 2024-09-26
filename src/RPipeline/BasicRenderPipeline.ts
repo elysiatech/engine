@@ -8,6 +8,9 @@ type BasicRenderPipelineArguments = Three.WebGLRendererParameters & {
 	devicePixelRatio?: number;
 };
 
+/**
+ * A basic render pipeline that uses Three.js to render the scene with the default WebGLRenderer.
+ */
 export class BasicRenderPipeline extends RenderPipeline
 {
 	constructor(args: BasicRenderPipelineArguments = {})

@@ -1,4 +1,4 @@
-import { Destroyable } from "../Core/Lifecycle";
+import { Destroyable, RenderPipelineLifecycle } from "../Core/Lifecycle";
 import { Scene } from "../Scene/Scene";
 import * as Three from "three";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
@@ -9,9 +9,9 @@ import { ELYSIA_LOGGER } from "../Core/Logger";
  * A render pipeline is a class that is responsible for rendering a scene.
  * It implements a render function that is called every frame.
  */
-export abstract class RenderPipeline implements Destroyable {
+export abstract class RenderPipeline implements RenderPipelineLifecycle, Destroyable {
 
-	constructor()
+	protected constructor()
 	{
 		this.onResize.bind(this);
 		this.handleResize = this.handleResize.bind(this);
@@ -53,6 +53,7 @@ export abstract class RenderPipeline implements Destroyable {
 
 	private handleResize(e: ResizeEvent["value"])
 	{
+		ELYSIA_LOGGER.debug("Resize event received", e);
 		this.onResize(e.x, e.y);
 	};
 }

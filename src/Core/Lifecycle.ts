@@ -1,4 +1,6 @@
 import { Actor } from "../Scene/Actor";
+import { Scene } from "../Scene/Scene";
+import * as Three from "three";
 
 export interface Destroyable {
 	destructor(): void;
@@ -78,4 +80,15 @@ export interface SceneLifecycle
 	 * Called when the scene is stopped.
 	 */
 	onEnd(): void;
+}
+
+export interface RenderPipelineLifecycle
+{
+	onCreate(scene: Scene, output: HTMLCanvasElement): void;
+
+	onCameraChange(camera: Three.Camera): void;
+
+	onResize(width: number, height: number): void;
+
+	onRender(scene: Scene, camera: Three.Camera): void;
 }

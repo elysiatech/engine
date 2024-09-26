@@ -1,9 +1,15 @@
 import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
 import { Actor } from "./Actor";
+import { Scene } from "./Scene";
+import { Application } from "../Core/Application";
+import { ELYSIA_LOGGER } from "../Core/Logger";
 
+/**
+ * A behavior is a component that can be attached to an actor to add functionality.
+ * It has no children but participates in the actor lifecycle.
+ */
 export class Behavior implements ActorLifecycle, Destroyable
 {
-	parent: Actor | null = null;
 
 	get created() { return this.#created; }
 
@@ -11,9 +17,31 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	get enabled() { return this.#enabled; }
 
-	enable() { this._enable(); }
+	/**
+	 * The parent actor of this behavior.
+	 */
+	parent: Actor<any> | null = null;
 
-	disable() { this._disable(); }
+	/**
+	 * The scene this behavior belongs
+	 * to, if any.
+	 */
+	scene: Scene | null = null;
+
+	/**
+	 * The application this behavior belongs to.
+	 */
+	app: Application | null = null;
+
+	/**
+	 * Enable this behavior.
+	 */
+	enable() { this._onEnable(); }
+
+	/**
+	 * Disable this behavior.
+	 */
+	disable() { this._onDisable(); }
 
 	/* **********************************************************
 	    Lifecycle methods
@@ -40,50 +68,101 @@ export class Behavior implements ActorLifecycle, Destroyable
 	destructor()
 	{
 		this.#destroyed = true;
-		this._disable();
+		this._onDestroy();
+		this._onDisable()
 	}
 
 	/* **********************************************************
 	    Internal methods
 	************************************************************/
 
-	/** @internal */ _enable()
-	{
-		if(this.#enabled || this.#destroyed) return;
+	/** @internal */ _onEnable() {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot enable a destroyed behavior:", this);
+			return;
+		}
+		if (this.#enabled) return;
 		this.#enabled = true;
 		this.onEnable();
 	}
 
-	/** @internal */ _disable()
-	{
-		if(!this.#enabled || this.#destroyed) return;
+	/** @internal */ _onDisable() {
+		if (!this.#enabled) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot disable a destroyed behavior:", this);
+			return;
+		}
 		this.#enabled = false;
 		this.onDisable();
 	}
 
-	/** @internal */ _create()
-	{
-		if(this.#created || this.#destroyed) return;
+	/** @internal */ _onCreate() {
+		if (this.#created) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot create a destroyed behavior:", this);
+			return;
+		}
 		this.#created = true;
 		this.onCreate();
 	}
 
-	/** @internal */ _start()
-	{
-		if(!this.#created || this.#started || this.#destroyed) return;
+	/** @internal */ _onStart() {
+		if (this.#started) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot start a destroyed behavior:", this);
+			return;
+		}
 		this.#started = true;
 		this.onStart();
 	}
 
-	/** @internal */ _update(delta: number, elapsed: number)
-	{
-		if(!this.#started || this.#destroyed) return;
+	/** @internal */ _onEnterScene() {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot enter scene a destroyed behavior:", this);
+			return;
+		}
+		this.onEnterScene();
+	}
+
+	/** @internal */ _onUpdate(delta: number, elapsed: number) {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot update a destroyed behavior:", this);
+			return;
+		}
 		this.onUpdate(delta, elapsed);
 	}
 
-	/** @internal */ _reparent(parent: Actor | null)
-	{
-		this.parent = parent;
+	/** @internal */ _onLeaveScene() {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot leave scene a destroyed behavior:", this);
+			return;
+		}
+		this.onLeaveScene();
+	}
+
+	/** @internal */ _onDestroy() {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot destroy a destroyed behavior:", this);
+			return;
+		}
+		this.#destroyed = true;
+		this.onDestroy();
+	}
+
+	/** @internal */ _onReparent(parent: Actor | null) {
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn("Cannot reparent a destroyed behavior:", this);
+			return;
+		}
 		this.onReparent(parent);
 	}
 
