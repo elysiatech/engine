@@ -175,7 +175,7 @@ export function hasTTY() { return toBoolean(globalThis.process?.stdout && global
 
 export function isCI(){ return toBoolean(env().CI); }
 
-three
+//three
 
 export function isObject3D(obj: any): obj is Object3D { return "isObject3D" in obj; }
 
