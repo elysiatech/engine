@@ -35,7 +35,7 @@ class SpinBehavior extends Behavior
 }
 
 const cube = new CubeActor()
-// cube.addComponent(new SpinBehavior());
+cube.addComponent(new SpinBehavior());
 scene.addComponent(cube);
 
 const floor = new PlaneActor()
