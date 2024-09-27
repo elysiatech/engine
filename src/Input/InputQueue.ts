@@ -3,18 +3,20 @@ import { ObjectPool } from "../Containers/ObjectPool";
 import { QueuedEvent } from "./QueuedEvent";
 import { Destroyable } from "../Core/Lifecycle";
 
-export class InputQueue implements Destroyable {
+export class InputQueue implements Destroyable
+{
 
-	constructor() {
-		for(const value in KeyCode) {
-			if (isNaN(Number(value))) {
-				return;
-			}
+	constructor()
+	{
+		for(const value in KeyCode)
+		{
+			if (isNaN(Number(value))) return;
 			// @ts-ignore
 			this.queue.set(value, new Set)
 		}
 
-		window.addEventListener("keydown", (e) => {
+		window.addEventListener("keydown", (e) =>
+		{
 			const key = e.key;
 			this.currentlyPressed.add(key);
 			// add to queue
@@ -24,7 +26,8 @@ export class InputQueue implements Destroyable {
 			this.queue.get(key)!.add(event);
 		})
 
-		window.addEventListener("keyup", (e) => {
+		window.addEventListener("keyup", (e) =>
+		{
 			// handle keyup
 			const key = e.key;
 			this.currentlyPressed.delete(key);

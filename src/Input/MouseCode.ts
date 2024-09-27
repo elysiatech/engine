@@ -1,7 +1,8 @@
 /**
  * Mouse Key Code
  */
-export enum MouseCode {
+export enum MouseCode
+{
 	/**
 	 * key code of mouse left
 	 */

@@ -26,7 +26,8 @@ export class FancyConsoleWriter implements Writer {
 		};
 	}
 
-	debug(message: any[]): void {
+	debug(message: any[]): void
+	{
 		console.debug(
 			`${this.formattedName.content} ${this.levels.debug.content}`,
 			...this.formattedName.styles,
@@ -35,7 +36,8 @@ export class FancyConsoleWriter implements Writer {
 		);
 	}
 
-	info(message: any[]): void {
+	info(message: any[]): void
+	{
 		console.info(
 			`${this.formattedName.content} ${this.levels.info.content}`,
 			...this.formattedName.styles,
@@ -44,7 +46,8 @@ export class FancyConsoleWriter implements Writer {
 		);
 	}
 
-	success(message: any[]): void {
+	success(message: any[]): void
+	{
 		console.log(
 			`${this.formattedName.content} ${this.levels.success.content}`,
 			...this.formattedName.styles,
@@ -53,7 +56,8 @@ export class FancyConsoleWriter implements Writer {
 		);
 	}
 
-	warn(message: any[]): void {
+	warn(message: any[]): void
+	{
 		console.warn(
 			`${this.formattedName.content} ${this.levels.warn.content}`,
 			...this.formattedName.styles,
@@ -62,7 +66,8 @@ export class FancyConsoleWriter implements Writer {
 		);
 	}
 
-	error(message: any[]): void {
+	error(message: any[]): void
+	{
 		console.error(
 			`${this.formattedName.content} ${this.levels.error.content}`,
 			...this.formattedName.styles,
@@ -71,7 +76,8 @@ export class FancyConsoleWriter implements Writer {
 		);
 	}
 
-	critical(message: any[]): void {
+	critical(message: any[]): void
+	{
 		console.error(
 			`${this.formattedName.content} ${this.levels.critical.content}`,
 			...this.formattedName.styles,

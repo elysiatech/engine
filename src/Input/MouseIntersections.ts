@@ -6,7 +6,8 @@ import { Scene } from "../Scene/Scene";
  * @internal
  * Collect mouse intersections with actors.
  */
-export class MouseIntersections {
+export class MouseIntersections
+{
 
 	/**
 	 * A set of Actors that the mouse is currently intersecting with

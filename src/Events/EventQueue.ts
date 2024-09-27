@@ -1,7 +1,8 @@
 import { ElysiaEvent } from "./Event";
 import { Constructor } from "../Core/Utilities";
 
-export class ElysiaEventQueue {
+export class ElysiaEventQueue
+{
 
 	/**
 	 * Push an event to the queue.

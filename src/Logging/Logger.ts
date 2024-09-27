@@ -8,14 +8,16 @@ import { FancyConsoleWriter } from "./FancyConsoleWriter";
 export { LogLevel } from "./Levels";
 export { Logger, type LogConfig, createLogger };
 
-declare global {
+declare global
+{
 	var FILTER_LOGS: (...args: any[]) => void;
 }
 
 // @ts-ignore
 globalThis.__LOG_FILTERS = null;
 
-globalThis.FILTER_LOGS = (...args: any[]) => {
+globalThis.FILTER_LOGS = (...args: any[]) =>
+{
 	if(args.length === 0 || args[0] === null || !args[0]) {
 		// @ts-ignore
 		globalThis.__LOG_FILTERS = null;
@@ -26,7 +28,8 @@ globalThis.FILTER_LOGS = (...args: any[]) => {
 	}
 }
 
-class Logger {
+class Logger
+{
 	constructor(
 		public readonly name: string,
 		public level: LogLevel,
@@ -38,13 +41,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	debug = (...msg: any[]) => {
+	debug = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return;
 		}
 		this.level <= LogLevel.Debug && this.writer.debug(msg);
 	}
@@ -53,13 +56,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	info = (...msg: any[]) => {
+	info = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return
 		}
 		this.level <= LogLevel.Info && this.writer.info(msg);
 	}
@@ -68,13 +71,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	success = (...msg: any[]) => {
+	success = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return;
 		}
 		this.level <= LogLevel.Info && this.writer.success(msg);
 	}
@@ -83,13 +86,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	warn = (...msg: any[]) => {
+	warn = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return;
 		}
 		this.level <= LogLevel.Warn && this.writer.warn(msg);
 	}
@@ -98,13 +101,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	error = (...msg: any[]) => {
+	error = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return;
 		}
 		this.level <= LogLevel.Error && this.writer.error(msg);
 	}
@@ -113,13 +116,13 @@ class Logger {
 	 * @param  {...any} msg
 	 * @returns void
 	 */
-	critical = (...msg: any[]) => {
+	critical = (...msg: any[]) =>
+	{
 		// @ts-ignore
-		if(globalThis.__LOG_FILTERS !== null) {
+		if(globalThis.__LOG_FILTERS !== null)
+		{
 			// @ts-ignore
-			if(!globalThis.__LOG_FILTERS.includes(this.name)) {
-				return
-			}
+			if(!globalThis.__LOG_FILTERS.includes(this.name)) return;
 		}
 		this.level <= LogLevel.Critical && this.writer.critical(msg);
 	}
@@ -132,7 +135,8 @@ type LogConfig = {
 	writer?: Logger["writer"];
 };
 
-function createLogger(config: LogConfig = {}) {
+function createLogger(config: LogConfig = {})
+{
 	const level = config.level ?? LogLevel.Info;
 	const color = config.color ?? gradients.sunset;
 	const writer = config.writer ?? (isColorSupported() ? new FancyConsoleWriter(config.name ?? "App", color) : new BasicConsoleWriter(config.name ?? "App"));

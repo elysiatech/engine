@@ -1,4 +1,5 @@
-export enum KeyCode {
+export enum KeyCode
+{
 	Key_BackSpace = 8,
 	Key_Tab = 9,
 	Key_Clear = 12,

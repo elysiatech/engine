@@ -1,6 +1,7 @@
 import { KeyCode } from "./KeyCode";
 
-export class QueuedEvent {
+export class QueuedEvent
+{
 	key: KeyCode;
 	type: "down" | "up";
 	timestamp: number;
@@ -29,7 +30,8 @@ export class QueuedEvent {
 		mouseRightDown: boolean = false,
 		mouseX: number = 0,
 		mouseY: number = 0,
-	) {
+	)
+	{
 		this.key = key;
 		this.type = type;
 		this.timestamp = timestamp;
