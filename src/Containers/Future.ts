@@ -4,7 +4,8 @@
  * It can also be resolved or rejected externally.
  * @template T The type of the resolved value.
  */
-export class Future<T> implements Promise<T> {
+export class Future<T> implements Promise<T>
+{
 	/**
 	 * Resolve the promise with the given value.
 	 */
@@ -28,7 +29,8 @@ export class Future<T> implements Promise<T> {
 
 	[Symbol.toStringTag] = 'Promise';
 
-	constructor(executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void) {
+	constructor(executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void)
+	{
 		this.#promise = new Promise<T>((resolve, reject) => {
 			this.resolve = async (value: T | PromiseLike<T>) => {
 				await this.#resolveValue(value);
@@ -45,17 +47,20 @@ export class Future<T> implements Promise<T> {
 	then<TResult1 = T, TResult2 = never>(
 		onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
 		onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
-	): Promise<TResult1 | TResult2> {
+	): Promise<TResult1 | TResult2>
+	{
 		return this.#promise.then(onfulfilled, onrejected);
 	}
 
 	catch<TResult = never>(
 		onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
-	): Promise<T | TResult> {
+	): Promise<T | TResult>
+	{
 		return this.#promise.catch(onrejected);
 	}
 
-	finally(onfinally?: (() => void) | undefined | null): Promise<T> {
+	finally(onfinally?: (() => void) | undefined | null): Promise<T>
+	{
 		return this.#promise.finally(onfinally);
 	}
 
@@ -65,7 +70,8 @@ export class Future<T> implements Promise<T> {
 
 	#state: 'pending' | 'fulfilled' | 'rejected' = 'pending';
 
-	async #resolveValue(value: T | PromiseLike<T>): Promise<void> {
+	async #resolveValue(value: T | PromiseLike<T>): Promise<void>
+	{
 		try {
 			this.#syncValue = await value;
 			this.#state = 'fulfilled';
