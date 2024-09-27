@@ -6,7 +6,8 @@ import { isOrthographicCamera, isPerspectiveCamera } from "../Core/Asserts";
 /**
  * Implements the standard orbit controls for a camera.
  */
-export class CameraOrbitBehavior extends Behavior {
+export class CameraOrbitBehavior extends Behavior
+{
 
 	controls?: OrbitControls;
 
@@ -22,7 +23,8 @@ export class CameraOrbitBehavior extends Behavior {
 		this.#smooth = value;
 	}
 
-	onCreate() {
+	onCreate()
+	{
 		super.onCreate();
 
 		const camera = this.scene!.getActiveCamera();
@@ -44,7 +46,8 @@ export class CameraOrbitBehavior extends Behavior {
 		this.controls.enableDamping = this.#smooth;
 	}
 
-	onUpdate() {
+	onUpdate()
+	{
 		if(this.controls)
 		{
 			this.controls.update();

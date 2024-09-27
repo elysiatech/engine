@@ -2,7 +2,8 @@ import { isBrowser } from "../Core/Asserts";
 import { ASSERT } from "../Core/Asserts";
 import { Audio, AudioConstructorArguments } from "./Audio";
 
-declare global {
+declare global
+{
 	var ELYSIA_AUDIO_CTX: AudioContext;
 }
 
@@ -14,7 +15,8 @@ export class AudioPlayer
 		return window.ELYSIA_AUDIO_CTX;
 	}
 
-	static {
+	static
+	{
 		if(isBrowser())
 		{
 			if(!window.ELYSIA_AUDIO_CTX)
@@ -42,11 +44,13 @@ export class AudioPlayer
 
 	debug = false;
 
-	get muteOnBlur() {
+	get muteOnBlur()
+	{
 		return this.#muteOnBlur;
 	}
 
-	set muteOnBlur(value: boolean) {
+	set muteOnBlur(value: boolean)
+	{
 		this.#muteOnBlur = value;
 
 		if (!isBrowser()) return;
@@ -70,7 +74,8 @@ export class AudioPlayer
 		return new Audio(Object.assign(args, { player: this }));
 	}
 
-	muteAll() {
+	muteAll()
+	{
 		if (!isBrowser()) return;
 		this.instances.forEach((ref) => {
 			const player = ref.deref();
@@ -80,7 +85,8 @@ export class AudioPlayer
 		});
 	}
 
-	unmuteAll() {
+	unmuteAll()
+	{
 		if (!isBrowser()) return;
 		this.instances.forEach((ref) => {
 			const player = ref.deref();
@@ -128,14 +134,19 @@ export class AudioPlayer
 		return this.cache.get(input)!;
 	}
 
-	constructor() {
+	constructor()
+	{
 		if(!isBrowser())
 			return;
 
-		setInterval(() => {
-			requestIdleCallback(() => {
-				for (const ref of this.instances) {
-					if (!ref.deref()) {
+		setInterval(() =>
+		{
+			requestIdleCallback(() =>
+			{
+				for (const ref of this.instances)
+				{
+					if (!ref.deref())
+					{
 						this.instances.delete(ref);
 					}
 				}

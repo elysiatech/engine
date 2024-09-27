@@ -13,7 +13,8 @@ export abstract class Asset<T> {
 	get loading() { return this.#loading; }
 	get progress() { return this.#progress; }
 
-	constructor() {
+	constructor()
+	{
 		this.#eventDispatcher = new ElysiaEventDispatcher;
 		this.addEventListener = this.#eventDispatcher.addEventListener.bind(this.#eventDispatcher);
 		this.removeEventListener = this.#eventDispatcher.removeEventListener.bind(this.#eventDispatcher);
@@ -65,10 +66,7 @@ export abstract class Asset<T> {
 	addEventListener: ElysiaEventDispatcher["addEventListener"];
 	removeEventListener: ElysiaEventDispatcher["removeEventListener"];
 
-	protected async fetch(
-		url: string,
-		options?: RequestInit & { onProgress?: (progress: number) => void },
-	)
+	protected async fetch(url: string, options?: RequestInit & { onProgress?: (progress: number) => void })
 	{
 		const response = await fetch(url, options);
 

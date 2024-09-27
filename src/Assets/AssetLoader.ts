@@ -3,14 +3,16 @@ import { Constructor } from "../Core/Utilities";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { LoadedEvent, ProgressEvent, ErrorEvent } from "../Events/Event";
 
-export class AssetLoader<A extends Record<string, Asset<any>>> {
+export class AssetLoader<A extends Record<string, Asset<any>>>
+{
 
 	get loading() { return this.#loading; }
 	get loaded() { return this.#loaded; }
 	get error() { return this.#error; }
 	get progress() { return this.#progress; }
 
-	constructor(assets: A) {
+	constructor(assets: A)
+	{
 		this.#assets = assets;
 		this.#eventDispatcher = new ElysiaEventDispatcher;
 		this.addEventListener = this.#eventDispatcher.addEventListener.bind(this.#eventDispatcher);
@@ -67,7 +69,8 @@ export class AssetLoader<A extends Record<string, Asset<any>>> {
 
 	get<T extends keyof A>(a: T): A[T];
 	get<T extends Asset<any>>(a: string): T | undefined
-	get<T extends Asset<any>>(a: string): T | undefined {
+	get<T extends Asset<any>>(a: string): T | undefined
+	{
 		return this.#assets[a] as T;
 	}
 

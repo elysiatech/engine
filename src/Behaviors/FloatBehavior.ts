@@ -1,7 +1,8 @@
 import * as Three from "three";
 import { Behavior } from "../Scene/Behavior";
 
-type FloatArgs = {
+type FloatArgs =
+	{
 	offset?: number;
 	speed?: number;
 	rotationIntensity?: number;
@@ -9,7 +10,8 @@ type FloatArgs = {
 	floatingRange?: [number, number];
 };
 
-export class FloatBehavior extends Behavior {
+export class FloatBehavior extends Behavior
+{
 
 	get offset() { return this.#offset; }
 	set offset(value) { this.#offset = value; }
@@ -26,7 +28,8 @@ export class FloatBehavior extends Behavior {
 	get floatingRange() { return this.#floatingRange; }
 	set floatingRange(value) { this.#floatingRange = value; }
 
-	constructor(args: FloatArgs = {}) {
+	constructor(args: FloatArgs = {})
+	{
 		super();
 		this.#offset = args.offset ?? Math.random() * 10000;
 		this.#speed = args.speed ?? 1;
@@ -35,7 +38,8 @@ export class FloatBehavior extends Behavior {
 		this.#floatingRange = args.floatingRange ?? [-0.1, 0.1];
 	}
 
-	onUpdate(frametime: number, elapsedtime: number) {
+	onUpdate(frametime: number, elapsedtime: number)
+	{
 		if (this.#speed === 0 || !this.parent) return;
 
 		const t = this.#offset + elapsedtime;

@@ -12,7 +12,8 @@ export class AmbientLightActor extends Actor<Three.AmbientLight>
 	get castShadow() { return this.object3d.castShadow; }
 	set castShadow(value: boolean) { this.object3d.castShadow = value; }
 
-	constructor(intensity?: number, color?: Three.Color) {
+	constructor(intensity?: number, color?: Three.Color)
+	{
 		super();
 		this.object3d = new Three.AmbientLight(color, intensity);
 		this.object3d.actor = this;

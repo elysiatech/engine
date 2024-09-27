@@ -18,7 +18,8 @@ export class DirectionalLightActor extends Actor<Three.DirectionalLight>
 	get shadowConfig() { return this.object3d.shadow; }
 
 	get debug() { return this.#debug; }
-	set debug(value: boolean) {
+	set debug(value: boolean)
+	{
 		this.#debug = value;
 		if(value)
 		{
@@ -33,7 +34,8 @@ export class DirectionalLightActor extends Actor<Three.DirectionalLight>
 		}
 	}
 
-	constructor(intensity?: number, color?: Three.Color, target?: Three.Object3D) {
+	constructor(intensity?: number, color?: Three.Color, target?: Three.Object3D)
+	{
 		super();
 		this.object3d = new Three.DirectionalLight(color, intensity);
 		this.object3d.actor = this;

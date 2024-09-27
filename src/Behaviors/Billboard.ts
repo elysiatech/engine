@@ -3,7 +3,8 @@ import { Behavior } from "../Scene/Behavior";
 /**
  * A behavior that makes the parent object always face the camera.
  */
-export class BillboardBehavior extends Behavior {
+export class BillboardBehavior extends Behavior
+{
 
 	/**
 	 * Lock the rotation on the X axis.

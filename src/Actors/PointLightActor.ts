@@ -40,7 +40,8 @@ export class PointLightActor extends Actor<Three.PointLight>
 		}
 	}
 
-	constructor(color?: Three.Color, intensity?: number, distance?: number, decay?: number) {
+	constructor(color?: Three.Color, intensity?: number, distance?: number, decay?: number)
+	{
 		super();
 		this.object3d = new Three.PointLight(color, intensity, distance, decay);
 		this.object3d.actor = this;
