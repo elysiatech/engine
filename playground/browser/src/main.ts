@@ -11,7 +11,9 @@ import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
 
 const app = new Application({
-	renderPipeline: new HighDefRenderPipeline()
+	renderPipeline: new HighDefRenderPipeline({
+		ssao: true,
+	})
 });
 
 const scene = new Scene();

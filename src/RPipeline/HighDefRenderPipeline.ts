@@ -69,7 +69,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(args.toneMapping.adaptationRate) { this.#tonemappingAdaptationRate = args.toneMapping.adaptationRate; }
 		}
 
-		this.#useSSAO = !!args.ssao ?? false;
+		this.#useSSAO = !!args.ssao;
 
 		if(args.ssao && typeof args.ssao === "object")
 		{
@@ -176,8 +176,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 	#tonemappingAdaptationRate: number = 1.0;
 	#useSSAO: boolean = false;
 	#ssaoPass?: N8AOPostPass;
-	#ssaoRadius: number = 0.5;
-	#ssaoDistanceFalloff: number = 0.00001;
-	#ssaoIntensity: number = 10;
-	#ssaoColor: Three.Color = new Three.Color(0, 0, 0);
+	#ssaoRadius?: number;
+	#ssaoDistanceFalloff?: number;
+	#ssaoIntensity?: number;
+	#ssaoColor?: Three.Color;
 }
