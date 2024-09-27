@@ -8,6 +8,7 @@ import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
 import { ActiveCameraTag } from "../Core/Tags";
 import { isActor } from "./Component";
+import { ELYSIA_LOGGER } from "../Core/Logger";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
@@ -95,6 +96,10 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	{
 		await this.onLoad()
 		this.loadPromise.resolve()
+	}
+
+	onCreate() {
+		ELYSIA_LOGGER.debug("Scene created", this)
 	}
 
 	loadPromise = new Future<void>(noop)

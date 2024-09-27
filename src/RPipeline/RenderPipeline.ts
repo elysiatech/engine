@@ -53,7 +53,6 @@ export abstract class RenderPipeline implements RenderPipelineLifecycle, Destroy
 
 	private handleResize(e: ResizeEvent["value"])
 	{
-		ELYSIA_LOGGER.debug("Resize event received", e);
 		this.onResize(e.x, e.y);
 	};
 }

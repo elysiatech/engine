@@ -154,9 +154,20 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		ElysiaEventDispatcher.dispatchEvent(new ComponentAddedEvent({ parent: this, child: component }));
 		component.parent = this;
-		component._onCreate();
-		component._onStart();
-		component._onEnterScene();
+		component.scene = this.scene;
+		component.app = this.app;
+		if(this.#created)
+		{
+			component._onCreate();
+		}
+		if(this.#started)
+		{
+			component._onStart();
+		}
+		if(this.#inScene)
+		{
+			component._onEnterScene();
+		}
 		return true;
 	}
 

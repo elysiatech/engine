@@ -1,8 +1,12 @@
 import { Actor } from "../Scene/Actor";
 import * as Three from "three";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
+import { ResizeEvent } from "../Core/Resize";
+import { ELYSIA_LOGGER } from "../Core/Logger";
 
 export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 {
+
 	get fov() { return this.object3d.fov; }
 	set fov(fov: number)
 	{
@@ -38,10 +42,47 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 	get view() { return this.object3d.view; }
 	set view(view: any) { this.object3d.view = view; }
 
+	get debug() { return this.#debug; }
+	set debug(value: boolean)
+	{
+		this.#debug = value;
+		if(value)
+		{
+			this.#debugHelper ??= new Three.CameraHelper(this.object3d);
+			this.object3d.add(this.#debugHelper);
+		}
+		else
+		{
+			this.#debugHelper?.parent?.remove(this.#debugHelper);
+			this.#debugHelper?.dispose();
+			this.#debugHelper = undefined;
+		}
+	}
+
 	constructor()
 	{
 		super();
+		this.onResize = this.onResize.bind(this);
 		this.object3d = new Three.PerspectiveCamera();
+		this.object3d.actor = this;
 	}
+
+	onCreate()
+	{
+		ElysiaEventDispatcher.addEventListener(ResizeEvent, this.onResize);
+		this.onResize({
+			x: this.app?.renderPipeline.getRenderer().domElement.width ?? 0,
+			y: this.app?.renderPipeline.getRenderer().domElement.height ?? 0
+		});
+	}
+
+	private onResize(e: { x: number, y: number })
+	{
+		this.object3d.aspect = e.x / e.y;
+		this.object3d.updateProjectionMatrix();
+	}
+
+	#debug = false;
+	#debugHelper?: Three.CameraHelper;
 }
 
