@@ -34,13 +34,13 @@ export class DirectionalLightActor extends Actor<Three.DirectionalLight>
 		}
 	}
 
-	constructor(intensity?: number, color?: Three.Color, target?: Three.Object3D)
+	constructor(intensity?: number, color?: Three.Color, target?: Three.Object3D, castShadow = true)
 	{
 		super();
 		this.object3d = new Three.DirectionalLight(color, intensity);
 		this.object3d.actor = this;
 		if (target) this.object3d.target = target;
-		this.castShadow = true;
+		this.castShadow = castShadow;
 	}
 
 	#debug = false;

@@ -32,7 +32,7 @@ export class MeshActor extends Actor<Three.Mesh>
 		this.#debug = value;
 	}
 
-	constructor(geometry: Three.BufferGeometry, material: Three.Material, castShadow = false, receiveShadow = false)
+	constructor(geometry: Three.BufferGeometry, material: Three.Material, castShadow = true, receiveShadow = true)
 	{
 		super();
 		this.object3d = new Three.Mesh(geometry, material);

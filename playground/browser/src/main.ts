@@ -7,12 +7,11 @@ import { CameraOrbitBehavior } from "../../../src/Behaviors/CameraOrbitBehavior.
 import { PerspectiveCameraActor } from "../../../src/Actors/PerspectiveCameraActor.ts";
 import { DirectionalLightActor } from "../../../src/Actors/DirectionalLightActor.ts";
 import { AmbientLightActor } from "../../../src/Actors/AmbientLightActor.ts";
-import { CubeActor } from "../../../src/Actors/Primitives.ts";
+import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
+import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
 
 const app = new Application({
-	renderPipeline: new BasicRenderPipeline({
-		alpha: true,
-	})
+	renderPipeline: new HighDefRenderPipeline()
 });
 
 const scene = new Scene();
@@ -34,12 +33,19 @@ class SpinBehavior extends Behavior
 }
 
 const cube = new CubeActor()
-cube.addComponent(new SpinBehavior());
+// cube.addComponent(new SpinBehavior());
 scene.addComponent(cube);
 
+const floor = new PlaneActor()
+floor.position.y = -0.5;
+floor.scale.set(10, 10, 10);
+floor.rotation.x = -Math.PI / 2;
+scene.addComponent(floor);
+
 const dirLight = new DirectionalLightActor()
-dirLight.position.set(0, 10, 0);
+dirLight.position.set(6, 10, 3);
 dirLight.target = cube.object3d;
+dirLight.debug = true;
 scene.addComponent(dirLight);
 
 const ambLight = new AmbientLightActor()
