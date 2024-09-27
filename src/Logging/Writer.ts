@@ -1,4 +1,5 @@
-export interface Writer {
+export interface Writer
+{
 	debug(message: any[]): void;
 	info(message: any[]): void;
 	success(message: any[]): void;

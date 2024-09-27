@@ -1,20 +1,24 @@
 import { ElysiaElement } from "./UI";
 
-export class Scheduler {
+export class Scheduler
+{
 
 	frametime: number = 0;
 
 	components = new Set<ElysiaElement>;
 
-	subscribe(component: ElysiaElement) {
+	subscribe(component: ElysiaElement)
+	{
 		this.components.add(component);
 	}
 
-	unsubscribe(component: ElysiaElement) {
+	unsubscribe(component: ElysiaElement)
+	{
 		this.components.delete(component);
 	}
 
-	update() {
+	update()
+	{
 		const t = performance.now();
 		for (const component of this.components) {
 			component.requestRender();
@@ -25,10 +29,8 @@ export class Scheduler {
 
 export const defaultScheduler = new Scheduler;
 
-if (typeof document !== "undefined") {
-	const render = () => {
-		requestAnimationFrame(render)
-		defaultScheduler.update()
-	}
+if (typeof document !== "undefined")
+{
+	const render = () => { requestAnimationFrame(render); defaultScheduler.update(); }
 	requestAnimationFrame(render)
 }

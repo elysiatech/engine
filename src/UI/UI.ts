@@ -20,33 +20,34 @@ export {
 	OffscreenUpdateStrategy
 };
 
-const isLitTemplateResult = (value: unknown): value is TemplateResult => {
-	return !!value && (typeof value === "object") && ("_$litType$" in value);
-}
+const isLitTemplateResult = (value: unknown): value is TemplateResult => !!value && (typeof value === "object") && ("_$litType$" in value);
 
-function defineComponent(component: Constructor<ElysiaElement> & { Tag: string }){
-	if(!component.Tag || component.Tag === "elysia-element"){
+function defineComponent(component: Constructor<ElysiaElement> & { Tag: string })
+{
+	if(!component.Tag || component.Tag === "elysia-element")
+	{
 		throw new Error(`You must define a tag for ${component.name}!`)
 	}
-	if(!customElements.get(component.Tag)){
+	if(!customElements.get(component.Tag))
+	{
 		customElements.define(component.Tag, component);
 	}
 }
 
-function attribute(options: { 
-	reflect?: boolean, 
-	converter?: PropertyDeclaration["converter"], 
-	attribute?: string 
-} = {}){
+function attribute(options: { reflect?: boolean, converter?: PropertyDeclaration["converter"], attribute?: string } = {})
+{
 	return property({ 
 		attribute: options.attribute ?? true, 
 		reflect: options.reflect, 
-		converter: options.converter })}
+		converter: options.converter
+	})
+}
 
 /**
  * Base class for creating custom elements
  * */
-interface ElysiaElement extends LitElement {
+interface ElysiaElement extends LitElement
+{
 	requestUpdate(): void;
 	requestRender(): void;
 	setOffscreenRenderStrategy(strategy: OffscreenUpdateStrategy): void;
@@ -58,78 +59,80 @@ interface ElysiaElement extends LitElement {
 	onUnmount?(): void;
 }
 
-enum OffscreenUpdateStrategy {
+enum OffscreenUpdateStrategy
+{
 	Disabled,
 	HighPriority
 }
 
-class ElysiaElement extends LitElement{
+class ElysiaElement extends LitElement
+{
 
 	static Tag: string = "elysia-element";
 
 	public scheduler: Scheduler = defaultScheduler;
 
-	get offscreen(){
-		return this.#offscreen;
-	}
+	get offscreen(){ return this.#offscreen; }
 
-	get offscreenUpdateStrategy(): OffscreenUpdateStrategy {
-		return this.#offscreenUpdateStrategy;
-	}
+	get offscreenUpdateStrategy(): OffscreenUpdateStrategy { return this.#offscreenUpdateStrategy; }
 
-	constructor(){
+	constructor()
+	{
 		super();
 		this.providedRenderFunction = this.render as any;
 		this.render = function render(){ return this.renderResult ?? this.providedRenderFunction() }
 	}
 
-	connectedCallback() {
+	connectedCallback()
+	{
 		super.connectedCallback();
 		this.onMount && this.onMount();
 		this.observer.observe(this)
 	}
 
-	disconnectedCallback(): void {
+	disconnectedCallback(): void
+	{
 		super.disconnectedCallback();
 		this.scheduler.unsubscribe(this);
 		this.observer.disconnect();
 		this.onUnmount && this.onUnmount();
 	}
 
-	requestRender() {
+	requestRender()
+	{
 		if(this.isUpdatePending) return;
 
 		const currentRender = this.providedRenderFunction();
 
-		if (isLitTemplateResult(currentRender)) {		
+		if (isLitTemplateResult(currentRender))
+		{
 			if (
 				!this.renderResult 
 				|| this.compareRenderOutput(this.renderResult.values, currentRender.values)
 				|| this.compareRenderOutput(this.renderResult.strings, currentRender.strings)
-			) {
+			)
+			{
 				this.renderResult = currentRender;
 				this.requestUpdate();
 				this.onBeforeUpdate && this.onBeforeUpdate();
 			}
-		} else {
-			throw Error("ImHTML render method must return a lit-html template result");
 		}
+		else { throw Error("ImHTML render method must return a lit-html template result"); }
 	}
 
-	setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy) {
+	setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy)
+	{
 		this.#offscreenUpdateStrategy = value;
 
-		if(this.offscreen){
-			if(value === OffscreenUpdateStrategy.Disabled){
-				this.scheduler.unsubscribe(this);
-			}
-			if(value === OffscreenUpdateStrategy.HighPriority){
-				this.scheduler.subscribe(this);
-			}
+		if(this.offscreen)
+		{
+			if(value === OffscreenUpdateStrategy.Disabled){ this.scheduler.unsubscribe(this); }
+			if(value === OffscreenUpdateStrategy.HighPriority){ this.scheduler.subscribe(this); }
 		}
 	}
 
-	protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
+	protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void
+	{
 		super.updated(_changedProperties);
 		this.onAfterUpdate && this.onAfterUpdate();
 	}
@@ -138,11 +141,15 @@ class ElysiaElement extends LitElement{
 
 	private renderResult?: TemplateResult;
 
-	private observer = new IntersectionObserver((entries) => {
-		if(entries.some(entry => entry.isIntersecting)){
+	private observer = new IntersectionObserver((entries) =>
+	{
+		if(entries.some(entry => entry.isIntersecting))
+		{
 			this.#offscreen = false;
 			this.scheduler.subscribe(this)
-		} else {
+		}
+		else
+		{
 			this.#offscreen = true;
 			this.setOffscreenUpdateStrategy(this.offscreenUpdateStrategy)
 		}
@@ -150,38 +157,33 @@ class ElysiaElement extends LitElement{
 		rootMargin: "25px"
 	})
 
-	private compareRenderOutput(a: unknown[] | TemplateStringsArray, b: unknown[] | TemplateStringsArray): boolean {
+	private compareRenderOutput(a: unknown[] | TemplateStringsArray, b: unknown[] | TemplateStringsArray): boolean
+	{
 		// if the lengths are different, we know the values are different and bail early
-		if (a.length !== b.length) {
-			return true;
-		}
+		if (a.length !== b.length) return true;
 
-		for (let i = 0; i < a.length; i++) {
+		for (let i = 0; i < a.length; i++)
+		{
 			const prev = a[i], next = b[i];
 
 			// functions are compared by name
-			if (isFunction(prev) && isFunction(next)) {
-				if (prev.name !== next.name) {
-					return true;
-				} else {
-					continue;
-				}
+			if (isFunction(prev) && isFunction(next))
+			{
+				if (prev.name !== next.name) return true;
+				else continue;
 			}
 
 			// lit template results are compared by their values
-			if (isLitTemplateResult(prev) && isLitTemplateResult(next)) {
+			if (isLitTemplateResult(prev) && isLitTemplateResult(next))
+			{
 				return this.compareRenderOutput(prev.values, next.values) && this.compareRenderOutput(prev.strings, next.strings);
 			}
 
 			// arrays are deeply compared
-			if (Array.isArray(prev) && Array.isArray(next)) {
-				return this.compareRenderOutput(prev, next);
-			}
+			if (Array.isArray(prev) && Array.isArray(next)) return this.compareRenderOutput(prev, next);
 
 			// strict equality check
-			if (a[i] !== b[i]) {
-				return true;
-			}
+			if (a[i] !== b[i]) return true;
 		}
 
 		return false;
