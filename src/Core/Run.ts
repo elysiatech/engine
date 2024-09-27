@@ -7,20 +7,27 @@ export default function run<T>(
 	fn: () => T
 ): T extends Promise<any> ? (Promise<Error | Awaited<T>>) : (Error | T)
 {
-	try {
+	try
+	{
 		const value = fn()
-		if(value instanceof Promise){
+		if(value instanceof Promise)
+		{
 			// @ts-ignore
 			return new Promise<Error | Awaited<T>>(
-				(res) => {
+				(res) =>
+				{
 					value.then(val => res(val)).catch(err => res(toError(err)))
 				}
 			);
-		} else {
+		}
+		else
+		{
 			// @ts-ignore
 			return value;
 		}
-	} catch(e) {
+	}
+	catch(e)
+	{
 		// @ts-ignore
 		return toError(e);
 	}

@@ -5,10 +5,12 @@ export const ELYSIA_LOGGER = createLogger({
 	name: "ELYSIA"
 });
 
-declare global {
+declare global
+{
 	var SET_ELYSIA_LOGLEVEL: (level: LogLevel) => void;
 }
 
-globalThis.SET_ELYSIA_LOGLEVEL = (level: LogLevel) => {
+globalThis.SET_ELYSIA_LOGLEVEL = (level: LogLevel) =>
+{
 	ELYSIA_LOGGER.level = level;
 }
