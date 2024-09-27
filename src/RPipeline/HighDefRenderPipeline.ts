@@ -14,10 +14,11 @@ import {
 } from "postprocessing";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { N8AOPostPass } from "../WebGL/SSAO";
-import { WebGLRenderer } from "three";
+import { Vector2, WebGLRenderer } from "three";
 
 type HighDefRenderPipelineConstructorArguments = {
 	alpha?: boolean;
+	shadows?: boolean;
 	devicePixelRatio?: number;
 	smaaPreset?: SMAAPreset;
 	toneMapping?: {
@@ -30,6 +31,12 @@ type HighDefRenderPipelineConstructorArguments = {
 		minLuminance?: number
 		averageLuminance?: number
 		adaptationRate?: number
+	}
+	ssao?: boolean | {
+		aoRadius?: number
+		distanceFalloff?: number
+		intensity?: number
+		color?: Three.Color
 	}
 };
 
@@ -62,13 +69,25 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(args.toneMapping.adaptationRate) { this.#tonemappingAdaptationRate = args.toneMapping.adaptationRate; }
 		}
 
+		this.#useSSAO = !!args.ssao ?? false;
+
+		if(args.ssao && typeof args.ssao === "object")
+		{
+			if(args.ssao.aoRadius) { this.#ssaoRadius = args.ssao.aoRadius; }
+			if(args.ssao.distanceFalloff) { this.#ssaoDistanceFalloff = args.ssao.distanceFalloff; }
+			if(args.ssao.intensity) { this.#ssaoIntensity = args.ssao.intensity; }
+			if(args.ssao.color) { this.#ssaoColor = args.ssao.color; }
+		}
+
 		this.#alpha = args.alpha ?? false;
+		this.#shadows = args.shadows ?? true;
 	}
 
 	onCreate(scene: Scene, output: HTMLCanvasElement)
 	{
 		this.scene = scene;
 		this.output = output;
+		const size = new Vector2()
 
 		const camera = scene.getActiveCamera();
 
@@ -80,7 +99,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 
 		this.renderer = new Three.WebGLRenderer({ canvas: output, alpha: this.#alpha });
 
-		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.enabled = this.#shadows;
 
 		this.effectComposer = new EffectComposer(
 			this.renderer,
@@ -97,6 +116,18 @@ export class HighDefRenderPipeline extends RenderPipeline
 		this.effectComposer.setMainCamera(camera);
 
 		this.effectComposer.addPass(new RenderPass(this.scene.object3d, camera));
+
+		this.renderer.getSize(size)
+
+		if(this.#useSSAO)
+		{
+			this.#ssaoPass = new N8AOPostPass(scene.object3d, camera, size.x, size.y);
+			if(this.#ssaoRadius) this.#ssaoPass.configuration.aoRadius = this.#ssaoRadius;
+			if(this.#ssaoDistanceFalloff) this.#ssaoPass.configuration.distanceFalloff = this.#ssaoDistanceFalloff;
+			if(this.#ssaoIntensity) this.#ssaoPass.configuration.intensity = this.#ssaoIntensity;
+			if(this.#ssaoColor) this.#ssaoPass.configuration.color = this.#ssaoColor;
+			this.effectComposer.addPass(this.#ssaoPass);
+		}
 
 		this.#smaaEffect = new SMAAEffect({ preset: this.#smaaPreset });
 
@@ -130,6 +161,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 	private output?: HTMLCanvasElement;
 
 	#alpha: boolean;
+	#shadows: boolean;
 	#smaaEffect?: SMAAEffect;
 	#smaaPreset = SMAAPreset.ULTRA;
 	#devicePixelRatio: number = window.devicePixelRatio ?? 1;
@@ -142,4 +174,10 @@ export class HighDefRenderPipeline extends RenderPipeline
 	#tonemappingMinLuminance: number = 0.01;
 	#tonemappingAverageLuminance: number = 1.0;
 	#tonemappingAdaptationRate: number = 1.0;
+	#useSSAO: boolean = false;
+	#ssaoPass?: N8AOPostPass;
+	#ssaoRadius: number = 0.5;
+	#ssaoDistanceFalloff: number = 0.00001;
+	#ssaoIntensity: number = 10;
+	#ssaoColor: Three.Color = new Three.Color(0, 0, 0);
 }
