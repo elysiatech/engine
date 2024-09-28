@@ -2,7 +2,7 @@ import { Actor } from "./Actor";
 import * as Three from "three";
 import { Destroyable, SceneLifecycle } from "../Core/Lifecycle";
 import { Future } from "../Containers/Future";
-import { noop } from "../Core/Utilities";
+import { Constructor, noop } from "../Core/Utilities";
 import { Behavior } from "./Behavior";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
@@ -23,10 +23,10 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, (e) => {
 			const type = e.child.constructor;
 
-			if(!this.byType.has(type))
-				this.byType.set(type, new Set());
+			if(!this.componentsByType.has(type))
+				this.componentsByType.set(type, new Set());
 
-			this.byType.get(type)!.add(e.child);
+			this.componentsByType.get(type)!.add(e.child);
 
 			if(isActor(e.child))
 			{
@@ -40,7 +40,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 		ElysiaEventDispatcher.addEventListener(ComponentRemovedEvent, (e) => {
 			const type = e.child.constructor;
-			this.byType.get(type)?.delete(e.child);
+			this.componentsByType.get(type)?.delete(e.child);
 
 			if(isActor(e.child))
 			{
@@ -53,10 +53,10 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		})
 
 		ElysiaEventDispatcher.addEventListener(TagAddedEvent, (event) => {
-			if(!this.byTag.has(event.tag))
-				this.byTag.set(event.tag, new Set());
+			if(!this.componentsByTag.has(event.tag))
+				this.componentsByTag.set(event.tag, new Set());
 
-			this.byTag.get(event.tag)!.add(event.target);
+			this.componentsByTag.get(event.tag)!.add(event.target);
 
 			if(event.tag === ActiveCameraTag && isActor(event.target))
 			{
@@ -65,18 +65,18 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		})
 
 		ElysiaEventDispatcher.addEventListener(TagRemovedEvent, (event) => {
-			this.byTag.get(event.tag)?.delete(event.target);
+			this.componentsByTag.get(event.tag)?.delete(event.target);
 		})
 	}
 
 	public getComponentByTag(tag: any): Set<Actor | Behavior>
 	{
-		return this.byTag.get(tag) || new Set();
+		return this.componentsByTag.get(tag) || new Set();
 	}
 
-	public getComponentByType(type: any): Set<Actor | Behavior>
+	public getComponentByType<T extends Actor | Behavior>(type: Constructor<T>): Set<T>
 	{
-		return this.byType.get(type) || new Set();
+		return (this.componentsByType.get(type) as Set<T>) || new Set<T>();
 	}
 
 	public getActiveCamera(): Three.Camera | null
@@ -86,8 +86,8 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	onEnd(): void
 	{
-		this.byTag.clear();
-		this.byType.clear();
+		this.componentsByTag.clear();
+		this.componentsByType.clear();
 	}
 
 	onLoad(): void | Promise<void> {}
@@ -104,8 +104,8 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	loadPromise = new Future<void>(noop)
 
-	private byTag = new Map<any, Set<Actor | Behavior>>
-	private byType = new Map<any, Set<Actor | Behavior>>
+	private componentsByTag = new Map<any, Set<Actor | Behavior>>
+	private componentsByType = new Map<any, Set<Actor | Behavior>>
 	private allActors = new Set<Actor>()
 	private allBehaviors = new Set<Behavior>()
 

@@ -11,9 +11,7 @@
     "build": "mkdist --src=src --dist=dist --format=esm -d --ext=js",
     "lint": "pnpm biome check old --write"
   },
-  "exports": {
-
-  },
+  "exports": {},
   "peerDependencies": {
     "postprocessing": "^6.35.4",
     "three": "^0.165.0",
@@ -28,6 +26,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@dimforge/rapier3d": "^0.14.0",
     "lit": "^3.2.0"
   }
 }

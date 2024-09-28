@@ -1,14 +1,16 @@
 import { Application } from "../../../src/Core/Application";
 import { Scene } from "../../../src/Scene/Scene";
 import { ActiveCameraTag } from "../../../src/Core/Tags.ts";
-import { Behavior } from "../../../src/Scene/Behavior.ts";
-import { BasicRenderPipeline } from "../../../src/RPipeline/BasicRenderPipeline.ts";
 import { CameraOrbitBehavior } from "../../../src/Behaviors/CameraOrbitBehavior.ts";
 import { PerspectiveCameraActor } from "../../../src/Actors/PerspectiveCameraActor.ts";
 import { DirectionalLightActor } from "../../../src/Actors/DirectionalLightActor.ts";
 import { AmbientLightActor } from "../../../src/Actors/AmbientLightActor.ts";
-import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
+import { PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
+import { GLTFLoader } from "three-stdlib";
+import * as Three from "three";
+import { Actor } from "../../../src/Scene/Actor.ts";
+import { ModelActor } from "../../../src/Actors/ModelActor.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -25,18 +27,13 @@ const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
 scene.addComponent(cameraActor);
 
-class SpinBehavior extends Behavior
-{
-	onUpdate(delta: number)
-	{
-		this.parent!.object3d.rotation.x += delta;
-		this.parent!.object3d.rotation.y += delta;
-	}
-}
+const meshLoader = new GLTFLoader;
 
-const cube = new CubeActor()
-cube.addComponent(new SpinBehavior());
-scene.addComponent(cube);
+const meshAsset = await meshLoader.loadAsync("/testgltf.glb");
+
+const mesh = new ModelActor(meshAsset);
+
+scene.addComponent(mesh);
 
 const floor = new PlaneActor()
 floor.position.y = -0.5;
@@ -46,7 +43,6 @@ scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()
 dirLight.position.set(6, 10, 3);
-dirLight.target = cube.object3d;
 dirLight.debug = true;
 scene.addComponent(dirLight);
 

@@ -18,6 +18,9 @@ declare module 'three'
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
+
+	public readonly type: string = "Actor";
+
 	get object3d() { return this.#object3d; }
 
 	set object3d(object3d: T)

@@ -10,6 +10,7 @@ import { ELYSIA_LOGGER } from "../Core/Logger";
  */
 export class Behavior implements ActorLifecycle, Destroyable
 {
+	public readonly type: string = "Behavior";
 
 	get created() { return this.#created; }
 
