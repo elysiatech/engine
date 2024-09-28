@@ -69,19 +69,29 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		})
 	}
 
-	public getComponentByTag(tag: any): Set<Actor | Behavior>
+	/**
+	 * Returns all actors in the scene with the given tag.
+	 * @param tag
+	 */
+	public override getComponentsByTag(tag: any): Set<Actor | Behavior>
 	{
 		return this.componentsByTag.get(tag) || new Set();
 	}
 
-	public getComponentByType<T extends Actor | Behavior>(type: Constructor<T>): Set<T>
+	/**
+	 * Returns all actors in the scene with the given type.
+	 */
+	public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): Set<T>
 	{
 		return (this.componentsByType.get(type) as Set<T>) || new Set<T>();
 	}
 
+	/**
+	 * Returns the active camera in the scene (if one is set via ActiveCameraTag).
+	 */
 	public getActiveCamera(): Three.Camera | null
 	{
-		return this.getComponentByTag(ActiveCameraTag).values()?.next()?.value?.object3d || null;
+		return this.getComponentsByTag(ActiveCameraTag).values()?.next()?.value?.object3d || null;
 	}
 
 	onEnd(): void

@@ -42,8 +42,8 @@ export class RapierPhysicsController implements Destroyable
 
 	updatePhysicsWorld(scene: Scene)
 	{
-		const colliders = scene.getComponentByType(RapierColliderBehavior)
-		const rigidBodies = scene.getComponentByType(RapierRigidBodyBehavior)
+		const colliders = scene.getComponentsByType(RapierColliderBehavior)
+		const rigidBodies = scene.getComponentsByType(RapierRigidBodyBehavior)
 
 		for(const c of colliders)
 		{

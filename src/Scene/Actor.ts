@@ -7,6 +7,7 @@ import { Component, isActor } from "./Component";
 import { Scene } from "./Scene";
 import { Application } from "../Core/Application";
 import { isDev } from "../Core/Asserts";
+import { Constructor } from "../Core/Utilities";
 
 declare module 'three'
 {
@@ -151,8 +152,21 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return false;
 		}
 		this.components.add(component);
+		if(!this.#componentsByType.has(component.constructor as Constructor<Component>))
+		{
+			this.#componentsByType.set(component.constructor as Constructor<Component>, new Set());
+		}
+		this.#componentsByType.get(component.constructor as Constructor<Component>)!.add(component);
 		if(isActor(component))
 		{
+			for(const tag of component.tags)
+			{
+				if(!this.#componentsByTag.has(tag))
+				{
+					this.#componentsByTag.set(tag, new Set());
+				}
+				this.#componentsByTag.get(tag)!.add(component);
+			}
 			this.object3d.add(component.object3d);
 		}
 		ElysiaEventDispatcher.dispatchEvent(new ComponentAddedEvent({ parent: this, child: component }));
@@ -193,8 +207,13 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		ElysiaEventDispatcher.dispatchEvent(new ComponentRemovedEvent({ parent: this, child: component }));
 		this.components.delete(component);
+		this.#componentsByType.get(component.constructor as Constructor<Component>)?.delete(component);
 		if(isActor(component))
 		{
+			for(const tag of component.tags)
+			{
+				this.#componentsByTag.get(tag)?.delete(component);
+			}
 			this.object3d.remove(component.object3d);
 		}
 		component._onLeaveScene();
@@ -266,6 +285,24 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		component._onStart();
 		component._onEnterScene();
 		return true;
+	}
+
+	/**
+	 * Gets all components of a certain type directly attached to this actor.
+	 * @param type
+	 */
+	getComponentsByType<T extends Component>(type: Constructor<T>): Set<T>
+	{
+		return (this.#componentsByType.get(type) as Set<T>) ?? new Set();
+	}
+
+	/**
+	 * Gets all components with a certain tag directly attached to this actor.
+	 * @param tag
+	 */
+	getComponentsByTag(tag: any): Set<Component>
+	{
+		return this.#componentsByTag.get(tag) ?? new Set();
 	}
 
 	/**
@@ -414,4 +451,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	#enabled: boolean = true;
 	#inScene: boolean = false;
 	#destroyed: boolean = false;
+	#componentsByType = new Map<Constructor<Component>, Set<Component>>();
+	#componentsByTag = new Map<any, Set<Component>>();
 }
