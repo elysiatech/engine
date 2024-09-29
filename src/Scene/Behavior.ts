@@ -14,6 +14,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	get created() { return this.#created; }
 
+	get started() { return this.#started; }
+
 	get destroyed() { return this.#destroyed; }
 
 	get enabled() { return this.#enabled; }

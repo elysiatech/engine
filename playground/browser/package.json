@@ -18,6 +18,8 @@
 		"postprocessing": "^6.35.5",
 		"preact": "^10.22.0",
 		"three": "^0.165.0",
-		"three-stdlib": "^2.30.3"
+		"three-stdlib": "^2.30.3",
+		"vite-plugin-top-level-await": "^1.4.4",
+		"vite-plugin-wasm": "^3.3.0"
 	}
 }

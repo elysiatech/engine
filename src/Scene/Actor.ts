@@ -37,6 +37,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	get enabled() { return this.#enabled; }
 
+	get started() { return this.#started; }
+
 	get inScene() { return this.#inScene; }
 
 	get destroyed() { return this.#destroyed; }

@@ -5,20 +5,40 @@ import { CameraOrbitBehavior } from "../../../src/Behaviors/CameraOrbitBehavior.
 import { PerspectiveCameraActor } from "../../../src/Actors/PerspectiveCameraActor.ts";
 import { DirectionalLightActor } from "../../../src/Actors/DirectionalLightActor.ts";
 import { AmbientLightActor } from "../../../src/Actors/AmbientLightActor.ts";
-import { PlaneActor } from "../../../src/Actors/Primitives.ts";
+import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
-import { GLTFLoader } from "three-stdlib";
 import * as Three from "three";
-import { Actor } from "../../../src/Scene/Actor.ts";
-import { ModelActor } from "../../../src/Actors/ModelActor.ts";
+import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
+import { RapierRigidBodyBehavior } from "../../../src/RapierPhysics/RigidBody";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
 		ssao: true,
 	})
 });
+class MyScene extends Scene
+{
 
-const scene = new Scene();
+	physics = new RapierPhysicsController({ gravity: new Three.Vector3(0, -9.81, 0) });
+
+	override async onLoad()
+	{
+		await super.onLoad();
+		await this.physics.init(this);
+	}
+
+	override onStart()
+	{
+		this.physics.start();
+	}
+
+	override onUpdate(d: number)
+	{
+		this.physics.updatePhysicsWorld(this, d)
+	}
+}
+
+const scene = new MyScene();
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
@@ -27,16 +47,17 @@ const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
 scene.addComponent(cameraActor);
 
-const meshLoader = new GLTFLoader;
+// const meshLoader = new GLTFLoader;
+// const meshAsset = await meshLoader.loadAsync("/testgltf.glb");
+// const mesh = new ModelActor(meshAsset);
+// scene.addComponent(mesh);
 
-const meshAsset = await meshLoader.loadAsync("/testgltf.glb");
-
-const mesh = new ModelActor(meshAsset);
-
-scene.addComponent(mesh);
+const cube = new CubeActor;
+cube.addComponent(new RapierRigidBodyBehavior({ type: 0 }));
+cube.position.set(0, 4, 0);
+scene.addComponent(cube);
 
 const floor = new PlaneActor()
-floor.position.y = -0.5;
 floor.scale.set(10, 10, 10);
 floor.rotation.x = -Math.PI / 2;
 scene.addComponent(floor);
