@@ -21,10 +21,10 @@ export class BasicRenderPipeline extends RenderPipeline
 
 	onCreate(scene: Scene, output: HTMLCanvasElement) {
 		this.renderer = new Three.WebGLRenderer({ ...this.args, canvas: output });
-
+		this.renderer.shadowMap.enabled = true;
 		if (this.args.devicePixelRatio) { this.renderer.setPixelRatio(this.args.devicePixelRatio); }
 		else { this.renderer.setPixelRatio(window.devicePixelRatio); }
-		if (this.args.toneMapping) { this.renderer.toneMapping = this.args.toneMapping; }
+		if (this.args.toneMapping) { this.renderer.toneMapping = this.args.toneMapping ?? Three.ACESFilmicToneMapping; }
 		if (this.args.toneMappingExposure) { this.renderer.toneMappingExposure = this.args.toneMappingExposure; }
 	}
 

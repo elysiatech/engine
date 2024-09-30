@@ -123,6 +123,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 
 		this.renderer.shadowMap.enabled = this.#shadows;
 
+		this.renderer.shadowMap.type = Three.PCFSoftShadowMap
+
 		this.effectComposer = new EffectComposer(
 			this.renderer,
 			{

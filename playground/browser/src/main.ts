@@ -28,6 +28,13 @@ const app = new Application({
 	stats: true,
 });
 
+// const app = new Application({
+// 	renderPipeline: new BasicRenderPipeline({
+// 		antialias: true,
+// 	}),
+// 	stats: true,
+// })
+
 class MyScene extends Scene
 {
 
@@ -54,6 +61,7 @@ const scene = new MyScene();
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
+cameraActor.position.y = 1;
 cameraActor.addTag(ActiveCameraTag);
 const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
@@ -80,9 +88,10 @@ const ambLight = new AmbientLightActor()
 scene.addComponent(ambLight);
 
 const sky = new SkyActor
-sky.elevation = 2;
+sky.elevation = 40;
 sky.rayleigh = 1
 sky.turbidity = 10
+sky.azimuth = 38
 sky.mieDirectionalG = 0.8
 scene.addComponent(sky)
 
