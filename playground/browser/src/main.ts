@@ -9,14 +9,14 @@ import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
 import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
+import { ELYSIA_LOGGER } from "../../../old/Core/Logger.ts";
+import { KeyCode } from "../../../src/Input/KeyCode.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
-		ssao:{
-			intensity: 2,
+		ssao: {
+			intensity: 1.5,
 		},
-		bloom: true,
-		chromaticAberration: true,
 	}),
 	stats: true,
 });
@@ -35,6 +35,9 @@ class MyScene extends Scene
 	override onStart()
 	{
 		this.physics.start();
+		this.app?.input.onKeyDown(KeyCode.Space, (e) => {
+			ELYSIA_LOGGER.info("Space pressed", e);
+		})
 	}
 
 	override onUpdate(d: number)

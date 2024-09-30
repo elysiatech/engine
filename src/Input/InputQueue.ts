@@ -43,11 +43,11 @@ export class InputQueue implements Destroyable
 	 **/
 	public onKeyDown(key: KeyCode | MouseCode, callback: (key: QueuedEvent) => void)
 	{
-		if(!this.callbacks.has(key))
+		if(!this.keyDownCallbacks.has(key))
 		{
-			this.callbacks.set(key, new Set);
+			this.keyDownCallbacks.set(key, new Set);
 		}
-		this.callbacks.get(key)!.add(callback);
+		this.keyDownCallbacks.get(key)!.add(callback);
 	}
 
 	/**
@@ -60,11 +60,11 @@ export class InputQueue implements Destroyable
 	 **/
 	public onKeyUp(key: KeyCode | MouseCode, callback: (key: QueuedEvent) => void)
 	{
-		if(!this.callbacks.has(key))
+		if(!this.keyUpCallbacks.has(key))
 		{
-			this.callbacks.set(key, new Set);
+			this.keyUpCallbacks.set(key, new Set);
 		}
-		this.callbacks.get(key)!.add(callback);
+		this.keyUpCallbacks.get(key)!.add(callback);
 	}
 
 	/** Add a callback to be called when the specified key is pressed or released. */
@@ -80,9 +80,19 @@ export class InputQueue implements Destroyable
 		{
 			for(const event of set)
 			{
-				for(const callback of this.callbacks.get(key) ?? [])
+				if(event.type === "down" && this.keyDownCallbacks.has(key))
 				{
-					callback(event);
+					for(const callback of this.keyDownCallbacks.get(key)!)
+					{
+						callback(event);
+					}
+				}
+				else if(event.type === "up" && this.keyUpCallbacks.has(key))
+				{
+					for(const callback of this.keyUpCallbacks.get(key)!)
+					{
+						callback(event);
+					}
 				}
 			}
 		}
@@ -109,12 +119,15 @@ export class InputQueue implements Destroyable
 		this.mouse.removeEventListener("mouseup", this.mouseUpHandler)
 		this.mouse.destructor()
 		this.clear()
-		this.callbacks.clear()
+		this.keyDownCallbacks.clear()
+		this.keyUpCallbacks.clear()
 	}
 
 	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 50)
 
-	private callbacks = new Map<KeyCode | MouseCode, Set<(key: QueuedEvent) => void>>
+	private keyDownCallbacks = new Map<KeyCode | MouseCode, Set<(key: QueuedEvent) => void>>
+
+	private keyUpCallbacks = new Map<KeyCode | MouseCode, Set<(key: QueuedEvent) => void>>
 
 	private queue = new Map<KeyCode | MouseCode, Set<QueuedEvent>>()
 
@@ -122,7 +135,7 @@ export class InputQueue implements Destroyable
 
 	private keyDownHandler(event: KeyboardEvent)
 	{
-		const key = event.key as KeyCode;
+		const key = event.code as KeyCode;
 
 		if(!this.currentlyPressed.has(key)) {
 			this.currentlyPressed.add(key);
@@ -140,12 +153,17 @@ export class InputQueue implements Destroyable
 			queued.mouseRightDown = this.mouse.rightDown;
 			queued.mouseX = this.mouse.x;
 			queued.mouseY = this.mouse.y;
+
+			if(!this.queue.has(key)) {
+				this.queue.set(key, new Set);
+			}
+			this.queue.get(key)!.add(queued);
 		}
 	}
 
 	private keyUpHandler(event: KeyboardEvent)
 	{
-		const key = event.key as KeyCode;
+		const key = event.code as KeyCode;
 
 		if(this.currentlyPressed.has(key)) {
 			this.currentlyPressed.delete(key);
@@ -163,6 +181,11 @@ export class InputQueue implements Destroyable
 			queued.mouseRightDown = this.mouse.rightDown;
 			queued.mouseX = this.mouse.x;
 			queued.mouseY = this.mouse.y;
+
+			if(!this.queue.has(key)) {
+				this.queue.set(key, new Set);
+			}
+			this.queue.get(key)!.add(queued);
 		}
 	}
 
@@ -186,6 +209,11 @@ export class InputQueue implements Destroyable
 			queued.mouseRightDown = this.mouse.rightDown;
 			queued.mouseX = this.mouse.x;
 			queued.mouseY = this.mouse.y;
+
+			if(!this.queue.has(button)) {
+				this.queue.set(button, new Set);
+			}
+			this.queue.get(button)!.add(queued);
 		}
 	}
 
@@ -209,6 +237,11 @@ export class InputQueue implements Destroyable
 			queued.mouseRightDown = this.mouse.rightDown;
 			queued.mouseX = this.mouse.x;
 			queued.mouseY = this.mouse.y;
+
+			if(!this.queue.has(button)) {
+				this.queue.set(button, new Set);
+			}
+			this.queue.get(button)!.add(queued);
 		}
 	}
 }
