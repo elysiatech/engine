@@ -7,9 +7,10 @@ import { Behavior } from "./Behavior";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
 import { ActiveCameraTag } from "../Core/Tags";
-import { isActor } from "./Component";
+import { Component, isActor } from "./Component";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { GridActor } from "../Actors/GridActor.ts";
+import { SparseSet } from "../Containers/SparseSet.ts";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
@@ -32,7 +33,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 			const type = e.child.constructor;
 
 			if(!this.componentsByType.has(type))
-				this.componentsByType.set(type, new Set());
+				this.componentsByType.set(type, new SparseSet);
 
 			this.componentsByType.get(type)!.add(e.child);
 
@@ -62,7 +63,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 		ElysiaEventDispatcher.addEventListener(TagAddedEvent, (event) => {
 			if(!this.componentsByTag.has(event.tag))
-				this.componentsByTag.set(event.tag, new Set());
+				this.componentsByTag.set(event.tag, new SparseSet);
 
 			this.componentsByTag.get(event.tag)!.add(event.target);
 
@@ -81,25 +82,29 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 * Returns all actors in the scene with the given tag.
 	 * @param tag
 	 */
-	public override getComponentsByTag(tag: any): Set<Actor | Behavior>
+	public override getComponentsByTag(tag: any): SparseSet<Component>
 	{
-		return this.componentsByTag.get(tag) || new Set();
+		return this.componentsByTag.get(tag) || new SparseSet<Component>;
 	}
 
 	/**
 	 * Returns all actors in the scene with the given type.
 	 */
-	public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): Set<T>
+	public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>
 	{
-		return (this.componentsByType.get(type) as Set<T>) || new Set<T>();
+		return (this.componentsByType.get(type) as SparseSet<T>) || new SparseSet<T>;
 	}
 
 	/**
 	 * Returns the active camera in the scene (if one is set via ActiveCameraTag).
+	 * If multiple cameras are set as active, the first one found is returned.
 	 */
 	public getActiveCamera(): Three.Camera | null
 	{
-		return this.getComponentsByTag(ActiveCameraTag).values()?.next()?.value?.object3d || null;
+		const activeCamera = this.getComponentsByTag(ActiveCameraTag).first;
+		if(isActor(activeCamera) && activeCamera.object3d instanceof Three.Camera)
+			return activeCamera.object3d as Three.Camera;
+		return null;
 	}
 
 	onLoad(): void | Promise<void> {}
@@ -120,10 +125,10 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		this.componentsByType.clear();
 	}
 
-	private componentsByTag = new Map<any, Set<Actor | Behavior>>
-	private componentsByType = new Map<any, Set<Actor | Behavior>>
-	private allActors = new Set<Actor>()
-	private allBehaviors = new Set<Behavior>()
+	private componentsByTag = new Map<any, SparseSet<Component>>
+	private componentsByType = new Map<any, SparseSet<Component>>
+	private allActors = new SparseSet<Actor>
+	private allBehaviors = new SparseSet<Behavior>
 
 	#object3d: Three.Scene = new Three.Scene();
 

@@ -8,6 +8,7 @@ import { Scene } from "./Scene";
 import { Application } from "../Core/Application";
 import { isDev } from "../Core/Asserts";
 import { Constructor } from "../Core/Utilities";
+import { SparseSet } from "../Containers/SparseSet.ts";
 
 declare module 'three'
 {
@@ -156,7 +157,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.components.add(component);
 		if(!this.#componentsByType.has(component.constructor as Constructor<Component>))
 		{
-			this.#componentsByType.set(component.constructor as Constructor<Component>, new Set());
+			this.#componentsByType.set(component.constructor as Constructor<Component>, new SparseSet);
 		}
 		this.#componentsByType.get(component.constructor as Constructor<Component>)!.add(component);
 		if(isActor(component))
@@ -165,7 +166,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			{
 				if(!this.#componentsByTag.has(tag))
 				{
-					this.#componentsByTag.set(tag, new Set());
+					this.#componentsByTag.set(tag, new SparseSet);
 				}
 				this.#componentsByTag.get(tag)!.add(component);
 			}
@@ -291,20 +292,18 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	/**
 	 * Gets all components of a certain type directly attached to this actor.
-	 * @param type
 	 */
-	getComponentsByType<T extends Component>(type: Constructor<T>): Set<T>
+	getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>
 	{
-		return (this.#componentsByType.get(type) as Set<T>) ?? new Set();
+		return (this.#componentsByType.get(type) as SparseSet<T>) ?? new SparseSet<T>;
 	}
 
 	/**
 	 * Gets all components with a certain tag directly attached to this actor.
-	 * @param tag
 	 */
-	getComponentsByTag(tag: any): Set<Component>
+	getComponentsByTag(tag: any): SparseSet<Component>
 	{
-		return this.#componentsByTag.get(tag) ?? new Set();
+		return this.#componentsByTag.get(tag) ?? new SparseSet;
 	}
 
 	/**
@@ -453,6 +452,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	#enabled: boolean = true;
 	#inScene: boolean = false;
 	#destroyed: boolean = false;
-	#componentsByType = new Map<Constructor<Component>, Set<Component>>();
-	#componentsByTag = new Map<any, Set<Component>>();
+	#componentsByType = new Map<Constructor<Component>, SparseSet<Component>>;
+	#componentsByTag = new Map<any, SparseSet<Component>>;
 }

@@ -10,7 +10,7 @@ export type Component = Actor | Behavior;
  * Returns true if the component is an Actor.
  * @param component
  */
-export function isActor(component: Component): component is Actor
+export function isActor(component: any): component is Actor
 {
 	return component instanceof Actor;
 }
@@ -19,7 +19,7 @@ export function isActor(component: Component): component is Actor
  * Returns true if the component is a Behavior.
  * @param component
  */
-export function isBehavior(component: Component): component is Behavior
+export function isBehavior(component: any): component is Behavior
 {
 	return component instanceof Behavior;
 }

@@ -1,12 +1,30 @@
 /**
  * SparseSet is a data structure that is used to store a set of unique values.
- * It is similar to a Set, but it is optimized for memory usage.
- * It is implemented as a sparse array, where each index is a value in the set,
- * and the value at that index is the index of the next value in the set.
- * This allows for fast iteration over the set, as well as fast insertion and deletion of values.
+ * It is backed by a dense array and a sparse map.
+ * The dense array stores the values in contiguous memory, while the sparse map
+ * stores the index of each value in the dense array.
+ * This means it is possible to look up the index of a value in constant time.
+ * However, the set does not guarantee the order of the values.
  */
 export class SparseSet<T>
 {
+
+	/**
+	 * Returns the first element in the set or undefined if the set is empty.
+	 */
+	get first(): T | undefined
+	{
+		return this.dense[0];
+	}
+
+	/**
+	 * Returns the last element in the set or undefined if the set is empty.
+	 */
+	get last(): T | undefined
+	{
+		return this.dense[this.dense.length - 1];
+	}
+
 	/**
 	 * Adds a value to the set.
 	 * @param value The value to add.
@@ -84,6 +102,24 @@ export class SparseSet<T>
 	public filter(callback: (value: T) => boolean): T[]
 	{
 		return this.dense.filter(callback);
+	}
+
+	/**
+	 * Returns the value at the given index in the set.
+	 * @param index The index of the value to return.
+	 * @returns The value at the given index, or undefined if the index is out of bounds.
+	 */
+	at(index: number): T | undefined
+	{
+		return this.dense[index];
+	}
+
+	public *[Symbol.iterator]()
+	{
+		for (let value of this.dense)
+		{
+			yield value;
+		}
 	}
 
 	private dense: T[] = [];
