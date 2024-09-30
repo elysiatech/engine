@@ -86,8 +86,6 @@ sky.turbidity = 10
 sky.mieDirectionalG = 0.8
 scene.addComponent(sky)
 
-const grid = new GridActor;
-
-scene.addComponent(grid);
+scene.grid.enable();
 
 app.loadScene(scene);

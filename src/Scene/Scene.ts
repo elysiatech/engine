@@ -9,16 +9,24 @@ import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEv
 import { ActiveCameraTag } from "../Core/Tags";
 import { isActor } from "./Component";
 import { ELYSIA_LOGGER } from "../Core/Logger";
+import { GridActor } from "../Actors/GridActor.ts";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
+	readonly loadPromise = new Future<void>(noop)
+
 	get object3d() { return this.#object3d; }
+
+	get grid() { return this.#grid; }
 
 	constructor()
 	{
 		super();
 		this.object3d.actor = this;
 		this.scene = this;
+
+		this.#grid.disable();
+		this.addComponent(this.#grid);
 
 		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, (e) => {
 			const type = e.child.constructor;
@@ -94,12 +102,6 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		return this.getComponentsByTag(ActiveCameraTag).values()?.next()?.value?.object3d || null;
 	}
 
-	onEnd(): void
-	{
-		this.componentsByTag.clear();
-		this.componentsByType.clear();
-	}
-
 	onLoad(): void | Promise<void> {}
 
 	async _load()
@@ -112,7 +114,11 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 		ELYSIA_LOGGER.debug("Scene created", this)
 	}
 
-	loadPromise = new Future<void>(noop)
+	onEnd(): void
+	{
+		this.componentsByTag.clear();
+		this.componentsByType.clear();
+	}
 
 	private componentsByTag = new Map<any, Set<Actor | Behavior>>
 	private componentsByType = new Map<any, Set<Actor | Behavior>>
@@ -120,4 +126,6 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	private allBehaviors = new Set<Behavior>()
 
 	#object3d: Three.Scene = new Three.Scene();
+
+	#grid = new GridActor;
 }

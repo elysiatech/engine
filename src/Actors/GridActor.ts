@@ -200,11 +200,11 @@ export class GridActor extends Actor<Three.Mesh>
 	{
 		super()
 
-		this.cellSize = props.cellSize || 0.5
-		this.cellThickness = props.cellThickness || 0.5
+		this.cellSize = props.cellSize || 1
+		this.cellThickness = props.cellThickness || 0.33
 		this.cellColor = props.cellColor || new Three.Color()
-		this.sectionSize = props.sectionSize || 1
-		this.sectionThickness = props.sectionThickness || 1
+		this.sectionSize = props.sectionSize || 2
+		this.sectionThickness = props.sectionThickness || .777
 		this.sectionColor = props.sectionColor || new Three.Color()
 		this.fadeDistance = props.fadeDistance || 100
 		this.fadeStrength = props.fadeStrength || 1
