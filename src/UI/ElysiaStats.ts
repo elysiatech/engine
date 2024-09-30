@@ -10,6 +10,7 @@ export class ElysiaStats extends ElysiaElement
 		lines: 0,
 		points: 0,
 		triangles: 0,
+		memory: 0,
 	}
 
 	static styles = c`
@@ -21,14 +22,16 @@ export class ElysiaStats extends ElysiaElement
 			color: white;
 			padding: 0.5em;
 			font-family: monospace;
-			font-size: 0.8em;
+			font-size: 0.6em;
 			z-index: 1000;
+			border-radius: 0 0 0 0.5em;
+			backdrop-filter: blur(2px);
 		}
 		
 		aside {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			grid-gap: 0.5em;
+			display: flex;
+			grid-template-columns: 1fr;
+			grid-gap: .25em 1em;
 		}
 		
 		.red {
@@ -44,11 +47,13 @@ export class ElysiaStats extends ElysiaElement
 	{
 		return h`
 			<aside>
+				<div>elsyia 2024.2.1</div>
 				<div class=${this.stats.fps < 60 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
 				<div class=${this.stats.calls > 500 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
 				<div>lines: ${this.stats.lines}</div>
 				<div>points: ${this.stats.points}</div>
 				<div>triangles: ${this.stats.triangles}</div>
+				<div>memory: ${this.stats.memory}</div>
 			</aside>
 		`
 	}

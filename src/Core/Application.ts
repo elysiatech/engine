@@ -191,6 +191,7 @@ export class Application {
 				this.#stats.stats.lines = this.renderPipeline!.getRenderer().info.render.lines;
 				this.#stats.stats.points = this.renderPipeline!.getRenderer().info.render.points;
 				this.#stats.stats.triangles = this.renderPipeline!.getRenderer().info.render.triangles;
+				this.#stats.stats.memory = this.renderPipeline!.getRenderer().info.memory.geometries + this.renderPipeline!.getRenderer().info.memory.textures;
 				this.#renderPipeline!.getRenderer().info.reset();
 			}
 
