@@ -22,6 +22,7 @@ export class ElysiaStats extends ElysiaElement
 			bottom: 0;
 			left: 0;
 			z-index: 1000;
+			pointer-events: none;
 		}
 		aside {
 			background: rgba(0, 0, 0, 0.5);
