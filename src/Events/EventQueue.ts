@@ -1,8 +1,26 @@
 import { ElysiaEvent } from "./Event";
 import { Constructor } from "../Core/Utilities";
 
+/**
+ * A queue of events.
+ * Events are pushed to the queue and then flushed.
+ * Events are flushed in the order they were pushed.
+ * Events pushed after the queue has been flushed are pushed to a secondary queue
+ * and are flushed only after .clear() is called.
+ */
 export class ElysiaEventQueue
 {
+
+	constructor()
+	{
+		this.flush = this.flush.bind(this);
+		this.flushAndClear = this.flushAndClear.bind(this);
+		this.clear = this.clear.bind(this);
+		this.push = this.push.bind(this);
+		this.subscribe = this.subscribe.bind(this);
+		this.unsubscribe = this.unsubscribe.bind(this);
+		this.iterator = this.iterator.bind(this);
+	}
 
 	/**
 	 * Push an event to the queue.
@@ -10,6 +28,11 @@ export class ElysiaEventQueue
 	 */
 	public push(event: ElysiaEvent<any>)
 	{
+		if(this.#hasFlushed)
+		{
+			this.nextQueue.push(event);
+			return;
+		}
 		this.queue.push(event);
 	}
 
@@ -26,6 +49,7 @@ export class ElysiaEventQueue
 	 */
 	public flush()
 	{
+		this.#hasFlushed = true;
 		for(const event of this.queue)
 		{
 			const listeners = this.listeners.get(event.constructor as Constructor<ElysiaEvent<any>>);
@@ -62,7 +86,11 @@ export class ElysiaEventQueue
 	 */
 	public clear()
 	{
-		this.queue.length = 0;
+		const temp = this.queue;
+		temp.length = 0;
+		this.queue = this.nextQueue;
+		this.nextQueue = temp;
+		this.#hasFlushed = false;
 	}
 
 	/**
@@ -97,6 +125,10 @@ export class ElysiaEventQueue
 
 	private readonly listeners = new Map<new (value: any) => ElysiaEvent<any>, Set<(value: any) => void>>();
 
-	private readonly queue: ElysiaEvent<any>[] = [];
+	private queue: ElysiaEvent<any>[] = [];
+
+	private nextQueue: ElysiaEvent<any>[] = [];
+
+	#hasFlushed = false;
 }
 

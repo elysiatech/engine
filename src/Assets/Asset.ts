@@ -60,7 +60,6 @@ export abstract class Asset<T> {
 			this.#loaded = true;
 			this.#progress = 1;
 		}
-
 	}
 
 	addEventListener: ElysiaEventDispatcher["addEventListener"];
@@ -121,7 +120,7 @@ export abstract class Asset<T> {
 	#future = new Future<Maybe<T>>(() => {});
 	#loading = false;
 	#loaded = false;
-	#started = true;
+	#started = false;
 	#progress = 0;
 	#data: Maybe<T>;
 	#error: Maybe<Error>;

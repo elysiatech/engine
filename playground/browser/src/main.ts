@@ -11,6 +11,9 @@ import * as Three from "three";
 import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
 import { ELYSIA_LOGGER } from "../../../old/Core/Logger.ts";
 import { KeyCode } from "../../../src/Input/KeyCode.ts";
+import { ElysiaEvent } from "../../../src/Events/Event.ts";
+import { GLTFAsset } from "../../../src/Assets/GLTFAsset.ts";
+import { ModelActor } from "../../../src/Actors/ModelActor.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -35,9 +38,6 @@ class MyScene extends Scene
 	override onStart()
 	{
 		this.physics.start();
-		this.app?.input.onKeyDown(KeyCode.Space, (e) => {
-			ELYSIA_LOGGER.info("Space pressed", e);
-		})
 	}
 
 	override onUpdate(d: number)
@@ -55,10 +55,9 @@ const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
 scene.addComponent(cameraActor);
 
-// const meshLoader = new GLTFLoader;
-// const meshAsset = await meshLoader.loadAsync("/testgltf.glb");
-// const mesh = new ModelActor(meshAsset);
-// scene.addComponent(mesh);
+const meshAsset = new GLTFAsset("/testgltf.glb")
+
+await meshAsset.load();
 
 const cube = new CubeActor;
 scene.addComponent(cube);

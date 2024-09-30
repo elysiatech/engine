@@ -21,7 +21,7 @@ export class Future<T> implements Promise<T>
 		return this.#state;
 	}
 	/**
-	 * Get the value of the promise, undefined if pending.
+	 * Get the value of the promise synchronously, undefined if pending.
 	 */
 	get value(): T | undefined {
 		return this.#syncValue;
@@ -31,14 +31,14 @@ export class Future<T> implements Promise<T>
 
 	constructor(executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void)
 	{
-		this.#promise = new Promise<T>((resolve, reject) => {
+		this.#promise = new Promise<T>((res, rej) => {
 			this.resolve = async (value: T | PromiseLike<T>) => {
 				await this.#resolveValue(value);
-				resolve(value);
+				res(value);
 			};
 			this.reject = (reason?: any) => {
 				this.#state = 'rejected';
-				reject(reason);
+				rej(reason);
 			};
 			executor(this.resolve, this.reject);
 		});

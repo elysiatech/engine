@@ -37,7 +37,7 @@ export class AssetLoader<A extends Record<string, Asset<any>>>
 			return asset.load()
 		});
 
-		Promise.all(promises).then(() => {
+		return Promise.all(promises).then(() => {
 			this.#loaded = true;
 			this.#loading = false;
 			this.#progress = 1;
