@@ -1,22 +1,22 @@
 import { Scene } from "../Scene/Scene";
 import * as Three from "three"
 import { RapierColliderBehavior } from "./Collider";
-import { RapierRigidBodyBehavior } from "./RigidBody";
+import { RigidBodyBehavior } from "./RigidBody";
 import { ComponentAddedEvent, ComponentRemovedEvent } from "../Core/ElysiaEvents";
 import { Destroyable, } from "../Core/Lifecycle";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import Rapier from '@dimforge/rapier3d-compat'
 import { ELYSIA_LOGGER } from "../Core/Logger";
-import { RapierDebugRenderer } from "./Debug";
+import { PhysicsDebugRenderer } from "./Debug";
 import { Actor } from "../Scene/Actor";
 
-export interface RapierPhysicsControllerConstructorArguments
+export interface PhysicsControllerConstructorArguments
 {
 	gravity?: Three.Vector3;
 	debug?: boolean;
 }
 
-export class RapierPhysicsController implements Destroyable
+export class PhysicsController implements Destroyable
 {
 	world?: Rapier.World;
 
@@ -24,20 +24,20 @@ export class RapierPhysicsController implements Destroyable
 
 	readonly colliders = new Set<{ component: RapierColliderBehavior, parent?: Actor, handle?: number }>;
 
-	readonly rigidBodies = new Set<{ component: RapierRigidBodyBehavior, parent?: Actor, handle: number }>;
+	readonly rigidBodies = new Set<{ component: RigidBodyBehavior, parent?: Actor, handle: number }>;
 
 	scene?: Scene;
 
 	get debug() { return this.#debugRenderer.enabled; }
 	set debug(value: boolean) { this.#debugRenderer.enabled = value; }
 
-	constructor(args: RapierPhysicsControllerConstructorArguments = {})
+	constructor(args: PhysicsControllerConstructorArguments = {})
 	{
 		this.init = this.init.bind(this);
 		this.updatePhysicsWorld = this.updatePhysicsWorld.bind(this);
 		this.gravity = args.gravity ?? new Three.Vector3(0, -9.81, 0)
 
-		this.#debugRenderer = new RapierDebugRenderer(args.debug);
+		this.#debugRenderer = new PhysicsDebugRenderer(args.debug);
 	}
 
 	async init(scene: Scene)
@@ -153,5 +153,5 @@ export class RapierPhysicsController implements Destroyable
 		// we need to handle modifications, such as adding a collider or rigid body to the physics world.
 	}
 
-	#debugRenderer: RapierDebugRenderer;
+	#debugRenderer: PhysicsDebugRenderer;
 }

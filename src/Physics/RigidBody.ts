@@ -1,7 +1,7 @@
 import { Behavior } from "../Scene/Behavior";
 import Rapier from "@dimforge/rapier3d-compat"
 
-export class RapierRigidBodyBehavior extends Behavior
+export class RigidBodyBehavior extends Behavior
 {
 	override type = "RapierRigidBodyBehavior";
 

@@ -1,7 +1,7 @@
 import * as Three from "three";
 import Rapier from "@dimforge/rapier3d-compat";
 
-export class RapierDebugRenderer {
+export class PhysicsDebugRenderer {
 	mesh?: Three.LineSegments;
 	world?: Rapier.World
 

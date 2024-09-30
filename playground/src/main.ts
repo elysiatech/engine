@@ -8,7 +8,7 @@ import { AmbientLightActor } from "../../src/Actors/AmbientLightActor.ts";
 import { CubeActor, PlaneActor } from "../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
-import { RapierPhysicsController } from "../../src/RapierPhysics/PhysicsController.ts";
+import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
 import { GLTFAsset } from "../../src/Assets/GLTFAsset.ts";
 import { SkyActor, SkyDirectionalLightTag } from "../../src/Actors/SkyActor.ts";
 import { BasicRenderPipeline } from "../../src/RPipeline/BasicRenderPipeline.ts";
@@ -32,7 +32,7 @@ const app = new Application({
 class MyScene extends Scene
 {
 
-	physics = new RapierPhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
+	physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
 	override async onLoad()
 	{
@@ -84,10 +84,7 @@ scene.addComponent(ambLight);
 
 const sky = new SkyActor
 sky.elevation = 40;
-sky.rayleigh = 1
-sky.turbidity = 10
 sky.azimuth = 38
-sky.mieDirectionalG = 0.8
 scene.addComponent(sky)
 
 scene.grid.enable();

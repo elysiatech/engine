@@ -50,7 +50,7 @@ type HighDefRenderPipelineConstructorArguments = {
 };
 
 /**
- * A high definition render pipeline that uses pmndr's Postprocesing to render the scene.
+ * A high definition render pipeline that uses pmndr's Postprocessing to render the scene.
  */
 export class HighDefRenderPipeline extends RenderPipeline
 {
