@@ -77,6 +77,15 @@ export class SparseSet<T>
 		this.dense.forEach(callback);
 	}
 
+	/**
+	 * Filter the values of the set.
+	 * @param callback
+	 */
+	public filter(callback: (value: T) => boolean): T[]
+	{
+		return this.dense.filter(callback);
+	}
+
 	private dense: T[] = [];
 	private sparse = new Map<T, number>();
 }

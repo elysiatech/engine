@@ -13,7 +13,6 @@ export interface AudioConstructorArguments {
 	nodes?: AudioNode[];
 }
 
-
 export class Audio
 {
 	get loading() { return !this.#ready; }

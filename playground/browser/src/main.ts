@@ -14,6 +14,9 @@ import { KeyCode } from "../../../src/Input/KeyCode.ts";
 import { ElysiaEvent } from "../../../src/Events/Event.ts";
 import { GLTFAsset } from "../../../src/Assets/GLTFAsset.ts";
 import { ModelActor } from "../../../src/Actors/ModelActor.ts";
+import { EnvironmentActor } from "../../../src/Actors/EnvironmentActor.ts";
+import { SkyActor, SkyDirectionalLightTag } from "../../../src/Actors/SkyActor.ts";
+import { BasicRenderPipeline } from "../../../src/RPipeline/BasicRenderPipeline.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -69,11 +72,17 @@ floor.position.y = -.5;
 scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()
-dirLight.position.set(6, 10, 3);
-dirLight.debug = true;
 scene.addComponent(dirLight);
+dirLight.addTag(SkyDirectionalLightTag)
 
 const ambLight = new AmbientLightActor()
 scene.addComponent(ambLight);
+
+const sky = new SkyActor
+sky.elevation = 2;
+sky.rayleigh = 1
+sky.turbidity = 10
+sky.mieDirectionalG = 0.8
+scene.addComponent(sky)
 
 app.loadScene(scene);

@@ -43,6 +43,11 @@ export class DirectionalLightActor extends Actor<Three.DirectionalLight>
 		this.castShadow = castShadow;
 	}
 
+	onUpdate(delta: number, elapsed: number)
+	{
+		this.#debug && this.#debugHelper?.update();
+	}
+
 	#debug = false;
 	#debugHelper?: Three.DirectionalLightHelper;
 }
