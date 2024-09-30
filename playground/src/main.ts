@@ -1,22 +1,17 @@
-import { Application } from "../../../src/Core/Application";
-import { Scene } from "../../../src/Scene/Scene";
-import { ActiveCameraTag } from "../../../src/Core/Tags.ts";
-import { CameraOrbitBehavior } from "../../../src/Behaviors/CameraOrbitBehavior.ts";
-import { PerspectiveCameraActor } from "../../../src/Actors/PerspectiveCameraActor.ts";
-import { DirectionalLightActor } from "../../../src/Actors/DirectionalLightActor.ts";
-import { AmbientLightActor } from "../../../src/Actors/AmbientLightActor.ts";
-import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
-import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
+import { Application } from "../../src/Core/Application";
+import { Scene } from "../../src/Scene/Scene";
+import { ActiveCameraTag } from "../../src/Core/Tags.ts";
+import { CameraOrbitBehavior } from "../../src/Behaviors/CameraOrbitBehavior.ts";
+import { PerspectiveCameraActor } from "../../src/Actors/PerspectiveCameraActor.ts";
+import { DirectionalLightActor } from "../../src/Actors/DirectionalLightActor.ts";
+import { AmbientLightActor } from "../../src/Actors/AmbientLightActor.ts";
+import { CubeActor, PlaneActor } from "../../src/Actors/Primitives.ts";
+import { HighDefRenderPipeline } from "../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
-import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
-import { KeyCode } from "../../../src/Input/KeyCode.ts";
-import { ElysiaEvent } from "../../../src/Events/Event.ts";
-import { GLTFAsset } from "../../../src/Assets/GLTFAsset.ts";
-import { ModelActor } from "../../../src/Actors/ModelActor.ts";
-import { EnvironmentActor } from "../../../src/Actors/EnvironmentActor.ts";
-import { SkyActor, SkyDirectionalLightTag } from "../../../src/Actors/SkyActor.ts";
-import { BasicRenderPipeline } from "../../../src/RPipeline/BasicRenderPipeline.ts";
-import { GridActor } from "../../../src/Actors/GridActor.ts";
+import { RapierPhysicsController } from "../../src/RapierPhysics/PhysicsController.ts";
+import { GLTFAsset } from "../../src/Assets/GLTFAsset.ts";
+import { SkyActor, SkyDirectionalLightTag } from "../../src/Actors/SkyActor.ts";
+import { BasicRenderPipeline } from "../../src/RPipeline/BasicRenderPipeline.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({

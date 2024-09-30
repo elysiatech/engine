@@ -2,14 +2,26 @@ import { Actor } from "../Scene/Actor";
 import * as Three from "three";
 import { GLTF } from "three-stdlib";
 
+/**
+ * A model actor is an actor that represents a 3D model, usually loaded from a GLTF file.
+ */
 export class ModelActor extends Actor
 {
+	/**
+	 * Should this model cast shadows?
+	 */
 	get castShadow() { return this.object3d.castShadow; }
 	set castShadow(value) { this.object3d.castShadow = value; }
 
+	/**
+	 * Should this model receive shadows?
+	 */
 	get receiveShadow() { return this.object3d.receiveShadow; }
 	set receiveShadow(value) { this.object3d.receiveShadow = value; }
 
+	/**
+	 * A debug flag that will show a bounding box around the model.
+	 */
 	get debug() { return this.#debug; }
 	set debug(value)
 	{

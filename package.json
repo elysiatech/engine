@@ -6,10 +6,8 @@
     "dist"
   ],
   "scripts": {
-    "browser": "cd playground/browser && pnpm run dev",
-    "node": "cd playground/node && tsx index.ts",
-    "build": "mkdist --src=src --dist=dist --format=esm -d --ext=js",
-    "lint": "pnpm biome check old --write"
+    "dev": "cd playground && pnpm run dev",
+    "build": "mkdist --src=src --dist=dist --format=esm -d --ext=js"
   },
   "exports": {},
   "peerDependencies": {
