@@ -14,6 +14,7 @@ import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger";
 import { ResizeController } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
+import { ElysiaStats } from "../UI/ElysiaStats";
 
 class UnhandledUpdateLoopError extends Error
 {
@@ -88,6 +89,7 @@ export class Application {
 			this.#output.style.display = "block";
 			this.#output.style.margin = "0";
 			this.#output.style.padding = "0";
+			this.#output.style.position = "relative";
 		}
 
 		this.mouse = new MouseObserver(this.#output);
@@ -95,6 +97,12 @@ export class Application {
 		this.#resizeController = new ResizeController();
 
 		this.updateDefaultUiScheduler = config.updateDefaultUiScheduler ?? true;
+
+		if(config.stats)
+		{
+			this.#stats = document.createElement("elysia-stats") as ElysiaStats;
+			this.#output.parentElement?.appendChild(this.#stats);
+		}
 	}
 
 	public async loadScene(scene: Scene)
@@ -175,6 +183,16 @@ export class Application {
 			this.events.flush();
 
 			// update stats
+			if(this.#stats instanceof ElysiaStats)
+			{
+				this.renderPipeline!.getRenderer().info.autoReset = false;
+				this.#stats.stats.fps = Math.round(1 / delta);
+				this.#stats.stats.calls = this.renderPipeline!.getRenderer().info.render.calls;
+				this.#stats.stats.lines = this.renderPipeline!.getRenderer().info.render.lines;
+				this.#stats.stats.points = this.renderPipeline!.getRenderer().info.render.points;
+				this.#stats.stats.triangles = this.renderPipeline!.getRenderer().info.render.triangles;
+				this.#renderPipeline!.getRenderer().info.reset();
+			}
 
 			// scene update
 			this.#scene._onUpdate(delta, elapsed);
@@ -202,7 +220,7 @@ export class Application {
 
 	#errorCount = 0;
 	#resizeController: ResizeController;
-	#stats = false;
+	#stats: boolean | ElysiaStats = false;
 	#clock = new Three.Clock;
 	#renderPipeline?: RenderPipeline;
 	#output: HTMLCanvasElement;

@@ -10,7 +10,6 @@ import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipel
 import * as Three from "three";
 import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
 
-
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
 		ssao:{
@@ -18,8 +17,10 @@ const app = new Application({
 		},
 		bloom: true,
 		chromaticAberration: true,
-	})
+	}),
+	stats: true,
 });
+
 class MyScene extends Scene
 {
 
