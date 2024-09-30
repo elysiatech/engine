@@ -13,6 +13,7 @@ import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline";
 import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger";
 import { ResizeController } from "./Resize";
+import { defaultScheduler } from "../UI/Scheduler";
 
 class UnhandledUpdateLoopError extends Error
 {
@@ -35,6 +36,7 @@ interface ApplicationConstructorArguments
 	audio?: AudioPlayer
 	renderPipeline?: RenderPipeline
 	stats?: boolean
+	updateDefaultUiScheduler?: boolean
 }
 
 export class Application {
@@ -48,6 +50,8 @@ export class Application {
 	public readonly profiler: Profiler;
 
 	public readonly audio: AudioPlayer;
+
+	public updateDefaultUiScheduler: boolean;
 
 	/**
 	 * The maximum number of consecutive errors that can occur inside update() before stopping.
@@ -89,6 +93,8 @@ export class Application {
 		this.mouse = new MouseObserver(this.#output);
 
 		this.#resizeController = new ResizeController();
+
+		this.updateDefaultUiScheduler = config.updateDefaultUiScheduler ?? true;
 	}
 
 	public async loadScene(scene: Scene)
@@ -175,6 +181,9 @@ export class Application {
 
 			// scene update
 			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera()!);
+
+			// update default UI scheduler
+			this.updateDefaultUiScheduler && defaultScheduler.update();
 
 			// clear input and event queues
 			this.input.clear();

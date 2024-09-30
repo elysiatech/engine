@@ -2,7 +2,6 @@ import { ElysiaElement } from "./UI";
 
 export class Scheduler
 {
-
 	frametime: number = 0;
 
 	components = new Set<ElysiaElement>;
@@ -28,9 +27,3 @@ export class Scheduler
 }
 
 export const defaultScheduler = new Scheduler;
-
-if (typeof document !== "undefined")
-{
-	const render = () => { requestAnimationFrame(render); defaultScheduler.update(); }
-	requestAnimationFrame(render)
-}
