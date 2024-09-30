@@ -1,3 +1,8 @@
+/* **********************************************************
+    Big thanks to N8Python for this excellent SSAO implementation
+    https://github.com/N8python/n8ao
+************************************************************/
+
 import {Color as $5Whe3$Color, WebGLRenderTarget as $5Whe3$WebGLRenderTarget, LinearFilter as $5Whe3$LinearFilter, NearestFilter as $5Whe3$NearestFilter, HalfFloatType as $5Whe3$HalfFloatType, RGBAFormat as $5Whe3$RGBAFormat, DepthTexture as $5Whe3$DepthTexture, UnsignedInt248Type as $5Whe3$UnsignedInt248Type, UnsignedIntType as $5Whe3$UnsignedIntType, DepthStencilFormat as $5Whe3$DepthStencilFormat, DepthFormat as $5Whe3$DepthFormat, Matrix4 as $5Whe3$Matrix4, DataTexture as $5Whe3$DataTexture, ShaderMaterial as $5Whe3$ShaderMaterial, NoColorSpace as $5Whe3$NoColorSpace, RepeatWrapping as $5Whe3$RepeatWrapping, Vector2 as $5Whe3$Vector2, REVISION as $5Whe3$REVISION, WebGLMultipleRenderTargets as $5Whe3$WebGLMultipleRenderTargets, RedFormat as $5Whe3$RedFormat, FloatType as $5Whe3$FloatType, Vector3 as $5Whe3$Vector3, BufferGeometry as $5Whe3$BufferGeometry, BufferAttribute as $5Whe3$BufferAttribute, Sphere as $5Whe3$Sphere, OrthographicCamera as $5Whe3$OrthographicCamera, Mesh as $5Whe3$Mesh} from "three";
 import {Pass as $5Whe3$Pass} from "three/examples/jsm/postprocessing/Pass.js";
 import {Pass as $5Whe3$Pass1} from "postprocessing";
