@@ -1,8 +1,11 @@
 import { ElysiaElement, defineComponent, h, c } from "./UI";
+import { ELYSIA_VERSION } from "../Core/Constants.ts";
 
 export class ElysiaStats extends ElysiaElement
 {
 	static Tag = "elysia-stats";
+
+	visible = false;
 
 	public stats = {
 		calls: 0,
@@ -13,41 +16,52 @@ export class ElysiaStats extends ElysiaElement
 		memory: 0,
 	}
 
-	static styles = c`
+	static styles = c`	
 		:host {
 			position: fixed;
-			top: 0;
-			right: 0;
+			bottom: 0;
+			left: 0;
+			z-index: 1000;
+		}
+		aside {
 			background: rgba(0, 0, 0, 0.5);
 			color: white;
 			padding: 0.5em;
-			font-family: monospace;
-			font-size: 0.6em;
-			z-index: 1000;
-			border-radius: 0 0 0 0.5em;
-			backdrop-filter: blur(2px);
-		}
-		
-		aside {
+			font-family: Kode Mono, serif;
+			font-size: .7em;
+			font-weight: 300;
 			display: flex;
-			grid-template-columns: 1fr;
+			grid-template-columns: 1fr 1fr;
 			grid-gap: .25em 1em;
+			border-radius: 0 .5em 0 0;
+			backdrop-filter: blur(2px);
+			transition: all 0.5s ease;
 		}
-		
-		.red {
-			color: red;
+		@media (max-width: 620px) {
+			aside { 
+				display: grid;
+				font-size: .5em;
+			}
 		}
-		
-		.white {
-			color: white;
-		}
+		.purple { color: #ee95ff; }
+		.red { color: red; }
+		.white { color: white; }
+		.inv { opacity: 0; transform: translateY(100%); }
 	`
+
+	onMount() {
+		document.head.insertAdjacentHTML(
+			'beforeend',
+			`<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap" rel="stylesheet">`
+		);
+		setTimeout(() => this.visible = true, 500);
+	}
 
 	render()
 	{
 		return h`
-			<aside>
-				<div>elsyia 2024.2.1</div>
+			<aside id="stats" class=${this.visible ? '' : 'inv'}>
+				<div class="purple">elsyia ${ELYSIA_VERSION}</div>
 				<div class=${this.stats.fps < 60 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
 				<div class=${this.stats.calls > 500 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
 				<div>lines: ${this.stats.lines}</div>
