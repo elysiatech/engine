@@ -17,6 +17,7 @@ import { ModelActor } from "../../../src/Actors/ModelActor.ts";
 import { EnvironmentActor } from "../../../src/Actors/EnvironmentActor.ts";
 import { SkyActor, SkyDirectionalLightTag } from "../../../src/Actors/SkyActor.ts";
 import { BasicRenderPipeline } from "../../../src/RPipeline/BasicRenderPipeline.ts";
+import { GridActor } from "../../../src/Actors/GridActor.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -84,5 +85,9 @@ sky.rayleigh = 1
 sky.turbidity = 10
 sky.mieDirectionalG = 0.8
 scene.addComponent(sky)
+
+const grid = new GridActor;
+
+scene.addComponent(grid);
 
 app.loadScene(scene);
