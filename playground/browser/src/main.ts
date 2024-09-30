@@ -9,7 +9,6 @@ import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
 import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
-import { ELYSIA_LOGGER } from "../../../old/Core/Logger.ts";
 import { KeyCode } from "../../../src/Input/KeyCode.ts";
 import { ElysiaEvent } from "../../../src/Events/Event.ts";
 import { GLTFAsset } from "../../../src/Assets/GLTFAsset.ts";
@@ -72,6 +71,7 @@ const meshAsset = new GLTFAsset("/testgltf.glb")
 await meshAsset.load();
 
 const cube = new CubeActor;
+(cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
 scene.addComponent(cube);
 
 const floor = new PlaneActor()

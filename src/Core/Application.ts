@@ -3,7 +3,7 @@ import { isDestroyable, isDev } from "./Asserts";
 import { MouseIntersections } from "../Input/MouseIntersections";
 import { ElysiaEventQueue } from "../Events/EventQueue";
 import { InputQueue } from "../Input/InputQueue";
-import { AssetLoader } from "../../old/Assets/AssetLoader";
+import { AssetLoader } from "../Assets/AssetLoader.ts";
 import { Profiler } from "./Profiler";
 import { AudioPlayer } from "../Audio/AudioPlayer";
 import { MouseObserver } from "../Input/Mouse";

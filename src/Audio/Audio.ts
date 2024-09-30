@@ -2,7 +2,7 @@ import { AudioPlayer } from "./AudioPlayer";
 import { Queue } from "../Containers/Queue";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import * as Events from "./AudioEvents";
-import { ASSERT } from "../../old/Core/Assert";
+import { ASSERT } from "../Core/Asserts";
 import { isBrowser } from "../Core/Asserts";
 
 export interface AudioConstructorArguments {

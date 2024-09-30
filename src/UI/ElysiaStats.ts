@@ -64,10 +64,10 @@ export class ElysiaStats extends ElysiaElement
 				<div class="purple">elsyia ${ELYSIA_VERSION}</div>
 				<div class=${this.stats.fps < 60 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
 				<div class=${this.stats.calls > 500 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
+				<div>memory: ${this.stats.memory}</div>
+				<div>triangles: ${this.stats.triangles}</div>
 				<div>lines: ${this.stats.lines}</div>
 				<div>points: ${this.stats.points}</div>
-				<div>triangles: ${this.stats.triangles}</div>
-				<div>memory: ${this.stats.memory}</div>
 			</aside>
 		`
 	}
