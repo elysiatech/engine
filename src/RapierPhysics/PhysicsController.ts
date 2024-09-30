@@ -8,29 +8,36 @@ import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import Rapier from '@dimforge/rapier3d-compat'
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { RapierDebugRenderer } from "./Debug";
+import { Actor } from "../Scene/Actor";
 
 export interface RapierPhysicsControllerConstructorArguments
 {
 	gravity?: Three.Vector3;
+	debug?: boolean;
 }
 
 export class RapierPhysicsController implements Destroyable
 {
-	world!: Rapier.World;
+	world?: Rapier.World;
 
 	readonly gravity: Three.Vector3;
 
-	readonly colliders = new Set<{ component: RapierColliderBehavior, handle: number }>;
+	readonly colliders = new Set<{ component: RapierColliderBehavior, parent?: Actor, handle?: number }>;
 
-	readonly rigidBodies = new Set<{ component: RapierRigidBodyBehavior, handle: number }>;
+	readonly rigidBodies = new Set<{ component: RapierRigidBodyBehavior, parent?: Actor, handle: number }>;
 
-	scene!: Scene;
+	scene?: Scene;
+
+	get debug() { return this.#debugRenderer.enabled; }
+	set debug(value: boolean) { this.#debugRenderer.enabled = value; }
 
 	constructor(args: RapierPhysicsControllerConstructorArguments = {})
 	{
 		this.init = this.init.bind(this);
 		this.updatePhysicsWorld = this.updatePhysicsWorld.bind(this);
 		this.gravity = args.gravity ?? new Three.Vector3(0, -9.81, 0)
+
+		this.#debugRenderer = new RapierDebugRenderer(args.debug);
 	}
 
 	async init(scene: Scene)
@@ -46,42 +53,60 @@ export class RapierPhysicsController implements Destroyable
 
 	start()
 	{
-		// find all entities and create their physics objects
-		const rigidBodies = this.scene.getComponentsByType(RapierRigidBodyBehavior);
-
-		for(const rb of rigidBodies)
-		{
-			rb.desc.setAdditionalMass(0.5)
-
-			const collider = Rapier.ColliderDesc.cuboid(.5, .5, .5);
-
-			const body = this.world.createRigidBody(rb.desc);
-
-			body.addForce(new Rapier.Vector3(.3, 0, 0), true);
-			body.addTorque(new Rapier.Vector3(0, 0, 1), true);
-
-			this.world.createCollider(collider, body);
-
-			const worldSpaceTransform = new Three.Vector3();
-			rb.parent!.object3d.getWorldPosition(worldSpaceTransform);
-			body.setTranslation(worldSpaceTransform, true);
-
-			const worldSpaceQuaternion = new Three.Quaternion();
-			rb.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
-			body.setRotation(worldSpaceQuaternion, true);
-
-			this.rigidBodies.add({ component: rb, handle: body.handle });
-		}
-
-		const collider = Rapier.ColliderDesc.cuboid(5, .1, 5);
-		const c = this.world.createCollider(collider);
-		c.setTranslation(new Rapier.Vector3(0, -.1, 0));
-
-		this.#debugRenderer.start(this.scene.object3d, this.world);
+		// const colliders = this.scene.getComponentsByType(RapierBoxColliderBehavior);
+		//
+		// for(const c of colliders)
+		// {
+		// 	if(!c.parent) continue;
+		//
+		// 	if(!c.parent.getComponentsByType(RapierRigidBodyBehavior).size)
+		// 	{
+		// 		// no sibiling rigid body, so we can go ahead and create this collider now
+		// 		const collider = this.world.createCollider(c.description);
+		// 		collider.setTranslation(c.parent.position.clone().add(c.localPosition ?? new Three.Vector3(0, 0, 0)));
+		// 		this.colliders.add({ component: c, parent: c.parent! });
+		// 	}
+		// }
+		//
+		// // find all entities and create their physics objects
+		// const rigidBodies = this.scene.getComponentsByType(RapierRigidBodyBehavior);
+		//
+		// for(const rb of rigidBodies)
+		// {
+		// 	if(!rb.parent) continue;
+		//
+		// 	const body = this.world.createRigidBody(rb.desc);
+		//
+		// 	const associatedColliders = rb.parent.getComponentsByType(RapierBoxColliderBehavior);
+		//
+		// 	for(const c of associatedColliders)
+		// 	{
+		// 		const collider = this.world.createCollider(c.description, body);
+		// 		if(c.localPosition)
+		// 		{
+		// 			collider.setTranslationWrtParent(new Rapier.Vector3(c.localPosition.x, c.localPosition.y, c.localPosition.z));
+		// 		}
+		// 		this.colliders.add({ component: c, parent: rb.parent, handle: collider.handle });
+		// 	}
+		//
+		// 	const worldSpaceTransform = new Three.Vector3();
+		// 	rb.parent!.object3d.getWorldPosition(worldSpaceTransform);
+		// 	body.setTranslation(worldSpaceTransform, true);
+		//
+		// 	const worldSpaceQuaternion = new Three.Quaternion();
+		// 	rb.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
+		// 	body.setRotation(worldSpaceQuaternion, true);
+		//
+		// 	this.rigidBodies.add({ component: rb, handle: body.handle });
+		// }
+		//
+		// this.#debugRenderer.start(this.scene.object3d, this.world);
 	}
 
 	updatePhysicsWorld(scene: Scene, delta: number)
 	{
+		if(!this.world) return;
+
 		this.world.timestep = delta;
 		this.world.step();
 
@@ -128,5 +153,5 @@ export class RapierPhysicsController implements Destroyable
 		// we need to handle modifications, such as adding a collider or rigid body to the physics world.
 	}
 
-	#debugRenderer = new RapierDebugRenderer(false);
+	#debugRenderer: RapierDebugRenderer;
 }

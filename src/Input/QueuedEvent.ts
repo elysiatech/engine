@@ -1,8 +1,9 @@
 import { KeyCode } from "./KeyCode";
+import { MouseCode } from "./MouseCode";
 
 export class QueuedEvent
 {
-	key: KeyCode;
+	key: KeyCode | MouseCode;
 	type: "down" | "up";
 	timestamp: number;
 	ctrlDown: boolean;
@@ -17,7 +18,7 @@ export class QueuedEvent
 	mouseY: number;
 
 	constructor(
-		key: KeyCode = KeyCode.None,
+		key: KeyCode | MouseCode = KeyCode.None,
 		type: "down" | "up" = "down",
 		timestamp: number = performance.now(),
 		ctrlDown: boolean = false,
@@ -30,8 +31,7 @@ export class QueuedEvent
 		mouseRightDown: boolean = false,
 		mouseX: number = 0,
 		mouseY: number = 0,
-	)
-	{
+	) {
 		this.key = key;
 		this.type = type;
 		this.timestamp = timestamp;
@@ -47,4 +47,22 @@ export class QueuedEvent
 		this.mouseY = mouseY;
 	}
 
+	clone()
+	{
+		return new QueuedEvent(
+			this.key,
+			this.type,
+			this.timestamp,
+			this.ctrlDown,
+			this.shiftDown,
+			this.spaceDown,
+			this.altDown,
+			this.metaDown,
+			this.mouseLeftDown,
+			this.mouseMidDown,
+			this.mouseRightDown,
+			this.mouseX,
+			this.mouseY,
+		);
+	}
 }

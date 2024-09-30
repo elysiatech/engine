@@ -41,7 +41,7 @@ export class Application {
 
 	public readonly events: ElysiaEventQueue;
 
-	public readonly mouse = new MouseObserver;
+	public readonly mouse: MouseObserver;
 
 	public readonly input = new InputQueue;
 
@@ -86,9 +86,9 @@ export class Application {
 			this.#output.style.padding = "0";
 		}
 
-		this.#resizeController = new ResizeController();
+		this.mouse = new MouseObserver(this.#output);
 
-		this.mouse.register(this.#output)
+		this.#resizeController = new ResizeController();
 	}
 
 	public async loadScene(scene: Scene)

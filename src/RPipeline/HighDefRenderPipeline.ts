@@ -3,7 +3,7 @@ import { Scene } from "../Scene/Scene";
 import * as Three from "three";
 import {
 	BlendFunction,
-	BloomEffect,
+	BloomEffect, BloomEffectOptions, ChromaticAberrationEffect,
 	EffectComposer,
 	EffectPass,
 	RenderPass,
@@ -15,6 +15,7 @@ import {
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { N8AOPostPass } from "../WebGL/SSAO";
 import { Vector2, WebGLRenderer } from "three";
+import { noop } from "../Core/Utilities";
 
 type HighDefRenderPipelineConstructorArguments = {
 	alpha?: boolean;
@@ -37,7 +38,15 @@ type HighDefRenderPipelineConstructorArguments = {
 		distanceFalloff?: number
 		intensity?: number
 		color?: Three.Color
-	}
+	},
+	bloom?: boolean | BloomEffectOptions,
+	chromaticAberration?: boolean | {
+		blendFunction?: BlendFunction,
+		offset?: Vector2,
+		radialModulation: boolean,
+		modulationOffset: number
+	},
+	createEffectChain?(effectComposer: EffectComposer, scene: Scene, camera: Three.Camera): void;
 };
 
 /**
@@ -47,9 +56,6 @@ export class HighDefRenderPipeline extends RenderPipeline
 {
 	get devicePixelRatio() { return this.#devicePixelRatio; }
 	set devicePixelRatio(value) { this.#devicePixelRatio = value; this.renderer.setPixelRatio(value); }
-
-	get smaaPreset() { return this.#smaaPreset; }
-	set smaaPreset(value) { this.#smaaPreset = value; this.#smaaEffect?.applyPreset(value); }
 
 	constructor(args: HighDefRenderPipelineConstructorArguments = {})
 	{
@@ -69,6 +75,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(args.toneMapping.adaptationRate) { this.#tonemappingAdaptationRate = args.toneMapping.adaptationRate; }
 		}
 
+		this.#createEffectChain = args.createEffectChain ?? noop;
+
 		this.#useSSAO = !!args.ssao;
 
 		if(args.ssao && typeof args.ssao === "object")
@@ -77,6 +85,20 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(args.ssao.distanceFalloff) { this.#ssaoDistanceFalloff = args.ssao.distanceFalloff; }
 			if(args.ssao.intensity) { this.#ssaoIntensity = args.ssao.intensity; }
 			if(args.ssao.color) { this.#ssaoColor = args.ssao.color; }
+		}
+
+		this.#useBloom = !!args.bloom;
+
+		if(args.bloom && typeof args.bloom === "object")
+		{
+			this.#bloomEffectOptions = args.bloom;
+		}
+
+		this.#useChromaticAberration = !!args.chromaticAberration;
+
+		if(args.chromaticAberration && typeof args.chromaticAberration === "object")
+		{
+			this.#chromaticAberrationOptions = args.chromaticAberration;
 		}
 
 		this.#alpha = args.alpha ?? false;
@@ -118,6 +140,21 @@ export class HighDefRenderPipeline extends RenderPipeline
 		this.effectComposer.addPass(new RenderPass(this.scene.object3d, camera));
 
 		this.renderer.getSize(size)
+
+		this.#createEffectChain(this.effectComposer, scene, camera);
+
+		if(this.#useChromaticAberration)
+		{
+			this.#chromaticAberrationEffect = new ChromaticAberrationEffect(this.#chromaticAberrationOptions);
+			this.effectComposer.addPass(new EffectPass(camera, this.#chromaticAberrationEffect));
+		}
+
+		if(this.#useBloom)
+		{
+
+			this.#bloomEffect = new BloomEffect(this.#bloomEffectOptions);
+			this.effectComposer.addPass(new EffectPass(camera, this.#bloomEffect));
+		}
 
 		if(this.#useSSAO)
 		{
@@ -162,9 +199,14 @@ export class HighDefRenderPipeline extends RenderPipeline
 
 	#alpha: boolean;
 	#shadows: boolean;
+
 	#smaaEffect?: SMAAEffect;
 	#smaaPreset = SMAAPreset.ULTRA;
+
 	#devicePixelRatio: number = window.devicePixelRatio ?? 1;
+
+	#createEffectChain: (effectComposer: EffectComposer, scene: Scene, camera: Three.Camera) => void = noop;
+
 	#tonemappingEffect?: ToneMappingEffect;
 	#tonemappingBlendFunction: BlendFunction = BlendFunction.NORMAL;
 	#tonemappingMode: ToneMappingMode = ToneMappingMode.ACES_FILMIC;
@@ -174,10 +216,19 @@ export class HighDefRenderPipeline extends RenderPipeline
 	#tonemappingMinLuminance: number = 0.01;
 	#tonemappingAverageLuminance: number = 1.0;
 	#tonemappingAdaptationRate: number = 1.0;
+
 	#useSSAO: boolean = false;
 	#ssaoPass?: N8AOPostPass;
 	#ssaoRadius?: number;
 	#ssaoDistanceFalloff?: number;
 	#ssaoIntensity?: number;
 	#ssaoColor?: Three.Color;
+
+	#useBloom: boolean = false;
+	#bloomEffect?: BloomEffect;
+	#bloomEffectOptions?: BloomEffectOptions;
+
+	#useChromaticAberration: boolean = false;
+	#chromaticAberrationEffect?: ChromaticAberrationEffect;
+	#chromaticAberrationOptions?: any;
 }

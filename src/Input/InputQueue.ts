@@ -2,75 +2,213 @@ import { KeyCode } from "./KeyCode";
 import { ObjectPool } from "../Containers/ObjectPool";
 import { QueuedEvent } from "./QueuedEvent";
 import { Destroyable } from "../Core/Lifecycle";
+import { MouseObserver } from "./Mouse";
+import { MouseCode } from "./MouseCode";
 
+interface InputQueueConstructorArguments
+{
+	mouseTarget?: HTMLElement;
+}
+
+/**
+ * Input queue backed by an object pool for event recycling.
+ */
 export class InputQueue implements Destroyable
 {
 
-	constructor()
+	public readonly mouse: MouseObserver;
+
+	constructor(args: InputQueueConstructorArguments = {})
 	{
-		for(const value in KeyCode)
+		this.mouse = new MouseObserver(args.mouseTarget ?? window.document.body);
+
+		this.keyDownHandler = this.keyDownHandler.bind(this);
+		this.keyUpHandler = this.keyUpHandler.bind(this);
+		this.mouseDownHandler = this.mouseDownHandler.bind(this);
+		this.mouseUpHandler = this.mouseUpHandler.bind(this);
+
+		window.addEventListener("keydown", this.keyDownHandler);
+		window.addEventListener("keyup", this.keyUpHandler);
+		this.mouse.addEventListener("mousedown", this.mouseDownHandler);
+		this.mouse.addEventListener("mouseup", this.mouseUpHandler);
+	}
+
+	/**
+	 * Add a callback to be called when the specified key or button is pressed.
+	 * The QueuedEvent object passed to the callback is part of an object pool and will be freed after the callback returns.
+	 * If you need to keep the QueuedEvent object, you must clone it using the clone() method.
+	 * @param key The key or button to listen for.
+	 * @param callback The callback to call when the key is pressed.
+	 * @returns A function that can be called to remove the callback.
+	 **/
+	public onKeyDown(key: KeyCode | MouseCode, callback: (key: QueuedEvent) => void)
+	{
+		if(!this.callbacks.has(key))
 		{
-			if (isNaN(Number(value))) return;
-			// @ts-ignore
-			this.queue.set(value, new Set)
+			this.callbacks.set(key, new Set);
 		}
-
-		window.addEventListener("keydown", (e) =>
-		{
-			const key = e.key;
-			this.currentlyPressed.add(key);
-			// add to queue
-			const event = this.pool.alloc()
-			event.key = key;
-			event.type = "down";
-			this.queue.get(key)!.add(event);
-		})
-
-		window.addEventListener("keyup", (e) =>
-		{
-			// handle keyup
-			const key = e.key;
-			this.currentlyPressed.delete(key);
-		})
-
+		this.callbacks.get(key)!.add(callback);
 	}
 
-	public onKey(key: KeyCode, callback: Function) {}
-
-	public onKeyDown(key: KeyCode, callback: Function) {}
-
-	public onKeyUp(key: KeyCode, callback: Function) {}
-
-	public isDown(key: KeyCode) {
-		return this.currentlyPressed.has(key);
+	/**
+	 * Add a callback to be called when the specified key or button is released.
+	 * The QueuedEvent object passed to the callback is part of an object pool and will be freed after the callback returns.
+	 * If you need to keep the QueuedEvent object, you must clone it using the clone() method.
+	 * @param key The key or button to listen for.
+	 * @param callback The callback to call when the key is released.
+	 * @returns A function that can be called to remove the callback.
+	 **/
+	public onKeyUp(key: KeyCode | MouseCode, callback: (key: QueuedEvent) => void)
+	{
+		if(!this.callbacks.has(key))
+		{
+			this.callbacks.set(key, new Set);
+		}
+		this.callbacks.get(key)!.add(callback);
 	}
 
-	public flush() {}
+	/** Add a callback to be called when the specified key is pressed or released. */
+	public onMouseMove(callback: (event: MouseEvent) => void) { return this.mouse.addEventListener("mousemove", callback); }
 
-	public clear() {
-		for(const set of this.queue.values()) {
-			for(const event of set) {
+	/** Check if a key or mouse button is down. */
+	public isDown(key: KeyCode | MouseCode) { return this.currentlyPressed.has(key); }
+
+	/** Flush all events in the queue to their respective listeners, without clearing the queue. */
+	public flush()
+	{
+		for(const [key, set] of this.queue)
+		{
+			for(const event of set)
+			{
+				for(const callback of this.callbacks.get(key) ?? [])
+				{
+					callback(event);
+				}
+			}
+		}
+	}
+
+	/** clear all events in the queue and free them from the pool. */
+	public clear()
+	{
+		for(const set of this.queue.values())
+		{
+			for(const event of set)
+			{
 				this.pool.free(event);
 			}
 			set.clear()
 		}
 	}
 
-	public destructor() {
+	public destructor()
+	{
+		window.removeEventListener("keydown", this.keyDownHandler)
+		window.removeEventListener("keyup", this.keyUpHandler)
+		this.mouse.removeEventListener("mousedown", this.mouseDownHandler)
+		this.mouse.removeEventListener("mouseup", this.mouseUpHandler)
+		this.mouse.destructor()
 		this.clear()
-		// kill listeners
+		this.callbacks.clear()
 	}
 
-	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 30)
+	private pool = new ObjectPool<QueuedEvent>(() => new QueuedEvent, 50)
 
-	private callbacks = new Map<KeyCode, Set<(key: QueuedEvent) => void>>
+	private callbacks = new Map<KeyCode | MouseCode, Set<(key: QueuedEvent) => void>>
 
-	private queue = new Map<KeyCode, Set<QueuedEvent>>()
+	private queue = new Map<KeyCode | MouseCode, Set<QueuedEvent>>()
 
-	private currentlyPressed = new Set<KeyCode>();
+	private currentlyPressed = new Set<KeyCode | MouseCode>();
 
-	public readonly mouse = {
-		x: 0,
-		y: 0,
+	private keyDownHandler(event: KeyboardEvent)
+	{
+		const key = event.key as KeyCode;
+
+		if(!this.currentlyPressed.has(key)) {
+			this.currentlyPressed.add(key);
+			const queued = this.pool.alloc()
+			queued.key = key;
+			queued.type = "down";
+			queued.timestamp = performance.now();
+			queued.ctrlDown = event.ctrlKey;
+			queued.shiftDown = event.shiftKey;
+			queued.spaceDown = this.isDown(KeyCode.Space);
+			queued.altDown = event.altKey;
+			queued.metaDown = event.metaKey;
+			queued.mouseLeftDown = this.mouse.leftDown;
+			queued.mouseMidDown = this.mouse.middleDown;
+			queued.mouseRightDown = this.mouse.rightDown;
+			queued.mouseX = this.mouse.x;
+			queued.mouseY = this.mouse.y;
+		}
+	}
+
+	private keyUpHandler(event: KeyboardEvent)
+	{
+		const key = event.key as KeyCode;
+
+		if(this.currentlyPressed.has(key)) {
+			this.currentlyPressed.delete(key);
+			const queued = this.pool.alloc()
+			queued.key = key;
+			queued.type = "up";
+			queued.timestamp = performance.now();
+			queued.ctrlDown = event.ctrlKey;
+			queued.shiftDown = event.shiftKey;
+			queued.spaceDown = this.isDown(KeyCode.Space);
+			queued.altDown = event.altKey;
+			queued.metaDown = event.metaKey;
+			queued.mouseLeftDown = this.mouse.leftDown;
+			queued.mouseMidDown = this.mouse.middleDown;
+			queued.mouseRightDown = this.mouse.rightDown;
+			queued.mouseX = this.mouse.x;
+			queued.mouseY = this.mouse.y;
+		}
+	}
+
+	private mouseDownHandler(event: MouseEvent)
+	{
+		const button = event.button as MouseCode;
+
+		if(!this.currentlyPressed.has(button)) {
+			this.currentlyPressed.add(button);
+			const queued = this.pool.alloc()
+			queued.key = button;
+			queued.type = "down";
+			queued.timestamp = performance.now();
+			queued.ctrlDown = event.ctrlKey;
+			queued.shiftDown = event.shiftKey;
+			queued.spaceDown = this.isDown(KeyCode.Space);
+			queued.altDown = event.altKey;
+			queued.metaDown = event.metaKey;
+			queued.mouseLeftDown = this.mouse.leftDown;
+			queued.mouseMidDown = this.mouse.middleDown;
+			queued.mouseRightDown = this.mouse.rightDown;
+			queued.mouseX = this.mouse.x;
+			queued.mouseY = this.mouse.y;
+		}
+	}
+
+	private mouseUpHandler(event: MouseEvent)
+	{
+		const button = event.button as MouseCode;
+
+		if(this.currentlyPressed.has(button)) {
+			this.currentlyPressed.delete(button);
+			const queued = this.pool.alloc()
+			queued.key = button;
+			queued.type = "up";
+			queued.timestamp = performance.now();
+			queued.ctrlDown = event.ctrlKey;
+			queued.shiftDown = event.shiftKey;
+			queued.spaceDown = this.isDown(KeyCode.Space);
+			queued.altDown = event.altKey;
+			queued.metaDown = event.metaKey;
+			queued.mouseLeftDown = this.mouse.leftDown;
+			queued.mouseMidDown = this.mouse.middleDown;
+			queued.mouseRightDown = this.mouse.rightDown;
+			queued.mouseX = this.mouse.x;
+			queued.mouseY = this.mouse.y;
+		}
 	}
 }

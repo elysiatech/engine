@@ -3,6 +3,8 @@ import { Actor } from "./Actor";
 import { Scene } from "./Scene";
 import { Application } from "../Core/Application";
 import { ELYSIA_LOGGER } from "../Core/Logger";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
+import { TagAddedEvent } from "../Core/ElysiaEvents";
 
 /**
  * A behavior is a component that can be attached to an actor to add functionality.
@@ -36,6 +38,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 	 */
 	app: Application | null = null;
 
+	readonly tags = new Set<any>;
+
 	/**
 	 * Enable this behavior.
 	 */
@@ -45,6 +49,26 @@ export class Behavior implements ActorLifecycle, Destroyable
 	 * Disable this behavior.
 	 */
 	disable() { this._onDisable(); }
+
+	/**
+	 * Adds a tag to this behavior
+	 * @param tag
+	 */
+	addTag(tag: any)
+	{
+		ElysiaEventDispatcher.dispatchEvent(new TagAddedEvent({ tag, target: this }));
+		this.tags.add(tag);
+	}
+
+	/**
+	 * Removes a tag from this behavior.
+	 * @param tag
+	 */
+	removeTag(tag: any)
+	{
+		ElysiaEventDispatcher.dispatchEvent(new TagAddedEvent({ tag, target: this }));
+		this.tags.delete(tag);
+	}
 
 	/* **********************************************************
 	    Lifecycle methods

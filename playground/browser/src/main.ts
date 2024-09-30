@@ -9,17 +9,21 @@ import { CubeActor, PlaneActor } from "../../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
 import { RapierPhysicsController } from "../../../src/RapierPhysics/PhysicsController.ts";
-import { RapierRigidBodyBehavior } from "../../../src/RapierPhysics/RigidBody";
+
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
-		ssao: true,
+		ssao:{
+			intensity: 2,
+		},
+		bloom: true,
+		chromaticAberration: true,
 	})
 });
 class MyScene extends Scene
 {
 
-	physics = new RapierPhysicsController({ gravity: new Three.Vector3(0, -9.81, 0) });
+	physics = new RapierPhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
 	override async onLoad()
 	{
@@ -53,13 +57,12 @@ scene.addComponent(cameraActor);
 // scene.addComponent(mesh);
 
 const cube = new CubeActor;
-cube.addComponent(new RapierRigidBodyBehavior({ type: 0 }));
-cube.position.set(0, 4, 0);
 scene.addComponent(cube);
 
 const floor = new PlaneActor()
 floor.scale.set(10, 10, 10);
 floor.rotation.x = -Math.PI / 2;
+floor.position.y = -.5;
 scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()

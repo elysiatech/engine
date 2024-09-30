@@ -99,3 +99,4 @@ export class ElysiaEventQueue
 
 	private readonly queue: ElysiaEvent<any>[] = [];
 }
+

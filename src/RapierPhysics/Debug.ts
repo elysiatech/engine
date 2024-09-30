@@ -16,6 +16,7 @@ export class RapierDebugRenderer {
 
 	update() {
 		if (this.enabled) {
+			if(!this.world) return
 			const { vertices, colors } = this.world!.debugRender()
 			this.mesh!.geometry.setAttribute('position', new Three.BufferAttribute(vertices, 3))
 			this.mesh!.geometry.setAttribute('color', new Three.BufferAttribute(colors, 4))
