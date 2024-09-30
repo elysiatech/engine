@@ -228,7 +228,8 @@ export class GridActor extends Actor<Three.Mesh>
 		const planeGeometry = new Three.PlaneGeometry(100,100)
 		this.object3d = new Three.Mesh(planeGeometry, material)
 		this.object3d.frustumCulled = false
-		this.object3d.actor = this
+		this.object3d.renderOrder = 100
+		this.object3d.actor = this;
 	}
 
 	onUpdate(delta: number, elapsed: number)

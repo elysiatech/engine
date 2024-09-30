@@ -55,7 +55,7 @@ const scene = new MyScene();
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
-cameraActor.position.y = 1;
+cameraActor.position.y = 2;
 cameraActor.addTag(ActiveCameraTag);
 const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
@@ -66,13 +66,14 @@ const meshAsset = new GLTFAsset("/testgltf.glb")
 await meshAsset.load();
 
 const cube = new CubeActor;
+cube.position.y = .5;
 (cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
 scene.addComponent(cube);
 
 const floor = new PlaneActor()
 floor.scale.set(10, 10, 10);
+floor.position.y = -0.01;
 floor.rotation.x = -Math.PI / 2;
-floor.position.y = -.5;
 scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()

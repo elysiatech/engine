@@ -316,6 +316,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			ELYSIA_LOGGER.warn("Actor already destroyed");
 			return;
 		}
+		this.scene?.removeComponent(this);
 		this.#destroyed = true;
 		this.#object3d.actor = undefined;
 		this.#object3d.parent?.remove(this.#object3d);
