@@ -173,6 +173,8 @@ export interface GridConstructorArguments
 
 export class GridActor extends Actor<Three.Mesh>
 {
+	override type = "GridActor"
+
 	/** Cell size, default: 0.5 */
 	cellSize?: number
 	/** Cell thickness, default: 0.5 */

@@ -5,6 +5,8 @@ import { ResizeEvent } from "../Core/Resize";
 
 export class OrthographicCameraActor extends Actor<Three.OrthographicCamera>
 {
+	override type = "OrthographicCameraActor";
+
 	set left(value: number) { this.object3d.left = value; }
 	get left() { return this.object3d.left; }
 

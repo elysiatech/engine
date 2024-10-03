@@ -1,19 +1,33 @@
 import { Scene } from "../Scene/Scene";
 import * as Three from "three"
-import { RapierColliderBehavior } from "./Collider";
+import { ColliderBehavior } from "./ColliderBehavior.ts";
 import { RigidBodyBehavior } from "./RigidBody";
 import { ComponentAddedEvent, ComponentRemovedEvent } from "../Core/ElysiaEvents";
 import { Destroyable, } from "../Core/Lifecycle";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import Rapier from '@dimforge/rapier3d-compat'
-import { ELYSIA_LOGGER } from "../Core/Logger";
 import { PhysicsDebugRenderer } from "./Debug";
 import { Actor } from "../Scene/Actor";
+import { ASSERT } from "../Core/Asserts.ts";
+import { isActor } from "../Scene/Component.ts";
 
 export interface PhysicsControllerConstructorArguments
 {
 	gravity?: Three.Vector3;
 	debug?: boolean;
+}
+
+function findAncestorRigidbody(actor?: Actor): RigidBodyBehavior | undefined
+{
+	if(!actor) return undefined;
+	if(actor.type === "Scene") return undefined;
+
+	let rb = actor.getComponentsByType(RigidBodyBehavior);
+	if(rb.first) return rb.first
+	if(!actor.parent || actor.parent.type === "Scene") return undefined;
+	rb = actor.parent.getComponentsByType(RigidBodyBehavior);
+	if(rb.first) return rb.first
+	return findAncestorRigidbody(actor.parent);
 }
 
 export class PhysicsController implements Destroyable
@@ -22,7 +36,7 @@ export class PhysicsController implements Destroyable
 
 	readonly gravity: Three.Vector3;
 
-	readonly colliders = new Set<{ component: RapierColliderBehavior, parent?: Actor, handle?: number }>;
+	readonly colliders = new Set<{ component: ColliderBehavior, parent?: Actor, handle?: number }>;
 
 	readonly rigidBodies = new Set<{ component: RigidBodyBehavior, parent?: Actor, handle: number }>;
 
@@ -34,6 +48,8 @@ export class PhysicsController implements Destroyable
 	constructor(args: PhysicsControllerConstructorArguments = {})
 	{
 		this.init = this.init.bind(this);
+		this.onComponentAddedEventHandler = this.onComponentAddedEventHandler.bind(this);
+		this.onComponentRemovedEventHandler = this.onComponentRemovedEventHandler.bind(this);
 		this.updatePhysicsWorld = this.updatePhysicsWorld.bind(this);
 		this.gravity = args.gravity ?? new Three.Vector3(0, -9.81, 0)
 
@@ -47,60 +63,65 @@ export class PhysicsController implements Destroyable
 		this.world = new Rapier.World(this.gravity);
 		this.scene = scene;
 
-		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, this.#onComponentAddedEventHandler);
-		ElysiaEventDispatcher.addEventListener(ComponentRemovedEvent, this.#onComponentRemovedEventHandler);
+		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, this.onComponentAddedEventHandler);
+		ElysiaEventDispatcher.addEventListener(ComponentRemovedEvent, this.onComponentRemovedEventHandler);
 	}
 
 	start()
 	{
-		// const colliders = this.scene.getComponentsByType(RapierBoxColliderBehavior);
-		//
-		// for(const c of colliders)
-		// {
-		// 	if(!c.parent) continue;
-		//
-		// 	if(!c.parent.getComponentsByType(RapierRigidBodyBehavior).size)
-		// 	{
-		// 		// no sibiling rigid body, so we can go ahead and create this collider now
-		// 		const collider = this.world.createCollider(c.description);
-		// 		collider.setTranslation(c.parent.position.clone().add(c.localPosition ?? new Three.Vector3(0, 0, 0)));
-		// 		this.colliders.add({ component: c, parent: c.parent! });
-		// 	}
-		// }
-		//
-		// // find all entities and create their physics objects
-		// const rigidBodies = this.scene.getComponentsByType(RapierRigidBodyBehavior);
-		//
-		// for(const rb of rigidBodies)
-		// {
-		// 	if(!rb.parent) continue;
-		//
-		// 	const body = this.world.createRigidBody(rb.desc);
-		//
-		// 	const associatedColliders = rb.parent.getComponentsByType(RapierBoxColliderBehavior);
-		//
-		// 	for(const c of associatedColliders)
-		// 	{
-		// 		const collider = this.world.createCollider(c.description, body);
-		// 		if(c.localPosition)
-		// 		{
-		// 			collider.setTranslationWrtParent(new Rapier.Vector3(c.localPosition.x, c.localPosition.y, c.localPosition.z));
-		// 		}
-		// 		this.colliders.add({ component: c, parent: rb.parent, handle: collider.handle });
-		// 	}
-		//
-		// 	const worldSpaceTransform = new Three.Vector3();
-		// 	rb.parent!.object3d.getWorldPosition(worldSpaceTransform);
-		// 	body.setTranslation(worldSpaceTransform, true);
-		//
-		// 	const worldSpaceQuaternion = new Three.Quaternion();
-		// 	rb.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
-		// 	body.setRotation(worldSpaceQuaternion, true);
-		//
-		// 	this.rigidBodies.add({ component: rb, handle: body.handle });
-		// }
-		//
-		// this.#debugRenderer.start(this.scene.object3d, this.world);
+		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
+		ASSERT(this.scene, "PhysicsController has not been initialized with a scene yet.");
+
+		this.#debugRenderer.start(this.scene.object3d, this.world);
+	}
+
+	addCollider(collider: ColliderBehavior)
+	{
+		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
+		ASSERT(collider.parent, "ColliderBehavior has no parent.");
+		const parent = findAncestorRigidbody(collider.parent);
+		if(collider.collider)
+		{
+			this.world.removeCollider(collider.collider, true);
+		}
+		collider.collider = this.world!.createCollider(collider.colliderDescription, parent?.rBody);
+		this.colliders.add({ component: collider, parent: collider.parent!, handle: collider.collider.handle });
+	}
+
+	addRigidBody(rigidBody: RigidBodyBehavior)
+	{
+		// todo: need to reconstruct all children rigidbodies and colliders
+		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
+		ASSERT(rigidBody.parent, "RigidBodyBehavior has no parent.");
+		rigidBody.rBody = this.world.createRigidBody(rigidBody.rbodyDescription);
+
+		const worldSpaceTransform = new Three.Vector3();
+
+		rigidBody.parent!.object3d.getWorldPosition(worldSpaceTransform);
+
+		rigidBody.rBody.setTranslation(worldSpaceTransform, true);
+
+		const worldSpaceQuaternion = new Three.Quaternion();
+
+		rigidBody.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
+
+		rigidBody.rBody.setRotation(worldSpaceQuaternion, true);
+
+		this.rigidBodies.add({ component: rigidBody, handle: rigidBody.rBody.handle });
+
+		const recurseAndRecreateColliders = (actor: Actor) =>
+		{
+			for(const c of actor.components)
+			{
+				if(c.type === "ColliderBehavior")
+				{
+					this.addCollider(c as ColliderBehavior);
+				}
+				if(isActor(c)) recurseAndRecreateColliders(c);
+			}
+		}
+
+		recurseAndRecreateColliders(rigidBody.parent!);
 	}
 
 	updatePhysicsWorld(scene: Scene, delta: number)
@@ -123,6 +144,7 @@ export class PhysicsController implements Destroyable
 				// need to set position of parent actor IN WORLD SPACE
 				const pos = new Three.Vector3(transform.x, transform.y, transform.z);
 				r.component.parent.position.copy(pos);
+
 			}
 		}
 
@@ -131,22 +153,26 @@ export class PhysicsController implements Destroyable
 
 	destructor()
 	{
-		ElysiaEventDispatcher.removeEventListener(ComponentAddedEvent, this.#onComponentAddedEventHandler);
-		ElysiaEventDispatcher.removeEventListener(ComponentRemovedEvent, this.#onComponentRemovedEventHandler);
+		ElysiaEventDispatcher.removeEventListener(ComponentAddedEvent, this.onComponentAddedEventHandler);
+		ElysiaEventDispatcher.removeEventListener(ComponentRemovedEvent, this.onComponentRemovedEventHandler);
 	}
 
-	#onComponentAddedEventHandler(e: ComponentAddedEvent["value"])
+	onComponentAddedEventHandler(e: ComponentAddedEvent["value"])
 	{
-		if(!e.child.started) return
-		if(e.child.type !== "RapierColliderBehavior" && e.child.type !== "RapierRigidBodyBehavior") return;
-
-		// the child has started, which means it's initial physical properties have been added to the physics world.
-		// we need to handle modifications, such as adding a collider or rigid body to the physics world.
+		if(e.child.type === "RigidBodyBehavior")
+		{
+			console.log("adding rigid body")
+			this.addRigidBody(e.child as RigidBodyBehavior);
+		}
+		if(e.child.type === "ColliderBehavior")
+		{
+			console.log("adding collider")
+			this.addCollider(e.child as ColliderBehavior);
+		}
 	}
 
-	#onComponentRemovedEventHandler(e: ComponentRemovedEvent["value"])
+	onComponentRemovedEventHandler(e: ComponentRemovedEvent["value"])
 	{
-		if(!e.child.started) return;
 		if(e.child.type !== "RapierColliderBehavior" && e.child.type !== "RapierRigidBodyBehavior") return;
 
 		// the child has started, which means it's initial physical properties have been added to the physics world.

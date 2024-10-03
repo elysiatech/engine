@@ -3,10 +3,12 @@ import * as Three from "three";
 
 export class MeshActor extends Actor<Three.Mesh>
 {
+	override type = "MeshActor";
+
 	get geometry() { return this.object3d.geometry; }
 	set geometry(value) { this.object3d.geometry = value; }
 
-	get material() { return this.object3d.material; }
+	get material() { return this.object3d.material as Three.Material; }
 	set material(value) { this.object3d.material = value; }
 
 	get castShadow() { return this.object3d.castShadow; }

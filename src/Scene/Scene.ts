@@ -11,14 +11,19 @@ import { Component, isActor } from "./Component";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { GridActor } from "../Actors/GridActor.ts";
 import { SparseSet } from "../Containers/SparseSet.ts";
+import { PhysicsController } from "../Physics/PhysicsController.ts";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
+	override type = "Scene";
+
 	readonly loadPromise = new Future<void>(noop)
 
 	get object3d() { return this.#object3d; }
 
 	get grid() { return this.#grid; }
+
+	physics?: PhysicsController;
 
 	constructor()
 	{
@@ -111,12 +116,22 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	async _load()
 	{
-		await this.onLoad()
+		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
 		this.loadPromise.resolve()
 	}
 
 	onCreate() {
 		ELYSIA_LOGGER.debug("Scene created", this)
+	}
+
+	onStart() {
+		super.onStart();
+		this.physics?.start();
+	}
+
+	onUpdate(delta: number, elapsed: number) {
+		super.onUpdate(delta, elapsed);
+		this.physics?.updatePhysicsWorld(this, delta)
 	}
 
 	onEnd(): void

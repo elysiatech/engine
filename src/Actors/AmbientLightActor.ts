@@ -3,6 +3,8 @@ import * as Three from "three";
 
 export class AmbientLightActor extends Actor<Three.AmbientLight>
 {
+	override type = "AmbientLightActor";
+
 	get intensity() { return this.object3d.intensity; }
 	set intensity(value: number) { this.object3d.intensity = value; }
 

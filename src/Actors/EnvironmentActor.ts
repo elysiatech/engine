@@ -21,6 +21,8 @@ type EnvironmentArgs = {
 
 export class EnvironmentActor extends Actor
 {
+	override type = "EnvironmentActor";
+
 	get texture() { return this.#texture; }
 	set texture(v) { this.#texture = v; this.updateState(); }
 

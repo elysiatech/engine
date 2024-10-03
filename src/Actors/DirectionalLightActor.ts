@@ -3,6 +3,8 @@ import * as Three from "three";
 
 export class DirectionalLightActor extends Actor<Three.DirectionalLight>
 {
+	override type = "DirectionalLightActor";
+
 	get intensity() { return this.object3d.intensity; }
 	set intensity(value: number) { this.object3d.intensity = value; }
 

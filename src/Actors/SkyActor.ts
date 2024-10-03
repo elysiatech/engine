@@ -7,7 +7,6 @@ export const SkyDirectionalLightTag = Symbol.for("Elysia::SkyDirectionalLight");
 
 export class SkyActor extends Actor
 {
-
 	override type = "SkyActor";
 
 	get turbidity(): number { return this.material.uniforms.turbidity.value; }

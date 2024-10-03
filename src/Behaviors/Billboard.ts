@@ -5,6 +5,7 @@ import { Behavior } from "../Scene/Behavior";
  */
 export class BillboardBehavior extends Behavior
 {
+	override type = 'BillboardBehavior'
 
 	/**
 	 * Lock the rotation on the X axis.

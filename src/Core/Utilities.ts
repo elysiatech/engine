@@ -27,4 +27,3 @@ export type Maybe<T> = T | null | undefined;
 export type MaybePromise<T> = T | Promise<T>;
 
 export type Serializable = string | number | boolean | null | undefined | Serializable[] | { [key: string]: Serializable };
-

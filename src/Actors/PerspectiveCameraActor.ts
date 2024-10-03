@@ -6,6 +6,7 @@ import { ELYSIA_LOGGER } from "../Core/Logger";
 
 export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 {
+	override type = "PerspectiveCameraActor";
 
 	get fov() { return this.object3d.fov; }
 	set fov(fov: number)

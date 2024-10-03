@@ -25,7 +25,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 	/**
 	 * The parent actor of this behavior.
 	 */
-	parent: Actor<any> | null = null;
+	parent: Actor | null = null;
 
 	/**
 	 * The scene this behavior belongs

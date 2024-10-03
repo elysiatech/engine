@@ -7,6 +7,8 @@ import { GLTF } from "three-stdlib";
  */
 export class ModelActor extends Actor
 {
+	override type = "ModelActor";
+
 	/**
 	 * Should this model cast shadows?
 	 */

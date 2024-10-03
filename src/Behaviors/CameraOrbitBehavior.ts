@@ -9,6 +9,8 @@ import { isOrthographicCamera, isPerspectiveCamera } from "../Core/Asserts";
 export class CameraOrbitBehavior extends Behavior
 {
 
+	override type = 'CameraOrbitBehavior';
+
 	controls?: OrbitControls;
 
 	/**

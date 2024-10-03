@@ -122,6 +122,8 @@ export class SparseSet<T>
 		}
 	}
 
+	public get length() { return this.dense.length; }
+
 	private dense: T[] = [];
 	private sparse = new Map<T, number>();
 }

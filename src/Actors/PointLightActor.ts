@@ -4,6 +4,8 @@ import * as Three from "three";
 
 export class PointLightActor extends Actor<Three.PointLight>
 {
+	override type = "PointLightActor";
+
 	get intensity() { return this.object3d.intensity; }
 	set intensity(value: number) { this.object3d.intensity = value; }
 

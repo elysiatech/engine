@@ -12,6 +12,7 @@ type FloatArgs =
 
 export class FloatBehavior extends Behavior
 {
+	override type = 'FloatBehavior';
 
 	get offset() { return this.#offset; }
 	set offset(value) { this.#offset = value; }
