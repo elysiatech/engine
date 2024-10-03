@@ -48,8 +48,6 @@ export class PhysicsController implements Destroyable
 	constructor(args: PhysicsControllerConstructorArguments = {})
 	{
 		this.init = this.init.bind(this);
-		this.onComponentAddedEventHandler = this.onComponentAddedEventHandler.bind(this);
-		this.onComponentRemovedEventHandler = this.onComponentRemovedEventHandler.bind(this);
 		this.updatePhysicsWorld = this.updatePhysicsWorld.bind(this);
 		this.gravity = args.gravity ?? new Three.Vector3(0, -9.81, 0)
 
@@ -62,9 +60,6 @@ export class PhysicsController implements Destroyable
 
 		this.world = new Rapier.World(this.gravity);
 		this.scene = scene;
-
-		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, this.onComponentAddedEventHandler);
-		ElysiaEventDispatcher.addEventListener(ComponentRemovedEvent, this.onComponentRemovedEventHandler);
 	}
 
 	start()
@@ -151,32 +146,7 @@ export class PhysicsController implements Destroyable
 		this.#debugRenderer.update();
 	}
 
-	destructor()
-	{
-		ElysiaEventDispatcher.removeEventListener(ComponentAddedEvent, this.onComponentAddedEventHandler);
-		ElysiaEventDispatcher.removeEventListener(ComponentRemovedEvent, this.onComponentRemovedEventHandler);
-	}
-
-	onComponentAddedEventHandler(e: ComponentAddedEvent["value"])
-	{
-		if(e.child.type === "RigidBodyBehavior")
-		{
-			console.log("adding rigid body")
-			this.addRigidBody(e.child as RigidBodyBehavior);
-		}
-		if(e.child.type === "ColliderBehavior")
-		{
-			console.log("adding collider")
-			this.addCollider(e.child as ColliderBehavior);
-		}
-	}
-
-	onComponentRemovedEventHandler(e: ComponentRemovedEvent["value"])
-	{
-		if(e.child.type !== "RapierColliderBehavior" && e.child.type !== "RapierRigidBodyBehavior") return;
-
-		// the child has started, which means it's initial physical properties have been added to the physics world.
-		// we need to handle modifications, such as adding a collider or rigid body to the physics world.
+	destructor() {
 	}
 
 	#debugRenderer: PhysicsDebugRenderer;

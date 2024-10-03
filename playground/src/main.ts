@@ -41,9 +41,12 @@ class ProjectileBehavior extends Behavior
 		actor.scale.setScalar(.1);
 		// (actor.material as Three.MeshStandardMaterial).color = new Three.Color("red")
 		const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
+		rb.setLinearVelocity(new Three.Vector3(0, 0, -100))
+		rb.enableContinuousCollisionDetection(true)
 		actor.addComponent(rb)
-		rb.addForce(new Three.Vector3(0, 0, -10))
-		actor.addComponent(new ColliderBehavior({ type: Colliders.Sphere(.1) }))
+		rb.setAdditionalMass(10)
+		const col = new ColliderBehavior({ type: Colliders.Sphere(.1) })
+		actor.addComponent(col)
 		this.scene.addComponent(actor)
 	}
 }
