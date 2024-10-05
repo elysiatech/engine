@@ -116,4 +116,8 @@ export class RigidBodyBehavior extends Behavior
 		if(this.rBody) this.rBody.enableCcd(cond);
 		this.rbodyDescription.setCcdEnabled(cond);
 	}
+
+	onDestroy() {
+		this.scene?.physics?.destroyRigidBody(this)
+	}
 }

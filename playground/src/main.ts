@@ -16,6 +16,9 @@ import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.
 import { Behavior } from "../../src/Scene/Behavior.ts";
 import { MouseCode } from "../../src/Input/MouseCode.ts";
 import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
+import { defineComponent, ElysiaElement } from "../../src/UI/UI.ts";
+import { css, html } from "../../src/UI/UI.ts";
+import { KeyCode } from "../../src/Input/KeyCode.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -26,27 +29,46 @@ const app = new Application({
 	stats: true,
 });
 
+class KillIfOutOfBounds extends Behavior
+{
+	onUpdate()
+	{
+		if(!this.parent) return;
+		if(this.parent.position.y < -10)
+		{
+			this.parent.destructor();
+		}
+	}
+}
+
 class ProjectileBehavior extends Behavior
 {
 	onCreate() {
-		this.app!.input!.onKeyDown(MouseCode.MouseLeft, () => this.shoot())
+		this.app!.input!.onKeyDown(KeyCode.Space, () => this.shoot())
 	}
 
 	private shoot()
 	{
-		console.log("shooting")
 		if(!this.parent || !this.scene) return;
+
 		const actor = new SphereActor;
 		actor.position.copy(this.parent!.position);
+		actor.material.color = new Three.Color("red")
 		actor.scale.setScalar(.1);
-		// (actor.material as Three.MeshStandardMaterial).color = new Three.Color("red")
+
 		const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
-		rb.setLinearVelocity(new Three.Vector3(0, 0, -100))
+		const cameraVector = new Three.Vector3(0, 0, -1).applyQuaternion(this.parent!.quaternion);
+
+		rb.setLinearVelocity(cameraVector.multiplyScalar(100))
 		rb.enableContinuousCollisionDetection(true)
-		actor.addComponent(rb)
-		rb.setAdditionalMass(10)
+		rb.setAdditionalMass(1)
+
 		const col = new ColliderBehavior({ type: Colliders.Sphere(.1) })
+
+		actor.addComponent(rb)
 		actor.addComponent(col)
+		actor.addComponent(new KillIfOutOfBounds)
+
 		this.scene.addComponent(actor)
 	}
 }
@@ -75,15 +97,16 @@ const createCube = (x: number, y: number, z: number) =>
 	scene.addComponent(cube);
 	const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
 	const boxCol = new ColliderBehavior({type: Colliders.Box({ x: 1, y: 1, z: 1 })})
+	cube.addComponent(new KillIfOutOfBounds)
 	cube.addComponent(rb)
 	cube.addComponent(boxCol)
 }
 
-for(let i = 0; i < 5; i++)
+for(let i = 0; i < 10; i++)
 {
-	for(let j = 0; j < 5; j++)
+	for(let j = 0; j < 10; j++)
 	{
-		for(let k = 0; k < 5; k++)
+		for(let k = 0; k < 10; k++)
 		{
 			createCube(i, j, k)
 		}
@@ -110,5 +133,72 @@ sky.azimuth = 38
 scene.addComponent(sky)
 
 scene.grid.enable();
+
+class CrossHairUI extends ElysiaElement
+{
+	static override Tag = "cross-hair-ui";
+
+	static styles = css`
+		:host {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 100;
+		}
+		
+		.crosshair.left {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 10px;
+			height: 2px;
+			background-color: white;
+		}
+		
+		.crosshair.right {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 10px;
+			height: 2px;
+			background-color: white;
+		}
+		
+		.crosshair.top {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 2px;
+			height: 10px;
+			background-color: white;
+		}
+		
+		.crosshair.bottom {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			width: 2px;
+			height: 10px;
+			background-color: white;
+	`
+
+	render()
+	{
+		return html`
+			<div class="crosshair left"></div>
+			<div class="crosshair right"></div>
+			<div class="crosshair top"></div>
+			<div class="crosshair bottom"></div>`
+	}
+}
+
+defineComponent(CrossHairUI)
+
+document.body.appendChild(document.createElement("cross-hair-ui"))
 
 app.loadScene(scene);

@@ -33,6 +33,8 @@ export class CubeActor extends MeshActor
  */
 export class SphereActor extends MeshActor
 {
+	get material() { return this.object3d.material as Three.MeshStandardMaterial; }
+
 	constructor(color?: Three.ColorRepresentation, position?: Three.Vector3, radius = 1)
 	{
 		super(new Three.SphereGeometry(), new Three.MeshStandardMaterial({ color }));

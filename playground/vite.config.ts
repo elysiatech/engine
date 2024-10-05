@@ -18,5 +18,6 @@ export default defineConfig({
 			strict: false,
 			allow: ['C:/Users/Benton/Dev/engine/node_modules/.pnpm/@dimforge+rapier3d@0.14.0/node_modules/@dimforge/rapier3d']
 		}
-	}
+	},
+	esbuild: { target: 'es2022' }
 });

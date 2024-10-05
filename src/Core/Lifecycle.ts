@@ -28,6 +28,10 @@ export interface ActorLifecycle
 	 */
 	onEnterScene(): void;
 
+	onBeforePhysicsUpdate?(delta: number, elapsed: number): void;
+
+	onPhysicsUpdate?(delta: number, elapsed: number): void;
+
 	/**
 	 * Called every frame when the actor is updated.
 	 * @param delta The time in seconds since the last frame.

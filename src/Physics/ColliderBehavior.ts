@@ -97,6 +97,10 @@ export class ColliderBehavior extends Behavior
 		if(this.collider) this.collider.setRotationWrtParent(offset);
 	}
 
+	onDestroy() {
+		this.scene?.physics!.destroyCollider(this)
+	}
+
 	private positionOffset = new Three.Vector3;
 
 	private rotationOffset = new Three.Quaternion;

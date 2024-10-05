@@ -636,7 +636,7 @@ var DracoDecoderModule = (() => {
 			this.get_rethrown = function () {
 				return 0 != W[(this.ptr + 13) >> 0];
 			};
-			this.init = function (b, c) {
+			this.listen = function (b, c) {
 				this.set_adjusted_ptr(0);
 				this.set_type(b);
 				this.set_destructor(c);

@@ -131,7 +131,9 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	onUpdate(delta: number, elapsed: number) {
 		super.onUpdate(delta, elapsed);
+		const t = performance.now();
 		this.physics?.updatePhysicsWorld(this, delta)
+		// console.log("Physics update time", performance.now() - t)
 	}
 
 	onEnd(): void

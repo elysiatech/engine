@@ -2,9 +2,7 @@ import { Scene } from "../Scene/Scene";
 import * as Three from "three"
 import { ColliderBehavior } from "./ColliderBehavior.ts";
 import { RigidBodyBehavior } from "./RigidBody";
-import { ComponentAddedEvent, ComponentRemovedEvent } from "../Core/ElysiaEvents";
 import { Destroyable, } from "../Core/Lifecycle";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import Rapier from '@dimforge/rapier3d-compat'
 import { PhysicsDebugRenderer } from "./Debug";
 import { Actor } from "../Scene/Actor";
@@ -15,19 +13,6 @@ export interface PhysicsControllerConstructorArguments
 {
 	gravity?: Three.Vector3;
 	debug?: boolean;
-}
-
-function findAncestorRigidbody(actor?: Actor): RigidBodyBehavior | undefined
-{
-	if(!actor) return undefined;
-	if(actor.type === "Scene") return undefined;
-
-	let rb = actor.getComponentsByType(RigidBodyBehavior);
-	if(rb.first) return rb.first
-	if(!actor.parent || actor.parent.type === "Scene") return undefined;
-	rb = actor.parent.getComponentsByType(RigidBodyBehavior);
-	if(rb.first) return rb.first
-	return findAncestorRigidbody(actor.parent);
 }
 
 export class PhysicsController implements Destroyable
@@ -119,6 +104,24 @@ export class PhysicsController implements Destroyable
 		recurseAndRecreateColliders(rigidBody.parent!);
 	}
 
+	destroyCollider(collider: ColliderBehavior)
+	{
+		if(!collider.collider) return;
+
+		this.world?.removeCollider(collider.collider, true);
+
+		this.colliders.delete({ component: collider, parent: collider.parent!, handle: collider.collider.handle });
+	}
+
+	destroyRigidBody(rigidBody: RigidBodyBehavior)
+	{
+		if(!rigidBody.rBody) return;
+
+		this.world?.removeRigidBody(rigidBody.rBody);
+
+		this.rigidBodies.delete({ component: rigidBody, parent: rigidBody.parent!, handle: rigidBody.rBody.handle });
+	}
+
 	updatePhysicsWorld(scene: Scene, delta: number)
 	{
 		if(!this.world) return;
@@ -129,6 +132,7 @@ export class PhysicsController implements Destroyable
 		for(const r of this.rigidBodies)
 		{
 			const body = this.world.getRigidBody(r.handle);
+			if(!body) continue;
 			const transform = body.translation();
 			const _rotation = body.rotation();
 			const rotation = new Three.Quaternion(_rotation.x, _rotation.y, _rotation.z, _rotation.w);
@@ -146,8 +150,20 @@ export class PhysicsController implements Destroyable
 		this.#debugRenderer.update();
 	}
 
-	destructor() {
-	}
+	destructor() {}
 
 	#debugRenderer: PhysicsDebugRenderer;
+}
+
+function findAncestorRigidbody(actor?: Actor): RigidBodyBehavior | undefined
+{
+	if(!actor) return undefined;
+	if(actor.type === "Scene") return undefined;
+
+	let rb = actor.getComponentsByType(RigidBodyBehavior);
+	if(rb.first) return rb.first
+	if(!actor.parent || actor.parent.type === "Scene") return undefined;
+	rb = actor.parent.getComponentsByType(RigidBodyBehavior);
+	if(rb.first) return rb.first
+	return findAncestorRigidbody(actor.parent);
 }
