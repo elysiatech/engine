@@ -444,6 +444,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.#object3d.actor = undefined;
 		this.#object3d.parent?.remove(this.#object3d);
 		this.onDestroy();
+		this._onDisable();
+		this._onLeaveScene();
 		for(const component of this.components)
 		{
 			component._onDestroy();

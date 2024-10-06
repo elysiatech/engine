@@ -203,15 +203,23 @@ document.body.appendChild(document.createElement("cross-hair-ui"))
 // scene.addComponent(new Player)
 
 const p = new Actor;
-// p.rotation.x = Math.PI / 3
-p.position.y = 3;
-// p.rotation.z = Math.PI / 3;
+p.position.y = 3
+p.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
 
-const t = new CubeActor()
-t.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
-t.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) }))
+const t = new CubeActor;
+t.position.x = 1;
+t.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) }));
+
+const s = new SphereActor;
+s.position.x = -1;
+s.addComponent(new ColliderBehavior({ type: Colliders.Sphere(1) }));
 
 p.addComponent(t)
+p.addComponent(s)
+
+setTimeout(() => {
+	p.removeComponent(s)
+}, 1000)
 
 scene.addComponent(p)
 

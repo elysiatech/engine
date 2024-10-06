@@ -50,7 +50,9 @@ export class ColliderBehavior extends Behavior
 		this.colliderDescription = args.type
 	}
 
-	onCreate() {
+	onEnterScene()
+	{
+		console.log(this)
 		this.scene?.physics!.addCollider(this)
 	}
 
@@ -84,7 +86,8 @@ export class ColliderBehavior extends Behavior
 		else this.colliderDescription.setSensor(isSensor);
 	}
 
-	onDestroy() {
+	onLeaveScene()
+	{
 		this.scene?.physics!.destroyCollider(this)
 	}
 }

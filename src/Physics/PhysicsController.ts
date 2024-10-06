@@ -15,6 +15,15 @@ export interface PhysicsControllerConstructorArguments
 	debug?: boolean;
 }
 
+const temp = {
+	v1: new Three.Vector3(),
+	v2: new Three.Vector3(),
+	v3: new Three.Vector3(),
+	q1: new Three.Quaternion(),
+	q2: new Three.Quaternion(),
+	q3: new Three.Quaternion(),
+}
+
 export class PhysicsController implements Destroyable
 {
 	world?: Rapier.World;
@@ -62,8 +71,9 @@ export class PhysicsController implements Destroyable
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
 		ASSERT(collider.parent, "ColliderBehavior has no parent.");
-
 		const parent = findAncestorRigidbody(collider.parent);
+
+		console.log("addCollider",this)
 
 		if(collider.collider)
 		{
@@ -88,7 +98,7 @@ export class PhysicsController implements Destroyable
 		const c = collider.collider;
 		if(!c) return;
 
-		this.world?.removeCollider(c, true);
+		this.world!.removeCollider(c, true);
 
 		this.colliders.delete(c.handle);
 	}
@@ -100,19 +110,15 @@ export class PhysicsController implements Destroyable
 
 		rigidBody.handle = this.world.createRigidBody(rigidBody.rbodyDescription).handle;
 
-		const worldSpaceTransform = new Three.Vector3();
-
-		rigidBody.parent!.object3d.getWorldPosition(worldSpaceTransform);
+		rigidBody.parent!.object3d.getWorldPosition(temp.v1);
 
 		const rBody = this.world.getRigidBody(rigidBody.handle);
 
-		rBody.setTranslation(worldSpaceTransform, true);
+		rBody.setTranslation(temp.v1, true);
 
-		const worldSpaceQuaternion = new Three.Quaternion();
+		rigidBody.parent!.object3d.getWorldQuaternion(temp.q1);
 
-		rigidBody.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
-
-		rBody.setRotation(worldSpaceQuaternion, true);
+		rBody.setRotation(temp.q1, true);
 
 		this.rigidBodies.set(rigidBody.handle, { component: rigidBody });
 
@@ -122,6 +128,7 @@ export class PhysicsController implements Destroyable
 			{
 				if(c.type === "ColliderBehavior")
 				{
+					this.destroyCollider(c as ColliderBehavior);
 					this.addCollider(c as ColliderBehavior);
 				}
 				if(isActor(c)) recurseAndRecreateColliders(c);
@@ -187,21 +194,6 @@ export class PhysicsController implements Destroyable
 	{
 		if(!this.world) return;
 
-		const tempQ = new Three.Quaternion();
-		const tempQ2 = new Three.Vector3();
-		const tempP = new Three.Vector3();
-		const tempP2 = new Three.Vector3();
-
-		// update manual transforms for rigid bodies
-		for(const r of this.rigidBodies)
-		{
-			r[1].component.parent?.object3d.localToWorld(tempP.set(0, 0 ,0))
-			// r[1].component.parent?.object3d.getWorldQuaternion(tempQ.set(0, 0, 0, 1))
-			const body = this.world.getRigidBody(r[0]);
-			if(!body) continue;
-			body.setNextKinematicTranslation(tempP);
-		}
-
 		// update manual transforms for colliders
 		for(const c of this.colliders)
 		{
@@ -209,7 +201,7 @@ export class PhysicsController implements Destroyable
 			if(!parent) continue;
 
 			// the actor's world space location of the collider
-			parent.object3d.localToWorld(tempP.set(0, 0, 0));
+			parent.object3d.getWorldPosition(temp.v1);
 
 			const collider = this.getCollider(c[0]);
 			if(!collider) continue;
@@ -217,7 +209,7 @@ export class PhysicsController implements Destroyable
 			if(!c[1].component.hasParentRigidBody)
 			{
 				// position the collider where the actor is
-				collider.setTranslation(tempP);
+				collider.setTranslation(temp.v1);
 			}
 			else
 			{
@@ -230,12 +222,15 @@ export class PhysicsController implements Destroyable
 
 				// find the parent body's world space location.
 				const parentTransform = parentBody.translation();
+				const parentRotation = temp.q1.set(parentBody.rotation().x, parentBody.rotation().y, parentBody.rotation().z, parentBody.rotation().w);
 
 				// find the local space location of the collider
-				parent.object3d.worldToLocal(tempP2.copy(tempP));
+				temp.v2.copy(temp.v1).sub(parentTransform);
+				temp.v2.applyQuaternion(parentRotation.invert());
 
-				// set the collider's position to the parent body's position plus the local position
-				collider.setTranslationWrtParent(tempP2.add(tempP));
+				// set the collider's position to the local space location of the actor
+				collider.setTranslationWrtParent(temp.v2);
+				collider.setRotation(parentRotation);
 			}
 		}
 
@@ -252,7 +247,7 @@ export class PhysicsController implements Destroyable
 
 			// world space location of the rigid body
 			const transform = body.translation();
-			const rotation = tempQ.set(body.rotation().x, body.rotation().y, body.rotation().z, body.rotation().w);
+			const rotation = temp.q1.set(body.rotation().x, body.rotation().y, body.rotation().z, body.rotation().w);
 
 			if(r[1].component.parent)
 			{

@@ -155,6 +155,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 			ELYSIA_LOGGER.warn("Cannot enter scene a destroyed behavior:", this);
 			return;
 		}
+		if(this.#inScene) return;
+		this.#inScene = true;
 		this.onEnterScene();
 	}
 
@@ -174,6 +176,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 			ELYSIA_LOGGER.warn("Cannot leave scene a destroyed behavior:", this);
 			return;
 		}
+		if(!this.#inScene) return;
+		this.#inScene = false;
 		this.onLeaveScene();
 	}
 
@@ -199,5 +203,6 @@ export class Behavior implements ActorLifecycle, Destroyable
 	#enabled = false;
 	#created = false;
 	#started = false;
+	#inScene = false;
 	#destroyed = false;
 }

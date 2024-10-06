@@ -39,7 +39,7 @@ export class RigidBodyBehavior extends Behavior
 		this.rbodyDescription = new Rapier.RigidBodyDesc(this.rbodyType);
 	}
 
-	onCreate() {
+	onEnterScene() {
 		ASSERT(this.scene?.physics, "PhysicsController has not been initialized with a world yet.");
 		this.scene?.physics?.addRigidBody(this)
 	}
@@ -108,5 +108,5 @@ export class RigidBodyBehavior extends Behavior
 		this.rbodyDescription.setCcdEnabled(cond);
 	}
 
-	onDestroy() { this.scene?.physics?.destroyRigidBody(this) }
+	onLeaveScene() { this.scene?.physics?.destroyRigidBody(this) }
 }
