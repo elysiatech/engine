@@ -71,13 +71,8 @@ export class PhysicsController implements Destroyable
 		}
 
 		collider.handle = this.world.createCollider(collider.colliderDescription, parent?.rBody).handle;
-		collider.hasParentRigidBody = !!parent?.rBody;
 
-		if(!collider.hasParentRigidBody)
-		{
-			// collider.collider?.setTranslation(collider.parent.position);
-			// collider.collider?.setRotation(new Three.Quaternion().setFromEuler(collider.parent.rotation));
-		}
+		collider.hasParentRigidBody = !!parent?.rBody;
 
 		this.colliders.set(collider.handle, { component: collider });
 	}
@@ -188,37 +183,82 @@ export class PhysicsController implements Destroyable
 		if(player && this.world) this.world.removeCharacterController(player);
 	}
 
-	updatePhysicsWorld(scene: Scene, delta: number)
+	updatePhysicsWorld(scene: Scene, delta: number, elapsed: number)
 	{
 		if(!this.world) return;
+
+		const tempQ = new Three.Quaternion();
+		const tempQ2 = new Three.Vector3();
+		const tempP = new Three.Vector3();
+		const tempP2 = new Three.Vector3();
+
+		// update manual transforms for rigid bodies
+		for(const r of this.rigidBodies)
+		{
+			r[1].component.parent?.object3d.localToWorld(tempP.set(0, 0 ,0))
+			// r[1].component.parent?.object3d.getWorldQuaternion(tempQ.set(0, 0, 0, 1))
+			const body = this.world.getRigidBody(r[0]);
+			if(!body) continue;
+			body.setNextKinematicTranslation(tempP);
+		}
+
+		// update manual transforms for colliders
+		for(const c of this.colliders)
+		{
+			const parent = c[1].component.parent;
+			if(!parent) continue;
+
+			// the actor's world space location of the collider
+			parent.object3d.localToWorld(tempP.set(0, 0, 0));
+
+			const collider = this.getCollider(c[0]);
+			if(!collider) continue;
+
+			if(!c[1].component.hasParentRigidBody)
+			{
+				// position the collider where the actor is
+				collider.setTranslation(tempP);
+			}
+			else
+			{
+				// find the ancestor rigid body
+				const parentRigidBody = findAncestorRigidbody(parent);
+				if(!parentRigidBody) throw new Error("Collider has no ancestor rigid body but hasParentRigidBody is true. This is a bug.");
+
+				const parentBody = this.getRigidBody(parentRigidBody.rBody?.handle);
+				if(!parentBody) throw new Error("Collider has no parent rigid body but hasParentRigidBody is true. This is a bug.");
+
+				// find the parent body's world space location.
+				const parentTransform = parentBody.translation();
+
+				// find the local space location of the collider
+				parent.object3d.worldToLocal(tempP2.copy(tempP));
+
+				// set the collider's position to the parent body's position plus the local position
+				collider.setTranslationWrtParent(tempP2.add(tempP));
+			}
+		}
+
+		this.scene?._onBeforePhysicsUpdate(delta, elapsed);
 
 		this.world.timestep = delta;
 		this.world.step();
 
+		// update rigid bodies after physics step
 		for(const r of this.rigidBodies)
 		{
 			const body = this.world.getRigidBody(r[0]);
 			if(!body) continue;
+
+			// world space location of the rigid body
 			const transform = body.translation();
-			const _rotation = body.rotation();
-			const rotation = new Three.Quaternion(_rotation.x, _rotation.y, _rotation.z, _rotation.w);
+			const rotation = tempQ.set(body.rotation().x, body.rotation().y, body.rotation().z, body.rotation().w);
 
 			if(r[1].component.parent)
 			{
 				r[1].component.parent.rotation.setFromQuaternion(rotation);
-				// need to set position of parent actor IN WORLD SPACE
-				const pos = new Three.Vector3(transform.x, transform.y, transform.z);
-				r[1].component.parent.position.copy(pos);
-			}
-		}
-
-		const tempq = new Three.Quaternion();
-		for(const [, { component }] of this.colliders)
-		{
-			if(!component.hasParentRigidBody && component.parent)
-			{
-				// component.collider?.setTranslation(component.parent.position);
-				// component.collider?.setRotation(tempq.setFromEuler(component.parent.rotation));
+				// set the actor's position to the rigid body's position in world space
+				r[1].component.parent.position.copy(transform);
 			}
 		}
 

@@ -9,6 +9,7 @@ import { Application } from "../Core/Application";
 import { isDev } from "../Core/Asserts";
 import { Constructor } from "../Core/Utilities";
 import { SparseSet } from "../Containers/SparseSet.ts";
+import { track } from "../Core/Track.ts";
 
 declare module 'three'
 {
@@ -20,7 +21,6 @@ declare module 'three'
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
-
 	public readonly type: string = "Actor";
 
 	get object3d() { return this.#object3d; }
@@ -92,6 +92,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	onStart() {}
 
 	onEnterScene() {}
+
+	onBeforePhysicsUpdate(delta: number, elapsed: number) {}
 
 	onUpdate(delta: number, elapsed: number) {}
 
@@ -220,7 +222,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			this.object3d.remove(component.object3d);
 		}
 		component._onLeaveScene();
-		component._onDestroy();
 		return true;
 	}
 
@@ -317,14 +318,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return;
 		}
 		this.scene?.removeComponent(this);
-		this.#destroyed = true;
-		this.#object3d.actor = undefined;
-		this.#object3d.parent?.remove(this.#object3d);
-		this.disable();
-		for(const component of this.components)
-		{
-			component.destructor();
-		}
+		this._onDestroy();
 	}
 
 	/* **********************************************************
@@ -400,7 +394,24 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onUpdate(delta: number, elapsed: number) {
+	/** @internal */ _onBeforePhysicsUpdate(delta: number, elapsed: number)
+	{
+		if(!this.#enabled) return;
+		if(!this.#inScene) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
+			return;
+		}
+		this.onBeforePhysicsUpdate(delta, elapsed);
+		for(const component of this.components)
+		{
+			component._onBeforePhysicsUpdate(delta, elapsed);
+		}
+	}
+
+	/** @internal */ _onUpdate(delta: number, elapsed: number)
+	{
 		if(!this.#enabled) return;
 		if(!this.#inScene) return;
 		if(this.destroyed)
@@ -415,7 +426,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onLeaveScene() {
+	/** @internal */ _onLeaveScene()
+	{
 		if(!this.#inScene) return;
 		this.#inScene = false;
 		this.onLeaveScene();
@@ -425,9 +437,12 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onDestroy() {
+	/** @internal */ _onDestroy()
+	{
 		if(this.#destroyed) return;
 		this.#destroyed = true;
+		this.#object3d.actor = undefined;
+		this.#object3d.parent?.remove(this.#object3d);
 		this.onDestroy();
 		for(const component of this.components)
 		{

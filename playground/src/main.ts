@@ -19,13 +19,12 @@ import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
 import { defineComponent, ElysiaElement } from "../../src/UI/UI.ts";
 import { css, html } from "../../src/UI/UI.ts";
 import { KeyCode } from "../../src/Input/KeyCode.ts";
-import { BasicRenderPipeline } from "../../src/RPipeline/BasicRenderPipeline.ts";
-import { Player } from "./Player.ts";
+import { Actor } from "../../src/Scene/Actor.ts";
 
 const app = new Application({
-	renderPipeline: new BasicRenderPipeline({
+	renderPipeline: new HighDefRenderPipeline(
 
-	}),
+	),
 	stats: true,
 });
 
@@ -74,7 +73,7 @@ class ProjectileBehavior extends Behavior
 }
 
 const scene = new Scene();
-scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0) });
+scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
@@ -108,7 +107,7 @@ for(let i = 0; i < 10; i++)
 	{
 		for(let k = 0; k < 10; k++)
 		{
-			createCube(i, j, k, 1)
+			// createCube(i, j, k, 1)
 		}
 	}
 }
@@ -201,6 +200,19 @@ defineComponent(CrossHairUI)
 
 document.body.appendChild(document.createElement("cross-hair-ui"))
 
-scene.addComponent(new Player)
+// scene.addComponent(new Player)
+
+const p = new Actor;
+// p.rotation.x = Math.PI / 3
+p.position.y = 3;
+// p.rotation.z = Math.PI / 3;
+
+const t = new CubeActor()
+t.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
+t.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) }))
+
+p.addComponent(t)
+
+scene.addComponent(p)
 
 app.loadScene(scene);

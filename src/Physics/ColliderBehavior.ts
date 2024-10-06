@@ -24,8 +24,6 @@ interface ColliderBehaviorArguments
 	mass?: number;
 	friction?: number;
 	restitution?: number;
-	positionOffset?: Vector3Like;
-	rotationOffset?: QuaternionLike;
 }
 
 export class ColliderBehavior extends Behavior
@@ -50,8 +48,6 @@ export class ColliderBehavior extends Behavior
 		super();
 		this.addTag(ColliderBehavior)
 		this.colliderDescription = args.type
-		if(args.positionOffset) this.positionOffset.copy(args.positionOffset);
-		if(args.rotationOffset) this.rotationOffset.copy(args.rotationOffset);
 	}
 
 	onCreate() {
@@ -88,23 +84,7 @@ export class ColliderBehavior extends Behavior
 		else this.colliderDescription.setSensor(isSensor);
 	}
 
-	setPositionOffset(offset: Vector3Like)
-	{
-		this.positionOffset.copy(offset);
-		if(this.collider) this.collider.setTranslationWrtParent(offset);
-	}
-
-	setRotationOffset(offset: QuaternionLike)
-	{
-		this.rotationOffset.copy(offset);
-		if(this.collider) this.collider.setRotationWrtParent(offset);
-	}
-
 	onDestroy() {
 		this.scene?.physics!.destroyCollider(this)
 	}
-
-	private positionOffset = new Three.Vector3;
-
-	private rotationOffset = new Three.Quaternion;
 }

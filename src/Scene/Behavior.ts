@@ -82,6 +82,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	onEnterScene() {}
 
+	onBeforePhysicsUpdate(delta: number, elapsed: number) {}
+
 	onUpdate(delta: number, elapsed: number) {}
 
 	onDisable() {}
@@ -95,8 +97,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 	destructor()
 	{
 		this.#destroyed = true;
-		this._onDestroy();
 		this._onDisable()
+		this._onDestroy();
 	}
 
 	/* **********************************************************
@@ -156,12 +158,13 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onEnterScene();
 	}
 
+	/** @internal */ _onBeforePhysicsUpdate(delta: number, elapsed: number) {
+		if(this.destroyed) return;
+		this.onBeforePhysicsUpdate(delta, elapsed);
+	}
+
 	/** @internal */ _onUpdate(delta: number, elapsed: number) {
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot update a destroyed behavior:", this);
-			return;
-		}
+		if(this.destroyed) return;
 		this.onUpdate(delta, elapsed);
 	}
 

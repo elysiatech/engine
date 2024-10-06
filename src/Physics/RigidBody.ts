@@ -44,18 +44,6 @@ export class RigidBodyBehavior extends Behavior
 		this.scene?.physics?.addRigidBody(this)
 	}
 
-	setPosition(x: number, y: number, z: number)
-	{
-		if(this.rBody) this.rBody.setTranslation(new Rapier.Vector3(x,y,z), true);
-		this.rbodyDescription.setTranslation(x, y, z);
-	}
-
-	setRotation(x: number, y: number, z: number, w: number)
-	{
-		if(this.rBody) this.rBody.setRotation(new Rapier.Quaternion(x,y,z,w), true);
-		this.rbodyDescription.setRotation(new Rapier.Quaternion(x,y,z,w));
-	}
-
 	setAdditionalMass(mass: number)
 	{
 		if(this.rBody) this.rBody.setAdditionalMass(mass, true);
