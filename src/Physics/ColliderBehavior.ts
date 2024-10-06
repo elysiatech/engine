@@ -1,8 +1,10 @@
 import * as Three from "three";
+import * as THREE from "three"
 import Rapier from "@dimforge/rapier3d-compat";
 import { Behavior } from "../Scene/Behavior";
 import { QuaternionLike, Vector3Like } from "../Math/Vectors.ts";
 import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
+
 
 export const Colliders = {
 	Box: (scale: Vector3Like) => Rapier.ColliderDesc.cuboid(scale.x/2, scale.y/2, scale.z/2),
@@ -78,29 +80,39 @@ export class ColliderBehavior extends Behavior
 
 		if(this.hasParentRigidBody)
 		{
-			// need to set offset between parent and the rigid body itself.
-
 			const parentRigidBody = findAncestorRigidbody(this.parent!);
-			if(!parentRigidBody) return;
+			if (!parentRigidBody || !parentRigidBody.rBody) return;
 
 			const rigidBody = parentRigidBody.rBody;
-			if(!rigidBody) return;
 
-			// world space of the rigid body
-			temp.v1.copy(rigidBody.translation())
-			temp.q1.copy(rigidBody.rotation())
+			// Create matrices
+			const rbWorldMatrix = temp.m1.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+			const parentWorldMatrix = temp.m2.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+			const relativeMatrix = temp.m3.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
-			// world space of our parent
-			this.parent!.object3d.getWorldPosition(temp.v2);
-			this.parent!.object3d.getWorldQuaternion(temp.q2);
+			// Set rigid body's world transform
+			rbWorldMatrix.compose(
+				temp.v1.set(rigidBody.translation().x, rigidBody.translation().y, rigidBody.translation().z),
+				temp.q1.set(rigidBody.rotation().x, rigidBody.rotation().y, rigidBody.rotation().z, rigidBody.rotation().w),
+				temp.v2.set(1, 1, 1)  // Assuming no scale
+			);
 
-			// offset between the two
-			temp.v2.sub(temp.v1);
-			temp.q2.conjugate()
-			temp.v2.applyQuaternion(temp.q2);
+			// Get collider parent's world transform
+			this.parent!.object3d.updateWorldMatrix(true, false);
+			parentWorldMatrix.copy(this.parent!.object3d.matrixWorld);
 
-			c.setTranslationWrtParent(temp.v2);
-			c.setRotationWrtParent(temp.q2);
+			// Calculate relative transform
+			relativeMatrix.copy(rbWorldMatrix).invert().multiply(parentWorldMatrix);
+
+			// Extract position and rotation from the relative matrix
+			const relativePosition = temp.v3.setScalar(0)
+			const relativeQuaternion = temp.q2.set(0, 0, 0, 1);
+			const relativeScale = temp.v4.setScalar(1);
+			relativeMatrix.decompose(relativePosition, relativeQuaternion, relativeScale);
+
+			// Set collider's position and rotation relative to the parent rigid body
+			c.setTranslationWrtParent(relativePosition);
+			c.setRotationWrtParent(relativeQuaternion);
 		}
 		else
 		{
@@ -154,6 +166,14 @@ export class ColliderBehavior extends Behavior
 const temp = {
 	q1: new Three.Quaternion(),
 	q2: new Three.Quaternion(),
+	q3: new Three.Quaternion(),
+	q4: new Three.Quaternion(),
 	v1: new Three.Vector3(),
 	v2: new Three.Vector3(),
+	v3: new Three.Vector3(),
+	v4: new Three.Vector3(),
+	m1: new Three.Matrix4(),
+	m2: new Three.Matrix4(),
+	m3: new Three.Matrix4(),
+	m4: new Three.Matrix4(),
 }
