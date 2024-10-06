@@ -122,6 +122,7 @@ export class Application {
 		this.#renderPipeline!.onCreate(this.#scene, this.#output);
 		this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
 		this.#scene._onCreate();
+		this.#scene._onEnable();
 		this.#scene._onStart();
 		this.#scene._onEnterScene();
 		ELYSIA_LOGGER.debug("Scene started", scene)

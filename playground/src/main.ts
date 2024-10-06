@@ -1,4 +1,4 @@
-import { Application } from "../../src/Core/Application";
+import { Application } from "../../src/Core/ApplicationEntry.ts";
 import { Scene } from "../../src/Scene/Scene";
 import { ActiveCameraTag } from "../../src/Core/Tags.ts";
 import { CameraOrbitBehavior } from "../../src/Behaviors/CameraOrbitBehavior.ts";
@@ -203,23 +203,28 @@ document.body.appendChild(document.createElement("cross-hair-ui"))
 // scene.addComponent(new Player)
 
 const p = new Actor;
-p.position.y = 3
-p.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
+p.position.y = 3;
+p.rotation.y = Math.PI / 2
+p.rotation.x = Math.PI / 3
+
+
+const rb = new Actor;
+rb.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
+rb.scale.setScalar(.9)
+p.addComponent(rb)
 
 const t = new CubeActor;
+const cube = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) });
+t.addComponent(cube);
 t.position.x = 1;
-t.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) }));
 
 const s = new SphereActor;
+const sphereCollider = new ColliderBehavior({ type: Colliders.Sphere(1) });
+s.addComponent(sphereCollider);
 s.position.x = -1;
-s.addComponent(new ColliderBehavior({ type: Colliders.Sphere(1) }));
 
-p.addComponent(t)
-p.addComponent(s)
-
-setTimeout(() => {
-	p.removeComponent(s)
-}, 1000)
+rb.addComponent(t)
+rb.addComponent(s)
 
 scene.addComponent(p)
 

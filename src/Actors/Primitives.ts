@@ -6,6 +6,7 @@ import * as Three from "three";
  */
 export class CubeActor extends MeshActor
 {
+	get material() { return this.object3d.material as Three.MeshStandardMaterial; }
 	constructor(color?: Three.ColorRepresentation, position?: Three.Vector3, rotation?: Three.Euler, scale?: Three.Vector3)
 	{
 		super(new Three.BoxGeometry(), new Three.MeshStandardMaterial({ color }));

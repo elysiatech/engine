@@ -72,11 +72,11 @@ export class Future<T> implements Promise<T>
 
 	async #resolveValue(value: T | PromiseLike<T>): Promise<void>
 	{
-		try {
+		try
+		{
 			this.#syncValue = await value;
 			this.#state = 'fulfilled';
-		} catch (error) {
-			this.#state = 'rejected';
 		}
+		catch (error) { this.#state = 'rejected'; }
 	}
 }

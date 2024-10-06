@@ -8,6 +8,7 @@ import { PhysicsDebugRenderer } from "./Debug";
 import { Actor } from "../Scene/Actor";
 import { ASSERT } from "../Core/Asserts.ts";
 import { isActor } from "../Scene/Component.ts";
+import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
 
 export interface PhysicsControllerConstructorArguments
 {
@@ -72,8 +73,6 @@ export class PhysicsController implements Destroyable
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
 		ASSERT(collider.parent, "ColliderBehavior has no parent.");
 		const parent = findAncestorRigidbody(collider.parent);
-
-		console.log("addCollider",this)
 
 		if(collider.collider)
 		{
@@ -194,66 +193,41 @@ export class PhysicsController implements Destroyable
 	{
 		if(!this.world) return;
 
-		// update manual transforms for colliders
-		for(const c of this.colliders)
-		{
-			const parent = c[1].component.parent;
-			if(!parent) continue;
-
-			// the actor's world space location of the collider
-			parent.object3d.getWorldPosition(temp.v1);
-
-			const collider = this.getCollider(c[0]);
-			if(!collider) continue;
-
-			if(!c[1].component.hasParentRigidBody)
-			{
-				// position the collider where the actor is
-				collider.setTranslation(temp.v1);
-			}
-			else
-			{
-				// find the ancestor rigid body
-				const parentRigidBody = findAncestorRigidbody(parent);
-				if(!parentRigidBody) throw new Error("Collider has no ancestor rigid body but hasParentRigidBody is true. This is a bug.");
-
-				const parentBody = this.getRigidBody(parentRigidBody.rBody?.handle);
-				if(!parentBody) throw new Error("Collider has no parent rigid body but hasParentRigidBody is true. This is a bug.");
-
-				// find the parent body's world space location.
-				const parentTransform = parentBody.translation();
-				const parentRotation = temp.q1.set(parentBody.rotation().x, parentBody.rotation().y, parentBody.rotation().z, parentBody.rotation().w);
-
-				// find the local space location of the collider
-				temp.v2.copy(temp.v1).sub(parentTransform);
-				temp.v2.applyQuaternion(parentRotation.invert());
-
-				// set the collider's position to the local space location of the actor
-				collider.setTranslationWrtParent(temp.v2);
-				collider.setRotation(parentRotation);
-			}
-		}
-
 		this.scene?._onBeforePhysicsUpdate(delta, elapsed);
 
 		this.world.timestep = delta;
+
 		this.world.step();
 
-		// update rigid bodies after physics step
+		// sync the rigid bodies with the world
 		for(const r of this.rigidBodies)
 		{
 			const body = this.world.getRigidBody(r[0]);
 			if(!body) continue;
 
 			// world space location of the rigid body
-			const transform = body.translation();
-			const rotation = temp.q1.set(body.rotation().x, body.rotation().y, body.rotation().z, body.rotation().w);
+			const transform = temp.v1.copy(body.translation());
+			const rotation = temp.q1.copy(body.rotation())
 
 			if(r[1].component.parent)
 			{
-				r[1].component.parent.rotation.setFromQuaternion(rotation);
-				// set the actor's position to the rigid body's position in world space
-				r[1].component.parent.position.copy(transform);
+				if(r[1].component.parent.parent?.object3d)
+				{
+					// use parent space
+					r[1].component.parent.parent.object3d.worldToLocal(transform);
+					r[1].component.parent.position.copy(transform);
+
+					r[1].component.parent.parent.object3d.getWorldQuaternion(temp.q2)
+					temp.q2.invert();
+					rotation.premultiply(temp.q2);
+					r[1].component.parent.quaternion.copy(rotation);
+				}
+				else
+				{
+					// we are at the root, using worldspace
+					r[1].component.parent.object3d.position.copy(transform);
+					r[1].component.parent.object3d.quaternion.copy(rotation);
+				}
 			}
 		}
 
@@ -263,17 +237,4 @@ export class PhysicsController implements Destroyable
 	destructor() {}
 
 	#debugRenderer: PhysicsDebugRenderer;
-}
-
-function findAncestorRigidbody(actor?: Actor): RigidBodyBehavior | undefined
-{
-	if(!actor) return undefined;
-	if(actor.type === "Scene") return undefined;
-
-	let rb = actor.getComponentsByType(RigidBodyBehavior);
-	if(rb.first) return rb.first
-	if(!actor.parent || actor.parent.type === "Scene") return undefined;
-	rb = actor.parent.getComponentsByType(RigidBodyBehavior);
-	if(rb.first) return rb.first
-	return findAncestorRigidbody(actor.parent);
 }

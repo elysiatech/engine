@@ -1,7 +1,7 @@
 import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
 import { Actor } from "./Actor";
 import { Scene } from "./Scene";
-import { Application } from "../Core/Application";
+import { Application } from "../Core/ApplicationEntry.ts";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { TagAddedEvent } from "../Core/ElysiaEvents";
@@ -96,22 +96,27 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	destructor()
 	{
+		if(this.#destroyed) return;
+		this._onLeaveScene();
+		this.onDestroy();
+		this.parent = null;
+		this.scene = null;
+		this.app = null;
 		this.#destroyed = true;
-		this._onDisable()
-		this._onDestroy();
 	}
 
 	/* **********************************************************
 	    Internal methods
 	************************************************************/
 
-	/** @internal */ _onEnable() {
+	/** @internal */ _onEnable(runEvenIfAlreadyEnabled: boolean = false)
+	{
+		if (this.#enabled && !runEvenIfAlreadyEnabled) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn("Cannot enable a destroyed behavior:", this);
 			return;
 		}
-		if (this.#enabled) return;
 		this.#enabled = true;
 		this.onEnable();
 	}
@@ -157,6 +162,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		}
 		if(this.#inScene) return;
 		this.#inScene = true;
+		this._onEnable(true);
 		this.onEnterScene();
 	}
 
@@ -171,24 +177,11 @@ export class Behavior implements ActorLifecycle, Destroyable
 	}
 
 	/** @internal */ _onLeaveScene() {
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot leave scene a destroyed behavior:", this);
-			return;
-		}
+		if(this.destroyed) return;
 		if(!this.#inScene) return;
 		this.#inScene = false;
+		this._onDisable();
 		this.onLeaveScene();
-	}
-
-	/** @internal */ _onDestroy() {
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot destroy a destroyed behavior:", this);
-			return;
-		}
-		this.#destroyed = true;
-		this.onDestroy();
 	}
 
 	/** @internal */ _onReparent(parent: Actor | null) {
@@ -200,7 +193,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onReparent(parent);
 	}
 
-	#enabled = false;
+	#enabled = true;
 	#created = false;
 	#started = false;
 	#inScene = false;

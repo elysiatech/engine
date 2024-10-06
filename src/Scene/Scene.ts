@@ -106,7 +106,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 */
 	public getActiveCamera(): Three.Camera | null
 	{
-		const activeCamera = this.getComponentsByTag(ActiveCameraTag).first;
+		const activeCamera = this.getComponentsByTag(ActiveCameraTag).last;
 		if(isActor(activeCamera) && activeCamera.object3d instanceof Three.Camera)
 			return activeCamera.object3d as Three.Camera;
 		return null;
