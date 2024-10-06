@@ -2,14 +2,13 @@ import * as Three from "three";
 import Rapier from "@dimforge/rapier3d-compat";
 import { Behavior } from "../Scene/Behavior";
 import { QuaternionLike, Vector3Like } from "../Math/Vectors.ts";
-import { ASSERT } from "../Core/Asserts.ts";
 
 export const Colliders = {
 	Box: (scale: Vector3Like) => Rapier.ColliderDesc.cuboid(scale.x/2, scale.y/2, scale.z/2),
 	Cylinder: (height: number, radius: number) => Rapier.ColliderDesc.cylinder(height/2, radius),
 	Sphere: (radius: number) => Rapier.ColliderDesc.ball(radius),
 	Cone: (height: number, radius: number) => Rapier.ColliderDesc.cone(height/2, radius),
-	Capsule: (height: number, radius: number) => Rapier.ColliderDesc.capsule(height, radius),
+	Capsule: (height: number, radius: number) => Rapier.ColliderDesc.capsule(height/2, radius),
 	ConvexMesh: (points: Float32Array) => Rapier.ColliderDesc.convexHull(points)!,
 	TriangleMesh: (vertices: Float32Array, indices: Uint32Array) =>
 		Rapier.ColliderDesc.trimesh(vertices, indices),
@@ -35,13 +34,17 @@ export class ColliderBehavior extends Behavior
 
 	colliderDescription: Rapier.ColliderDesc;
 
-	collider?: Rapier.Collider;
+	handle?: number;
+
+	get collider(): Rapier.Collider | undefined { return this.scene?.physics?.getCollider(this.handle) }
 
 	get density() { return this.collider ? this.collider.density() : this.colliderDescription.density; }
 	get mass() { return this.collider ? this.collider.mass() : this.colliderDescription.mass; }
 	get friction() { return this.collider ? this.collider.friction() : this.colliderDescription.friction; }
 	get restitution() { return this.collider ? this.collider.restitution() : this.colliderDescription.restitution; }
 	get sensor() { return this.collider ? this.collider.isSensor() : this.colliderDescription.isSensor; }
+
+	hasParentRigidBody = false;
 
 	constructor(args: ColliderBehaviorArguments) {
 		super();

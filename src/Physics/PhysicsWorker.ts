@@ -3,24 +3,28 @@ import Rapier from "@dimforge/rapier3d-compat";
 
 class PhysicsWorker extends WorkerThread
 {
-
 	world?: Rapier.World;
-	scene?: any;
+	ready = false;
 
-	async onInit(args: { gravity: { x: number, y: number, z: number } })
-	{
-		await Rapier.init();
-		this.world = new Rapier.World(args.gravity);
+	constructor() {
+		super();
+		console.log("Physics worker created")
 	}
 
-	onStart(args: { scene: any })
-	{
-
+	async onInit(world: ArrayBuffer){
+		await Rapier.init()
+		console.log("Physics worker initialized")
+		this.ready = true;
+		this.world = Rapier.World.restoreSnapshot(new Uint8Array(world));
 	}
 
-	onGetDebugData()
+	onUpdate(world: ArrayBuffer)
 	{
-
+		if(!this.ready) return;
+		this.world = Rapier.World.restoreSnapshot(new Uint8Array(world));
+		if(!this.world) return;
+		this.world.step();
+		this.send("update", this.world.takeSnapshot().buffer);
 	}
 }
 

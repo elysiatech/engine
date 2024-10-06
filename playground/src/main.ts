@@ -19,12 +19,12 @@ import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
 import { defineComponent, ElysiaElement } from "../../src/UI/UI.ts";
 import { css, html } from "../../src/UI/UI.ts";
 import { KeyCode } from "../../src/Input/KeyCode.ts";
+import { BasicRenderPipeline } from "../../src/RPipeline/BasicRenderPipeline.ts";
+import { Player } from "./Player.ts";
 
 const app = new Application({
-	renderPipeline: new HighDefRenderPipeline({
-		ssao: {
-			intensity: 1.5,
-		},
+	renderPipeline: new BasicRenderPipeline({
+
 	}),
 	stats: true,
 });
@@ -61,7 +61,7 @@ class ProjectileBehavior extends Behavior
 
 		rb.setLinearVelocity(cameraVector.multiplyScalar(100))
 		rb.enableContinuousCollisionDetection(true)
-		rb.setAdditionalMass(1)
+		rb.setAdditionalMass(10)
 
 		const col = new ColliderBehavior({ type: Colliders.Sphere(.1) })
 
@@ -89,10 +89,10 @@ const meshAsset = new GLTFAsset("/testgltf.glb")
 
 await meshAsset.load();
 
-const createCube = (x: number, y: number, z: number) =>
+const createCube = (x: number, y: number, z: number, i: number) =>
 {
 	const cube = new CubeActor;
-	cube.position.set(x + .1, y + .1, z + .1);
+	cube.position.set(x + .1*i, y + .1*i, z + .1*i);
 	(cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
 	scene.addComponent(cube);
 	const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
@@ -108,7 +108,7 @@ for(let i = 0; i < 10; i++)
 	{
 		for(let k = 0; k < 10; k++)
 		{
-			createCube(i, j, k)
+			createCube(i, j, k, 1)
 		}
 	}
 }
@@ -200,5 +200,7 @@ class CrossHairUI extends ElysiaElement
 defineComponent(CrossHairUI)
 
 document.body.appendChild(document.createElement("cross-hair-ui"))
+
+scene.addComponent(new Player)
 
 app.loadScene(scene);

@@ -21,9 +21,11 @@ export class PhysicsController implements Destroyable
 
 	readonly gravity: Three.Vector3;
 
-	readonly colliders = new Set<{ component: ColliderBehavior, parent?: Actor, handle?: number }>;
+	readonly colliders = new Map<number, { component: ColliderBehavior }>;
 
-	readonly rigidBodies = new Set<{ component: RigidBodyBehavior, parent?: Actor, handle: number }>;
+	readonly rigidBodies = new Map<number, { component: RigidBodyBehavior }>;
+
+	readonly characterControllers = new Map<string, { instance: Rapier.KinematicCharacterController }>;
 
 	scene?: Scene;
 
@@ -34,6 +36,7 @@ export class PhysicsController implements Destroyable
 	{
 		this.init = this.init.bind(this);
 		this.updatePhysicsWorld = this.updatePhysicsWorld.bind(this);
+
 		this.gravity = args.gravity ?? new Three.Vector3(0, -9.81, 0)
 
 		this.#debugRenderer = new PhysicsDebugRenderer(args.debug);
@@ -59,35 +62,64 @@ export class PhysicsController implements Destroyable
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
 		ASSERT(collider.parent, "ColliderBehavior has no parent.");
+
 		const parent = findAncestorRigidbody(collider.parent);
+
 		if(collider.collider)
 		{
 			this.world.removeCollider(collider.collider, true);
 		}
-		collider.collider = this.world!.createCollider(collider.colliderDescription, parent?.rBody);
-		this.colliders.add({ component: collider, parent: collider.parent!, handle: collider.collider.handle });
+
+		collider.handle = this.world.createCollider(collider.colliderDescription, parent?.rBody).handle;
+		collider.hasParentRigidBody = !!parent?.rBody;
+
+		if(!collider.hasParentRigidBody)
+		{
+			// collider.collider?.setTranslation(collider.parent.position);
+			// collider.collider?.setRotation(new Three.Quaternion().setFromEuler(collider.parent.rotation));
+		}
+
+		this.colliders.set(collider.handle, { component: collider });
+	}
+
+	getCollider(handle?: number): Rapier.Collider | undefined
+	{
+		if(!handle) return undefined;
+		return this.world?.getCollider(handle);
+	}
+
+	destroyCollider(collider: ColliderBehavior)
+	{
+		const c = collider.collider;
+		if(!c) return;
+
+		this.world?.removeCollider(c, true);
+
+		this.colliders.delete(c.handle);
 	}
 
 	addRigidBody(rigidBody: RigidBodyBehavior)
 	{
-		// todo: need to reconstruct all children rigidbodies and colliders
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
 		ASSERT(rigidBody.parent, "RigidBodyBehavior has no parent.");
-		rigidBody.rBody = this.world.createRigidBody(rigidBody.rbodyDescription);
+
+		rigidBody.handle = this.world.createRigidBody(rigidBody.rbodyDescription).handle;
 
 		const worldSpaceTransform = new Three.Vector3();
 
 		rigidBody.parent!.object3d.getWorldPosition(worldSpaceTransform);
 
-		rigidBody.rBody.setTranslation(worldSpaceTransform, true);
+		const rBody = this.world.getRigidBody(rigidBody.handle);
+
+		rBody.setTranslation(worldSpaceTransform, true);
 
 		const worldSpaceQuaternion = new Three.Quaternion();
 
 		rigidBody.parent!.object3d.getWorldQuaternion(worldSpaceQuaternion);
 
-		rigidBody.rBody.setRotation(worldSpaceQuaternion, true);
+		rBody.setRotation(worldSpaceQuaternion, true);
 
-		this.rigidBodies.add({ component: rigidBody, handle: rigidBody.rBody.handle });
+		this.rigidBodies.set(rigidBody.handle, { component: rigidBody });
 
 		const recurseAndRecreateColliders = (actor: Actor) =>
 		{
@@ -104,13 +136,10 @@ export class PhysicsController implements Destroyable
 		recurseAndRecreateColliders(rigidBody.parent!);
 	}
 
-	destroyCollider(collider: ColliderBehavior)
+	getRigidBody(handle?: number): Rapier.RigidBody | undefined
 	{
-		if(!collider.collider) return;
-
-		this.world?.removeCollider(collider.collider, true);
-
-		this.colliders.delete({ component: collider, parent: collider.parent!, handle: collider.collider.handle });
+		if(typeof handle === "undefined") return undefined;
+		return this.world?.getRigidBody(handle);
 	}
 
 	destroyRigidBody(rigidBody: RigidBodyBehavior)
@@ -119,7 +148,44 @@ export class PhysicsController implements Destroyable
 
 		this.world?.removeRigidBody(rigidBody.rBody);
 
-		this.rigidBodies.delete({ component: rigidBody, parent: rigidBody.parent!, handle: rigidBody.rBody.handle });
+		this.rigidBodies.delete(rigidBody.handle ?? 0);
+
+		const recurseAndDestroyColliders = (actor: Actor) =>
+		{
+			for(const c of actor.components)
+			{
+				if(c.type === "ColliderBehavior")
+				{
+					(c as ColliderBehavior).hasParentRigidBody = false;
+					this.destroyCollider(c as ColliderBehavior);
+					this.addCollider(c as ColliderBehavior);
+				}
+				if(isActor(c)) recurseAndDestroyColliders(c);
+			}
+		}
+	}
+
+	addCharacterController(args: { offset: number }): string
+	{
+		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
+		const player = this.world.createCharacterController(0.01);
+		const uuid = Three.MathUtils.generateUUID();
+		this.characterControllers.set(uuid, { instance: player });
+		return uuid;
+	}
+
+	getCharacterController(handle?: string): Rapier.KinematicCharacterController | undefined
+	{
+		if(!handle) return undefined;
+		return this.characterControllers.get(handle)?.instance;
+	}
+
+	destroyCharacterController(handle?: string)
+	{
+		if(!handle) return;
+		const player = this.characterControllers.get(handle)?.instance;
+		this.characterControllers.delete(handle);
+		if(player && this.world) this.world.removeCharacterController(player);
 	}
 
 	updatePhysicsWorld(scene: Scene, delta: number)
@@ -131,19 +197,28 @@ export class PhysicsController implements Destroyable
 
 		for(const r of this.rigidBodies)
 		{
-			const body = this.world.getRigidBody(r.handle);
+			const body = this.world.getRigidBody(r[0]);
 			if(!body) continue;
 			const transform = body.translation();
 			const _rotation = body.rotation();
 			const rotation = new Three.Quaternion(_rotation.x, _rotation.y, _rotation.z, _rotation.w);
 
-			if(r.component.parent)
+			if(r[1].component.parent)
 			{
-				r.component.parent.rotation.setFromQuaternion(rotation);
+				r[1].component.parent.rotation.setFromQuaternion(rotation);
 				// need to set position of parent actor IN WORLD SPACE
 				const pos = new Three.Vector3(transform.x, transform.y, transform.z);
-				r.component.parent.position.copy(pos);
+				r[1].component.parent.position.copy(pos);
+			}
+		}
 
+		const tempq = new Three.Quaternion();
+		for(const [, { component }] of this.colliders)
+		{
+			if(!component.hasParentRigidBody && component.parent)
+			{
+				// component.collider?.setTranslation(component.parent.position);
+				// component.collider?.setRotation(tempq.setFromEuler(component.parent.rotation));
 			}
 		}
 
