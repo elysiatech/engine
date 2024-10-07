@@ -1,7 +1,11 @@
-import * as Three from 'three'
-
 const internal = Symbol('internal')
 
+/**
+ * Track changes to the object's properties.
+ * @param object
+ * @param keys
+ * @param callback
+ */
 export function track(
 	object: Record<any, any>, keys: string[],
 	callback: (key: string, value: any, object: Record<string, any>) => void

@@ -8,23 +8,24 @@ import { AmbientLightActor } from "../../src/Actors/AmbientLightActor.ts";
 import { CubeActor, PlaneActor, SphereActor } from "../../src/Actors/Primitives.ts";
 import { HighDefRenderPipeline } from "../../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
-import { GLTFAsset } from "../../src/Assets/GLTFAsset.ts";
 import { SkyActor, SkyDirectionalLightTag } from "../../src/Actors/SkyActor.ts";
 import { RigidBodyBehavior } from "../../src/Physics/RigidBody.ts";
 import Rapier from "@dimforge/rapier3d-compat";
 import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
 import { Behavior } from "../../src/Scene/Behavior.ts";
-import { MouseCode } from "../../src/Input/MouseCode.ts";
 import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
-import { defineComponent, ElysiaElement } from "../../src/UI/UI.ts";
-import { css, html } from "../../src/UI/UI.ts";
+import { css, defineComponent, ElysiaElement, html } from "../../src/UI/UI.ts";
 import { KeyCode } from "../../src/Input/KeyCode.ts";
 import { Actor } from "../../src/Scene/Actor.ts";
+import { SMAAPreset } from "postprocessing";
 
 const app = new Application({
-	renderPipeline: new HighDefRenderPipeline(
-
-	),
+	renderPipeline: new HighDefRenderPipeline({
+		ssao: {
+			intensity: 1.5,
+			aoRadius: 0.5,
+		}
+	}),
 	stats: true,
 });
 
@@ -66,12 +67,11 @@ class ProjectileBehavior extends Behavior
 		actor.addComponent(new KillIfOutOfBounds)
 
 		this.scene.addComponent(actor)
-		console.log(col.colliderDescription)
 	}
 }
 
 const scene = new Scene();
-scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
+scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: false });
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
@@ -101,7 +101,7 @@ for(let i = 0; i < 5; i++)
 	{
 		for(let k = 0; k < 5; k++)
 		{
-			createCube(i, j, k, 1)
+			// createCube(i, j, k, 1)
 		}
 	}
 }
@@ -220,6 +220,6 @@ s.position.x = -1;
 rb.addComponent(t)
 rb.addComponent(s)
 
-// scene.addComponent(p)
+scene.addComponent(p)
 
 app.loadScene(scene);

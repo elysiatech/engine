@@ -8,7 +8,7 @@ import {
 	EffectPass,
 	RenderPass,
 	SMAAEffect,
-	SMAAPreset,
+	SMAAPreset, SSAOEffect,
 	ToneMappingEffect,
 	ToneMappingMode
 } from "postprocessing";
@@ -38,6 +38,8 @@ type HighDefRenderPipelineConstructorArguments = {
 		distanceFalloff?: number
 		intensity?: number
 		color?: Three.Color
+		halfResolution?: boolean
+		qualityMode?: "Low" | "Medium" | "High" | "Ultra" | "Performance"
 	},
 	bloom?: boolean | BloomEffectOptions,
 	chromaticAberration?: boolean | {
@@ -85,6 +87,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(args.ssao.distanceFalloff) { this.#ssaoDistanceFalloff = args.ssao.distanceFalloff; }
 			if(args.ssao.intensity) { this.#ssaoIntensity = args.ssao.intensity; }
 			if(args.ssao.color) { this.#ssaoColor = args.ssao.color; }
+			if(args.ssao.halfResolution) { this.#ssaoHalfResolution = args.ssao.halfResolution; }
+			if(args.ssao.qualityMode) { this.#ssaoQualityMode = args.ssao.qualityMode; }
 		}
 
 		this.#useBloom = !!args.bloom;
@@ -165,6 +169,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(this.#ssaoDistanceFalloff) this.#ssaoPass.configuration.distanceFalloff = this.#ssaoDistanceFalloff;
 			if(this.#ssaoIntensity) this.#ssaoPass.configuration.intensity = this.#ssaoIntensity;
 			if(this.#ssaoColor) this.#ssaoPass.configuration.color = this.#ssaoColor;
+			this.#ssaoPass.setQualityMode(this.#ssaoQualityMode);
+			this.#ssaoPass.configuration.halfRes = this.#ssaoHalfResolution;
 			this.effectComposer.addPass(this.#ssaoPass);
 		}
 
@@ -190,7 +196,10 @@ export class HighDefRenderPipeline extends RenderPipeline
 
 	onResize(width: number, height: number) { this.effectComposer.setSize(width, height); }
 
-	onRender() { this.effectComposer.render(); }
+	onRender()
+	{
+		this.effectComposer.render();
+	}
 
 	getRenderer(): WebGLRenderer { return this.renderer; }
 
@@ -225,6 +234,8 @@ export class HighDefRenderPipeline extends RenderPipeline
 	#ssaoDistanceFalloff?: number;
 	#ssaoIntensity?: number;
 	#ssaoColor?: Three.Color;
+	#ssaoQualityMode: "Low" | "Medium" | "High" | "Ultra" | "Performance" = "Ultra";
+	#ssaoHalfResolution: boolean = true;
 
 	#useBloom: boolean = false;
 	#bloomEffect?: BloomEffect;
