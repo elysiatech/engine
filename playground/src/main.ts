@@ -214,6 +214,7 @@ t.position.x = 1;
 
 const s = new SphereActor;
 const sphereCollider = new ColliderBehavior({ type: Colliders.Sphere(1) });
+
 s.addComponent(sphereCollider);
 s.position.x = -1;
 

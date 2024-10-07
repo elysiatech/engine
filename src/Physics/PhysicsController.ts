@@ -39,6 +39,8 @@ export class PhysicsController implements Destroyable
 
 	scene?: Scene;
 
+	queue?: Rapier.EventQueue;
+
 	get debug() { return this.#debugRenderer.enabled; }
 	set debug(value: boolean) { this.#debugRenderer.enabled = value; }
 
@@ -56,6 +58,7 @@ export class PhysicsController implements Destroyable
 	{
 		await Rapier.init();
 
+		this.queue = new Rapier.EventQueue(false);
 		this.world = new Rapier.World(this.gravity);
 		this.scene = scene;
 	}
@@ -199,7 +202,7 @@ export class PhysicsController implements Destroyable
 
 		this.world.timestep = delta;
 
-		this.world.step();
+		this.world.step(this.queue!);
 
 		// sync the rigid bodies with the world
 		for(const r of this.rigidBodies)
@@ -232,6 +235,26 @@ export class PhysicsController implements Destroyable
 				}
 			}
 		}
+
+		this.queue!.drainCollisionEvents((handle1, handle2, started) =>
+		{
+			const c1 = this.colliders.get(handle1);
+			const c2 = this.colliders.get(handle2);
+			if(!c1 || !c2) return;
+			c1.component.onCollision?.(c2.component, started)
+			c2.component.onCollision?.(c1.component, started)
+		});
+
+		this.queue!.drainContactForceEvents((e) =>
+		{
+			const c1 = this.colliders.get(e.collider1())
+			const c2 = this.colliders.get(e.collider2())
+			if(!c1 || !c2) return;
+			c1.component.onContact?.(c2.component, e.maxForceDirection(), e.maxForceMagnitude(), e.totalForce(), e.totalForceMagnitude())
+			c2.component.onContact?.(c2.component, e.maxForceDirection(), e.maxForceMagnitude(), e.totalForce(), e.totalForceMagnitude())
+		})
+
+		this.queue!.clear();
 
 		this.#debugRenderer.update();
 	}

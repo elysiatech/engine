@@ -75,7 +75,6 @@ export class ColliderBehavior extends Behavior
 		}
 	}
 
-
 	hasParentRigidBody = false;
 
 	constructor(args: ColliderBehaviorArguments) {
@@ -88,6 +87,9 @@ export class ColliderBehavior extends Behavior
 		if(args.restitution) this.#restitution = args.restitution;
 	}
 
+	onCollision?(component: ColliderBehavior, started: boolean): void;
+	onContact?(component: ColliderBehavior, maxForceDir: Vector3Like, maxForceMagnitude: number, totalForce: Vector3Like, totalForceMagnitude: number): void;
+
 	private createCollider()
 	{
 		if(!this.scene) return;
@@ -99,6 +101,8 @@ export class ColliderBehavior extends Behavior
 		this.colliderDescription.setDensity(this.#density);
 		this.colliderDescription.setFriction(this.#friction);
 		this.colliderDescription.setRestitution(this.#restitution);
+		this.onCollision && this.colliderDescription.setActiveEvents(Rapier.ActiveEvents.COLLISION_EVENTS)
+		this.onContact && this.colliderDescription.setActiveEvents(Rapier.ActiveEvents.CONTACT_FORCE_EVENTS)
 		this.scene.physics!.addCollider(this)
 	}
 
