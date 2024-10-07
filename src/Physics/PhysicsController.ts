@@ -78,8 +78,9 @@ export class PhysicsController implements Destroyable
 		{
 			this.world.removeCollider(collider.collider, true);
 		}
-		console.log('addCollider', collider, collider.colliderDescription)
+
 		if(!collider.colliderDescription) return;
+
 		collider.handle = this.world.createCollider(collider.colliderDescription, parent?.rBody).handle;
 
 		collider.hasParentRigidBody = !!parent?.rBody;

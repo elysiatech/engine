@@ -1,21 +1,15 @@
 import * as Three from "three";
-import * as THREE from "three"
 import Rapier from "@dimforge/rapier3d-compat";
 import { Behavior } from "../Scene/Behavior";
-import { QuaternionLike, Vector3Like } from "../Math/Vectors.ts";
+import { Vector3Like } from "../Math/Vectors.ts";
 import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
 
 export const Colliders = {
-	Box: (scale: Vector3Like) => (worldScale: Vector3Like) => Rapier.ColliderDesc.cuboid((scale.x*worldScale.x)/2, (scale.y*worldScale.y)/2, (scale.z*worldScale.z)/2),
-	Cylinder: (height: number, radius: number) => Rapier.ColliderDesc.cylinder(height/2, radius),
-	Sphere: (radius: number) => Rapier.ColliderDesc.ball(radius),
-	Cone: (height: number, radius: number) => Rapier.ColliderDesc.cone(height/2, radius),
-	Capsule: (height: number, radius: number) => Rapier.ColliderDesc.capsule(height/2, radius),
-	ConvexMesh: (points: Float32Array) => Rapier.ColliderDesc.convexHull(points)!,
-	TriangleMesh: (vertices: Float32Array, indices: Uint32Array) =>
-		Rapier.ColliderDesc.trimesh(vertices, indices),
-	HeightField: (nrows: number, ncols: number, heights: Float32Array, scale: Rapier.Vector,) =>
-		Rapier.ColliderDesc.heightfield(nrows, ncols, heights, scale),
+	Box: (scale: Vector3Like) => (ws: Vector3Like) => Rapier.ColliderDesc.cuboid((scale.x * ws.x) / 2, (scale.y * ws.y) / 2, (scale.z * ws.z) / 2),
+	Cylinder: (height: number, radius: number) => (ws: Vector3Like) => Rapier.ColliderDesc.cylinder(height / 2, radius),
+	Sphere: (radius: number) => (ws: Vector3Like) => Rapier.ColliderDesc.ball(radius * ws.x),
+	Cone: (height: number, radius: number) => (ws: Vector3Like) => Rapier.ColliderDesc.cone((height * ws.y) / 2, radius * ws.x),
+	Capsule: (height: number, radius: number) => (ws: Vector3Like) => Rapier.ColliderDesc.capsule((height * ws.y) / 2, radius * ws.x),
 }
 
 type ColliderCreationFunction = (worldScale: Vector3Like) => Rapier.ColliderDesc;
@@ -23,9 +17,8 @@ type ColliderCreationFunction = (worldScale: Vector3Like) => Rapier.ColliderDesc
 interface ColliderBehaviorArguments
 {
 	type: (worldScale: Vector3Like) => Rapier.ColliderDesc;
-	sensor?: boolean;
-	density?: number;
 	mass?: number;
+	density?: number;
 	friction?: number;
 	restitution?: number;
 }
@@ -42,23 +35,77 @@ export class ColliderBehavior extends Behavior
 
 	get collider(): Rapier.Collider | undefined { return this.scene?.physics?.getCollider(this.handle) }
 
+	get mass() { return this.#mass }
+	set mass(mass: number)
+	{
+		this.#mass = mass;
+		if(this.collider)
+		{
+			this.collider.setMass(mass);
+		}
+	}
+
+	get density() { return this.#density }
+	set density(density: number)
+	{
+		this.#density = density;
+		if(this.collider)
+		{
+			this.collider.setDensity(density);
+		}
+	}
+
+	get friction() { return this.#friction }
+	set friction(friction: number)
+	{
+		this.#friction = friction;
+		if(this.collider)
+		{
+			this.collider.setFriction(friction);
+		}
+	}
+
+	get restitution() { return this.#restitution }
+	set restitution(restitution: number)
+	{
+		this.#restitution = restitution;
+		if(this.collider)
+		{
+			this.collider.setRestitution(restitution);
+		}
+	}
+
+
 	hasParentRigidBody = false;
 
 	constructor(args: ColliderBehaviorArguments) {
 		super();
 		this.addTag(ColliderBehavior)
 		this.colliderDescriptionConstructor = args.type;
-		// todo: adjust the scale of the collider's settings based on the world scale of the parent object.
+		if(args.mass) this.#mass = args.mass
+		if(args.density) this.#density = args.density
+		if(args.friction) this.#friction = args.friction
+		if(args.restitution) this.#restitution = args.restitution;
+	}
+
+	private createCollider()
+	{
+		if(!this.scene) return;
+		this.scene.physics?.destroyCollider(this);
+		const worldScale = this.parent?.parent?.object3d.getWorldScale(temp.v1) ?? temp.v1.setScalar(1);
+		this.colliderDescription = this.colliderDescriptionConstructor(worldScale);
+		// todo: add mass and other collider properties here.
+		this.colliderDescription.setMass(this.#mass);
+		this.colliderDescription.setDensity(this.#density);
+		this.colliderDescription.setFriction(this.#friction);
+		this.colliderDescription.setRestitution(this.#restitution);
+		this.scene.physics!.addCollider(this)
 	}
 
 	onEnterScene()
 	{
 		if(this.collider) return;
-		const worldScale = this.parent!.object3d.getWorldScale(new Three.Vector3(1,1,1))
-		console.log('worldScale',worldScale)
-		this.colliderDescription = this.colliderDescriptionConstructor(worldScale);
-		console.log('this.colliderDescription',this.colliderDescription)
-		this.scene?.physics!.addCollider(this)
+		this.createCollider();
 	}
 
 	override onBeforePhysicsUpdate(delta: number, elapsed: number)
@@ -128,6 +175,11 @@ export class ColliderBehavior extends Behavior
 	{
 		this.scene?.physics!.destroyCollider(this)
 	}
+
+	#mass = 1;
+	#density = 1;
+	#friction = 0.5;
+	#restitution = 0.5;
 
 	#previousPosition = new Three.Vector3();
 	#previousRotation = new Three.Quaternion();
