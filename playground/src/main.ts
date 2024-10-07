@@ -84,30 +84,26 @@ cameraActor.addComponent(orbitBehavior);
 cameraActor.addComponent(new ProjectileBehavior)
 scene.addComponent(cameraActor);
 
-const meshAsset = new GLTFAsset("/testgltf.glb")
-
-await meshAsset.load();
-
 const createCube = (x: number, y: number, z: number, i: number) =>
 {
 	const cube = new CubeActor;
 	cube.position.set(x + .1*i, y + .1*i, z + .1*i);
 	(cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
-	scene.addComponent(cube);
 	const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
 	const boxCol = new ColliderBehavior({type: Colliders.Box({ x: 1, y: 1, z: 1 })})
-	cube.addComponent(new KillIfOutOfBounds)
-	cube.addComponent(rb)
-	cube.addComponent(boxCol)
+	cube.addComponent(new KillIfOutOfBounds);
+	cube.addComponent(rb);
+	cube.addComponent(boxCol);
+	scene.addComponent(cube);
 }
 
-for(let i = 0; i < 10; i++)
+for(let i = 0; i < 5; i++)
 {
-	for(let j = 0; j < 10; j++)
+	for(let j = 0; j < 5; j++)
 	{
-		for(let k = 0; k < 10; k++)
+		for(let k = 0; k < 5; k++)
 		{
-			// createCube(i, j, k, 1)
+			createCube(i, j, k, 1)
 		}
 	}
 }
@@ -116,7 +112,7 @@ const floor = new PlaneActor()
 floor.scale.set(50, 50, 50);
 floor.position.y = -0.01;
 floor.rotation.x = -Math.PI / 2;
-floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 50, y: 0.01, z: 50 }) }))
+floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 50, y: 50, z: 0.01 }) }))
 scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()
@@ -202,30 +198,30 @@ document.body.appendChild(document.createElement("cross-hair-ui"))
 
 // scene.addComponent(new Player)
 
-const p = new Actor;
-p.position.y = 3;
-p.rotation.y = Math.PI / 2
-p.rotation.x = Math.PI / 3
-
-
-const rb = new Actor;
-rb.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
-rb.scale.setScalar(.9)
-p.addComponent(rb)
-
-const t = new CubeActor;
-const cube = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) });
-t.addComponent(cube);
-t.position.x = 1;
-
-const s = new SphereActor;
-const sphereCollider = new ColliderBehavior({ type: Colliders.Sphere(1) });
-s.addComponent(sphereCollider);
-s.position.x = -1;
-
-rb.addComponent(t)
-rb.addComponent(s)
-
-scene.addComponent(p)
-
+// const p = new Actor;
+// p.position.y = 3;
+// p.rotation.y = Math.PI / 2
+// p.rotation.x = Math.PI / 3
+//
+//
+// const rb = new Actor;
+// rb.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
+// rb.scale.setScalar(.9)
+// p.addComponent(rb)
+//
+// const t = new CubeActor;
+// const cube = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) });
+// t.addComponent(cube);
+// t.position.x = 1;
+//
+// const s = new SphereActor;
+// const sphereCollider = new ColliderBehavior({ type: Colliders.Sphere(1) });
+// s.addComponent(sphereCollider);
+// s.position.x = -1;
+//
+// rb.addComponent(t)
+// rb.addComponent(s)
+//
+// // scene.addComponent(p)
+//
 app.loadScene(scene);

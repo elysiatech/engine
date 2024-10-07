@@ -63,8 +63,8 @@ export class ElysiaStats extends ElysiaElement
 		return h`
 			<aside id="stats" class=${this.visible ? '' : 'inv'}>
 				<div class="purple">elsyia ${ELYSIA_VERSION}</div>
-				<div class=${this.stats.fps < 60 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
-				<div class=${this.stats.calls > 500 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
+				<div class=${this.stats.fps < 30 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
+				<div class=${this.stats.calls > 1000 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
 				<div>memory: ${this.stats.memory}</div>
 				<div>triangles: ${this.stats.triangles}</div>
 				<div>lines: ${this.stats.lines}</div>

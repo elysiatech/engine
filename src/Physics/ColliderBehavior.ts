@@ -60,8 +60,8 @@ export class ColliderBehavior extends Behavior
 		this.scene?.physics!.addCollider(this)
 	}
 
-	// we need to update the collider position depending on transforms to the parent objects.
-	onBeforePhysicsUpdate(delta: number, elapsed: number) {
+	override onBeforePhysicsUpdate(delta: number, elapsed: number)
+	{
 		const c = this.collider;
 		if(!c) return;
 
@@ -117,7 +117,7 @@ export class ColliderBehavior extends Behavior
 		else
 		{
 			this.parent!.object3d.getWorldPosition(temp.v1);
-			this.parent!.object3d.getWorldQuaternion(temp.q1);
+			this.parent!.object3d.getWorldQuaternion(temp.q1)
 			c.setTranslation(temp.v1);
 			c.setRotation(temp.q1);
 		}

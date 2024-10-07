@@ -88,7 +88,7 @@ export class PhysicsController implements Destroyable
 
 	getCollider(handle?: number): Rapier.Collider | undefined
 	{
-		if(!handle) return undefined;
+		if(typeof handle === "undefined") return undefined;
 		return this.world?.getCollider(handle);
 	}
 
