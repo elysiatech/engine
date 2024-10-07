@@ -62,10 +62,10 @@ class ProjectileBehavior extends Behavior
 		rb.enableContinuousCollisionDetection(true)
 		rb.setAdditionalMass(10)
 
-		const col = new ColliderBehavior({ type: Colliders.Sphere(.1) })
+		// const col = new ColliderBehavior({ type: Colliders.Sphere(.1) })
 
 		actor.addComponent(rb)
-		actor.addComponent(col)
+		// actor.addComponent(col)
 		actor.addComponent(new KillIfOutOfBounds)
 
 		this.scene.addComponent(actor)
@@ -90,7 +90,7 @@ const createCube = (x: number, y: number, z: number, i: number) =>
 	cube.position.set(x + .1*i, y + .1*i, z + .1*i);
 	(cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
 	const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
-	const boxCol = new ColliderBehavior({type: Colliders.Box({ x: 1, y: 1, z: 1 })})
+	const boxCol = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) })
 	cube.addComponent(new KillIfOutOfBounds);
 	cube.addComponent(rb);
 	cube.addComponent(boxCol);
@@ -109,10 +109,10 @@ for(let i = 0; i < 5; i++)
 }
 
 const floor = new PlaneActor()
-floor.scale.set(50, 50, 50);
+floor.scale.set(50, 50, 1);
 floor.position.y = -0.01;
 floor.rotation.x = -Math.PI / 2;
-floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 50, y: 50, z: 0.01 }) }))
+floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 0.01 }) }))
 scene.addComponent(floor);
 
 const dirLight = new DirectionalLightActor()

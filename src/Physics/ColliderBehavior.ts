@@ -5,9 +5,8 @@ import { Behavior } from "../Scene/Behavior";
 import { QuaternionLike, Vector3Like } from "../Math/Vectors.ts";
 import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
 
-
 export const Colliders = {
-	Box: (scale: Vector3Like) => Rapier.ColliderDesc.cuboid(scale.x/2, scale.y/2, scale.z/2),
+	Box: (scale: Vector3Like) => (worldScale: Vector3Like) => Rapier.ColliderDesc.cuboid((scale.x*worldScale.x)/2, (scale.y*worldScale.y)/2, (scale.z*worldScale.z)/2),
 	Cylinder: (height: number, radius: number) => Rapier.ColliderDesc.cylinder(height/2, radius),
 	Sphere: (radius: number) => Rapier.ColliderDesc.ball(radius),
 	Cone: (height: number, radius: number) => Rapier.ColliderDesc.cone(height/2, radius),
@@ -19,9 +18,11 @@ export const Colliders = {
 		Rapier.ColliderDesc.heightfield(nrows, ncols, heights, scale),
 }
 
+type ColliderCreationFunction = (worldScale: Vector3Like) => Rapier.ColliderDesc;
+
 interface ColliderBehaviorArguments
 {
-	type: Rapier.ColliderDesc;
+	type: (worldScale: Vector3Like) => Rapier.ColliderDesc;
 	sensor?: boolean;
 	density?: number;
 	mass?: number;
@@ -33,30 +34,30 @@ export class ColliderBehavior extends Behavior
 {
 	override type = "ColliderBehavior";
 
-	colliderDescription: Rapier.ColliderDesc;
+	colliderDescriptionConstructor: ColliderCreationFunction;
+
+	colliderDescription?: Rapier.ColliderDesc;
 
 	handle?: number;
 
 	get collider(): Rapier.Collider | undefined { return this.scene?.physics?.getCollider(this.handle) }
-
-	get density() { return this.collider ? this.collider.density() : this.colliderDescription.density; }
-	get mass() { return this.collider ? this.collider.mass() : this.colliderDescription.mass; }
-	get friction() { return this.collider ? this.collider.friction() : this.colliderDescription.friction; }
-	get restitution() { return this.collider ? this.collider.restitution() : this.colliderDescription.restitution; }
-	get sensor() { return this.collider ? this.collider.isSensor() : this.colliderDescription.isSensor; }
 
 	hasParentRigidBody = false;
 
 	constructor(args: ColliderBehaviorArguments) {
 		super();
 		this.addTag(ColliderBehavior)
-		this.colliderDescription = args.type
-		const worldScale = this.parent?.object3d.getWorldScale(new Three.Vector3())
+		this.colliderDescriptionConstructor = args.type;
 		// todo: adjust the scale of the collider's settings based on the world scale of the parent object.
 	}
 
 	onEnterScene()
 	{
+		if(this.collider) return;
+		const worldScale = this.parent!.object3d.getWorldScale(new Three.Vector3(1,1,1))
+		console.log('worldScale',worldScale)
+		this.colliderDescription = this.colliderDescriptionConstructor(worldScale);
+		console.log('this.colliderDescription',this.colliderDescription)
 		this.scene?.physics!.addCollider(this)
 	}
 
@@ -121,36 +122,6 @@ export class ColliderBehavior extends Behavior
 			c.setTranslation(temp.v1);
 			c.setRotation(temp.q1);
 		}
-	}
-
-	setDensity(density: number)
-	{
-		if(this.collider) this.collider.setDensity(density);
-		else this.colliderDescription.setDensity(density);
-	}
-
-	setMass(mass: number)
-	{
-		if(this.collider) this.collider.setMass(mass);
-		else this.colliderDescription.setMass(mass);
-	}
-
-	setFriction(friction: number)
-	{
-		if(this.collider) this.collider.setFriction(friction);
-		else this.colliderDescription.setFriction(friction);
-	}
-
-	setRestitution(restitution: number)
-	{
-		if(this.collider) this.collider.setRestitution(restitution);
-		else this.colliderDescription.setRestitution(restitution);
-	}
-
-	setSensor(isSensor: boolean)
-	{
-		if(this.collider) this.collider.setSensor(isSensor);
-		else this.colliderDescription.setSensor(isSensor);
 	}
 
 	onLeaveScene()
