@@ -22,7 +22,7 @@ export class Scheduler
 		for (const component of this.components) {
 			component.requestRender();
 		}
-		this.frametime = Math.round(((performance.now() - t) + Number.EPSILON) * 100) / 100
+		this.frametime = performance.now() - t;
 	}
 }
 

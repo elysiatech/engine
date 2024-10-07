@@ -1,20 +1,14 @@
 import { ElysiaElement, defineComponent, h, c, defaultScheduler } from "./UI";
 import { ELYSIA_VERSION } from "../Core/Constants.ts";
+import { nothing } from "lit";
 
-export class ElysiaStats extends ElysiaElement
+export class ElysiaUiStats extends ElysiaElement
 {
-	static Tag = "elysia-stats";
+	static Tag = "elysia-ui-stats";
 
 	visible = false;
 
-	public stats = {
-		calls: 0,
-		fps: 0,
-		lines: 0,
-		points: 0,
-		triangles: 0,
-		memory: 0,
-	}
+	public scheduler = defaultScheduler;
 
 	static styles = c`	
 		:host {
@@ -62,18 +56,12 @@ export class ElysiaStats extends ElysiaElement
 	{
 		return h`
 			<aside id="stats" class=${this.visible ? '' : 'inv'}>
-				<div class="purple">elsyia ${ELYSIA_VERSION}</div>
-				<div class=${this.stats.fps < 30 ? 'red' : 'white'}>fps: ${this.stats.fps}</div>
-				<div class=${this.stats.calls > 1000 ? 'red' : 'white'}>drawcalls: ${this.stats.calls}</div>
-				<div>memory: ${this.stats.memory}</div>
-				<div>triangles: ${this.stats.triangles}</div>
-				<div>lines: ${this.stats.lines}</div>
-				<div>points: ${this.stats.points}</div>
-				${defaultScheduler.components.size > 1 ? h`<div>ui components: ${defaultScheduler.components.size}</div>` : ''}
-				${defaultScheduler.components.size > 1 ? h`<div>ui updates: ${defaultScheduler.frametime.toFixed(0)}ms</div>` : ''}
+				<div class="purple">elsyia ui ${ELYSIA_VERSION}</div>
+				<div class=${this.scheduler.frametime > 12 ? 'red' : nothing}>update delta: ${this.scheduler.frametime.toFixed(0)}</div>
+				<div class="white">components: ${this.scheduler.components.size}</div>
 			</aside>
 		`
 	}
 }
 
-defineComponent(ElysiaStats);
+defineComponent(ElysiaUiStats);

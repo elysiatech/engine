@@ -14,10 +14,9 @@ import Rapier from "@dimforge/rapier3d-compat";
 import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
 import { Behavior } from "../../src/Scene/Behavior.ts";
 import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
-import { css, defineComponent, ElysiaElement, html } from "../../src/UI/UI.ts";
 import { KeyCode } from "../../src/Input/KeyCode.ts";
-import { Actor } from "../../src/Scene/Actor.ts";
-import { SMAAPreset } from "postprocessing";
+import "../../src/UI/ElysiaCrossHair.ts"
+import { Player } from "./Player.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -71,7 +70,7 @@ class ProjectileBehavior extends Behavior
 }
 
 const scene = new Scene();
-scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: false });
+scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
@@ -127,100 +126,10 @@ scene.addComponent(sky)
 
 scene.grid.enable();
 
-class CrossHairUI extends ElysiaElement
-{
-	static override Tag = "cross-hair-ui";
 
-	static styles = css`
-		:host {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			z-index: 100;
-		}
-		
-		.crosshair.left {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 10px;
-			height: 2px;
-			background-color: white;
-		}
-		
-		.crosshair.right {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 10px;
-			height: 2px;
-			background-color: white;
-		}
-		
-		.crosshair.top {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 2px;
-			height: 10px;
-			background-color: white;
-		}
-		
-		.crosshair.bottom {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 2px;
-			height: 10px;
-			background-color: white;
-	`
+document.body.appendChild(document.createElement("elysia-crosshair"))
 
-	render()
-	{
-		return html`
-			<div class="crosshair left"></div>
-			<div class="crosshair right"></div>
-			<div class="crosshair top"></div>
-			<div class="crosshair bottom"></div>`
-	}
-}
+scene.addComponent(new Player)
 
-defineComponent(CrossHairUI)
-
-document.body.appendChild(document.createElement("cross-hair-ui"))
-
-// scene.addComponent(new Player)
-
-const p = new Actor;
-p.position.y = 3;
-p.rotation.y = Math.PI / 2
-p.rotation.x = Math.PI / 3
-
-
-const rb = new Actor;
-rb.addComponent(new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic }))
-rb.scale.setScalar(.3)
-p.addComponent(rb)
-
-const t = new CubeActor;
-const cube = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) });
-t.addComponent(cube);
-t.position.x = 1;
-
-const s = new SphereActor;
-const sphereCollider = new ColliderBehavior({ type: Colliders.Sphere(1) });
-
-s.addComponent(sphereCollider);
-s.position.x = -1;
-
-rb.addComponent(t)
-rb.addComponent(s)
-
-scene.addComponent(p)
 
 app.loadScene(scene);

@@ -1,18 +1,16 @@
-import { LitElement, TemplateResult, html, css, svg, PropertyValueMap, PropertyDeclaration } from "lit";
-import { Scheduler, defaultScheduler } from "./Scheduler";
-import { property, query } from "lit/decorators.js";
-import { Constructor } from "../Core/Utilities";
+import { css, html, LitElement, PropertyDeclaration, PropertyValueMap, svg, TemplateResult } from "lit";
+import { defaultScheduler, Scheduler } from "./Scheduler";
+import { Constructor, tick } from "../Core/Utilities";
 import { isFunction } from "../Core/Asserts";
+import { property } from "lit/decorators/property.js";
 
-export { 
-	query as ref,
+export {
 	css, 
 	css as c,
 	svg,
 	svg as s,
 	html,
 	html as h,
-	attribute,
 	defineComponent,
 	Scheduler,
 	defaultScheduler,
@@ -24,7 +22,7 @@ const isLitTemplateResult = (value: unknown): value is TemplateResult => !!value
 
 function defineComponent(component: Constructor<ElysiaElement> & { Tag: string })
 {
-	if(!component.Tag || component.Tag === "elysia-element")
+	if(!component.Tag || component.Tag === "unknown-elysia-element")
 	{
 		throw new Error(`You must define a tag for ${component.name}!`)
 	}
@@ -34,12 +32,26 @@ function defineComponent(component: Constructor<ElysiaElement> & { Tag: string }
 	}
 }
 
-function attribute(options: { reflect?: boolean, converter?: PropertyDeclaration["converter"], attribute?: string } = {})
+const strictEqual = (a: any, b: any) => a === b;
+
+function attribute(options: {
+	reflect?: boolean,
+	converter?: PropertyDeclaration["converter"],
+	attribute?: string,
+	onChange?: (value: any) => void ,
+	hasChanged?: PropertyDeclaration["hasChanged"]
+} = {})
 {
-	return property({ 
-		attribute: options.attribute ?? true, 
-		reflect: options.reflect, 
-		converter: options.converter
+	return property({
+		attribute: options.attribute ?? true,
+		reflect: options.reflect,
+		converter: options.converter,
+		hasChanged(value: unknown, oldValue: unknown): boolean
+		{
+			const hasChanged = (options.hasChanged ?? strictEqual)(value, oldValue);
+			if(hasChanged && options.onChange) options.onChange(value);
+			return hasChanged;
+		}
 	})
 }
 
@@ -48,14 +60,42 @@ function attribute(options: { reflect?: boolean, converter?: PropertyDeclaration
  * */
 interface ElysiaElement extends LitElement
 {
-	requestUpdate(): void;
+	/**
+	 * Schedule a possible update, if it's template values have changed.
+	 * If you want to force an update, you can call requestUpdate().
+	 */
 	requestRender(): void;
+
+	/**
+	 * Set the offscreen update strategy for this element.
+	 * @default OffscreenUpdateStrategy.Disabled
+	 * @param strategy
+	 */
 	setOffscreenRenderStrategy(strategy: OffscreenUpdateStrategy): void;
+
+	/**
+	 * The scheduler that this element is subscribed to.
+	 */
 	scheduler: Scheduler;
 
+	/**
+	 * Lifecycle hook that is called when the element is mounted to the DOM.
+	 */
 	onMount?(): void;
+
+	/**
+	 * Lifecycle hook that is called before the element is updated.
+	 */
 	onBeforeUpdate?(): void;
+
+	/**
+	 * Lifecycle hook that is called after the element is updated.
+	 */
 	onAfterUpdate?(): void;
+
+	/**
+	 * Lifecycle hook that is called when the element is unmounted from the DOM.
+	 */
 	onUnmount?(): void;
 }
 
@@ -67,52 +107,71 @@ enum OffscreenUpdateStrategy
 
 class ElysiaElement extends LitElement
 {
-
-	static Tag: string = "elysia-element";
+	public static Tag: string = "unknown-elysia-element";
 
 	public scheduler: Scheduler = defaultScheduler;
 
-	get offscreen(){ return this.#offscreen; }
+	public get offscreen(){ return this.#offscreen; }
 
-	get offscreenUpdateStrategy(): OffscreenUpdateStrategy { return this.#offscreenUpdateStrategy; }
+	public get offscreenUpdateStrategy(): OffscreenUpdateStrategy { return this.#offscreenUpdateStrategy; }
 
-	constructor()
+	public constructor()
 	{
 		super();
-		this.providedRenderFunction = this.render as any;
-		this.render = function render(){ return this.renderResult ?? this.providedRenderFunction() }
+		this.#providedRenderFunction = this.render as any;
+		this.render = function render(){ return this.#renderResult ?? this.#providedRenderFunction() }
+
+		this.compareRenderOutput = this.compareRenderOutput.bind(this);
+		this.requestRender = this.requestRender.bind(this);
 	}
 
-	connectedCallback()
+	override connectedCallback()
 	{
 		super.connectedCallback();
 		this.onMount && this.onMount();
-		this.observer.observe(this)
+
+		this.componentVisibilityObserver = new IntersectionObserver((entries) =>
+		{
+			if(entries.some(entry => entry.isIntersecting))
+			{
+				this.#offscreen = false;
+				this.scheduler.subscribe(this)
+			}
+			else
+			{
+				this.#offscreen = true;
+				this.setOffscreenUpdateStrategy(this.offscreenUpdateStrategy)
+			}
+		}, {
+			rootMargin: "25px"
+		})
+
+		this.componentVisibilityObserver.observe(this)
 	}
 
-	disconnectedCallback(): void
+	override disconnectedCallback(): void
 	{
 		super.disconnectedCallback();
 		this.scheduler.unsubscribe(this);
-		this.observer.disconnect();
+		this.componentVisibilityObserver?.disconnect();
 		this.onUnmount && this.onUnmount();
 	}
 
-	requestRender()
+	public requestRender()
 	{
 		if(this.isUpdatePending) return;
 
-		const currentRender = this.providedRenderFunction();
+		const currentRender = this.#providedRenderFunction();
 
 		if (isLitTemplateResult(currentRender))
 		{
 			if (
-				!this.renderResult 
-				|| this.compareRenderOutput(this.renderResult.values, currentRender.values)
-				|| this.compareRenderOutput(this.renderResult.strings, currentRender.strings)
+				!this.#renderResult
+				|| this.compareRenderOutput(this.#renderResult.values, currentRender.values)
+				|| this.compareRenderOutput(this.#renderResult.strings, currentRender.strings)
 			)
 			{
-				this.renderResult = currentRender;
+				this.#renderResult = currentRender;
 				this.requestUpdate();
 				this.onBeforeUpdate && this.onBeforeUpdate();
 			}
@@ -120,49 +179,31 @@ class ElysiaElement extends LitElement
 		else { throw Error("ImHTML render method must return a lit-html template result"); }
 	}
 
-	setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy)
+	public setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy)
 	{
 		this.#offscreenUpdateStrategy = value;
 
 		if(this.offscreen)
 		{
-			if(value === OffscreenUpdateStrategy.Disabled){ this.scheduler.unsubscribe(this); }
-			if(value === OffscreenUpdateStrategy.HighPriority){ this.scheduler.subscribe(this); }
+			if(value === OffscreenUpdateStrategy.Disabled) this.scheduler.unsubscribe(this);
+			if(value === OffscreenUpdateStrategy.HighPriority) this.scheduler.subscribe(this);
 		}
 	}
 
-	protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void
+	protected componentVisibilityObserver?: IntersectionObserver;
+
+	protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void
 	{
 		super.updated(_changedProperties);
 		this.onAfterUpdate && this.onAfterUpdate();
 	}
 
-	private providedRenderFunction: () => TemplateResult;
-
-	private renderResult?: TemplateResult;
-
-	private observer = new IntersectionObserver((entries) =>
-	{
-		if(entries.some(entry => entry.isIntersecting))
-		{
-			this.#offscreen = false;
-			this.scheduler.subscribe(this)
-		}
-		else
-		{
-			this.#offscreen = true;
-			this.setOffscreenUpdateStrategy(this.offscreenUpdateStrategy)
-		}
-	}, {
-		rootMargin: "25px"
-	})
-
 	private compareRenderOutput(a: unknown[] | TemplateStringsArray, b: unknown[] | TemplateStringsArray): boolean
 	{
 		// if the lengths are different, we know the values are different and bail early
-		if (a.length !== b.length) return true;
+		if (a?.length !== b?.length) return true;
 
-		for (let i = 0; i < a.length; i++)
+		for (let i = 0; i < a?.length; i++)
 		{
 			const prev = a[i], next = b[i];
 
@@ -188,6 +229,10 @@ class ElysiaElement extends LitElement
 
 		return false;
 	}
+
+	readonly #providedRenderFunction: () => TemplateResult;
+
+	#renderResult?: TemplateResult;
 
 	#offscreen = true;
 

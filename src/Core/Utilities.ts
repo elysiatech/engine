@@ -27,3 +27,11 @@ export type Maybe<T> = T | null | undefined;
 export type MaybePromise<T> = T | Promise<T>;
 
 export type Serializable = string | number | boolean | null | undefined | Serializable[] | { [key: string]: Serializable };
+
+export function tick<T>(callback?: T): T extends Function ? void : Promise<void>
+{
+	// @ts-ignore
+	if(typeof callback === "function") return void setTimeout(callback)
+	// @ts-ignore
+	else return new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve)))
+}
