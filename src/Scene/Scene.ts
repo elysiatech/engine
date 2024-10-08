@@ -25,6 +25,8 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	physics?: PhysicsController;
 
+	get activeCamera() { return this.getActiveCamera(); }
+
 	constructor()
 	{
 		super();

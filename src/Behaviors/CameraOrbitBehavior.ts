@@ -2,6 +2,8 @@ import { OrbitControls } from "three-stdlib";
 import { Behavior } from "../Scene/Behavior";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { isOrthographicCamera, isPerspectiveCamera } from "../Core/Asserts";
+import { PerspectiveCameraActor } from "../Actors/PerspectiveCameraActor.ts";
+import { OrthographicCameraActor } from "../Actors/OrthographicCameraActor.ts";
 
 /**
  * Implements the standard orbit controls for a camera.
@@ -29,11 +31,11 @@ export class CameraOrbitBehavior extends Behavior
 	{
 		super.onCreate();
 
-		const camera = this.scene!.getActiveCamera();
+		const camera = this.parent?.getComponentsByType(PerspectiveCameraActor).first ?? this.parent?.getComponentsByType(OrthographicCameraActor).first;
 
 		if(!camera)
 		{
-			ELYSIA_LOGGER.error("No active camera found in scene");
+			ELYSIA_LOGGER.error("No camera found to attach orbit controls to", this.parent);
 			return
 		}
 

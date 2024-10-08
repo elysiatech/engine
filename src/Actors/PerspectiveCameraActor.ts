@@ -50,11 +50,11 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 		if(value)
 		{
 			this.#debugHelper ??= new Three.CameraHelper(this.object3d);
-			this.object3d.add(this.#debugHelper);
+			this.scene?.object3d.add(this.#debugHelper!);
 		}
 		else
 		{
-			this.#debugHelper?.parent?.remove(this.#debugHelper);
+			this.#debugHelper?.removeFromParent();
 			this.#debugHelper?.dispose();
 			this.#debugHelper = undefined;
 		}
@@ -65,16 +65,28 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 		super();
 		this.onResize = this.onResize.bind(this);
 		this.object3d = new Three.PerspectiveCamera();
-		this.object3d.actor = this;
 	}
 
-	onCreate()
+	override onCreate()
 	{
 		ElysiaEventDispatcher.addEventListener(ResizeEvent, this.onResize);
 		this.onResize({
 			x: this.app?.renderPipeline.getRenderer().domElement.width ?? 0,
 			y: this.app?.renderPipeline.getRenderer().domElement.height ?? 0
 		});
+		if(this.debug) this.scene!.object3d.add(this.#debugHelper!);
+	}
+
+	override onUpdate(delta: number, elapsed: number)
+	{
+		super.onUpdate(delta, elapsed);
+		if(this.debug) this.#debugHelper?.update();
+	}
+
+	override onDestroy()
+	{
+		ElysiaEventDispatcher.removeEventListener(ResizeEvent, this.onResize);
+		this.#debugHelper?.dispose();
 	}
 
 	private onResize(e: { x: number, y: number })

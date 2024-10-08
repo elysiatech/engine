@@ -48,6 +48,7 @@ class ProjectileBehavior extends Behavior
 
 	private shoot()
 	{
+		return;
 		if(!this.parent || !this.scene) return;
 
 		const actor = new SphereActor;
@@ -65,7 +66,7 @@ class ProjectileBehavior extends Behavior
 		actor.addComponent(col)
 		actor.addComponent(new KillIfOutOfBounds)
 
-		this.scene.addComponent(actor)
+		this.scene?.addComponent(actor)
 	}
 }
 
@@ -75,7 +76,7 @@ scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0),
 const cameraActor = new PerspectiveCameraActor()
 cameraActor.position.z = 5;
 cameraActor.position.y = 2;
-cameraActor.addTag(ActiveCameraTag);
+// cameraActor.addTag(ActiveCameraTag);
 const orbitBehavior = new CameraOrbitBehavior();
 cameraActor.addComponent(orbitBehavior);
 cameraActor.addComponent(new ProjectileBehavior)
@@ -131,5 +132,5 @@ document.body.appendChild(document.createElement("elysia-crosshair"))
 
 scene.addComponent(new Player)
 
-
+// debugger;
 app.loadScene(scene);

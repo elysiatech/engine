@@ -25,18 +25,18 @@ export class MouseIntersections
 		this.vec2.x = x
 		this.vec2.y = y
 
-		this.raycaster.setFromCamera(this.vec2, camera)
+		// this.raycaster.setFromCamera(this.vec2, camera)
 
-		const intersects = this.raycaster.intersectObjects(scene.children, true)
+		// const intersects = this.raycaster.intersectObjects(scene.children, true)
 
-		for(const intersection of intersects)
-		{
-			const actor = intersection.object.actor
-			if(actor)
-			{
-				this.intersections.add(actor)
-			}
-		}
+		// for(const intersection of intersects)
+		// {
+		// 	const actor = intersection.object.actor
+		// 	if(actor)
+		// 	{
+		// 		this.intersections.add(actor)
+		// 	}
+		// }
 	}
 
 	private vec2 = new Three.Vector2;
