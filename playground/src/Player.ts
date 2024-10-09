@@ -87,9 +87,9 @@ class FPSController extends Behavior
 
 export class Player extends Actor
 {
-	acceleration = 60;
+	acceleration = 125;
 
-	maxVelocity = 30;
+	maxVelocity = 10;
 
 	deceleration = 50;
 
@@ -141,6 +141,14 @@ export class Player extends Actor
 		this.rotationRoot.addComponent(new FPSController)
 
 		this.position.y = 2;
+
+		this.app!.input.onKeyDown(KeyCode.Space, () => {
+			if(!this.inAir)
+			{
+				this.velocity.y = 5;
+				this.inAir = true;
+			}
+		})
 	}
 
 	onBeforePhysicsUpdate(delta: number, elapsed: number)
@@ -157,9 +165,12 @@ export class Player extends Actor
 		// Normalize input vector if it's not zero
 		if (this.inputVector.lengthSq() > 0) this.inputVector.normalize();
 
-		this.desiredTranslation.set(0, 0, 0);
+		// Create a rotation matrix from the player's (or camera's) rotation
+		const rotationMatrix = new Three.Matrix4().makeRotationFromQuaternion(this.rotationRoot!.quaternion);
+		// Transform the input vector by the rotation matrix
+		this.inputVector.applyMatrix4(rotationMatrix);
 
-		// this.velocity.y = clamp(this.velocity.y - 9.81 * delta, -30, 30);
+		this.velocity.y = clamp(this.velocity.y - 9.81 * delta, -30, 30);
 
 		if(isZero(this.inputVector.x))
 		{
@@ -181,9 +192,7 @@ export class Player extends Actor
 			this.velocity.z = clamp(this.velocity.z + this.inputVector.z * this.acceleration * delta, -bounds, bounds);
 		}
 
-		console.log(Number(this.velocity.x.toFixed(2)), Number(this.velocity.z.toFixed(2)))
-
-		this.desiredTranslation.add(this.velocity.clone().multiplyScalar(delta))
+		this.desiredTranslation.setScalar(0).add(this.velocity.clone().multiplyScalar(delta))
 
 		this.controller.computeColliderMovement(
 			this.collider.collider,    // The collider we would like to move.
@@ -191,7 +200,7 @@ export class Player extends Actor
 		);
 
 		this.computedTranslation.copy(this.controller.computedMovement())
-		
+
 		this.rBody.setLinearVelocity(this.computedTranslation.divideScalar(delta));
 
 		this.inAir = !this.controller.computedGrounded();
