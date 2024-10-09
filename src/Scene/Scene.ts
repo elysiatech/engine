@@ -12,6 +12,7 @@ import { ELYSIA_LOGGER } from "../Core/Logger";
 import { GridActor } from "../Actors/GridActor.ts";
 import { SparseSet } from "../Containers/SparseSet.ts";
 import { PhysicsController } from "../Physics/PhysicsController.ts";
+import { EnvironmentActor } from "../Actors/EnvironmentActor.ts";
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
@@ -23,9 +24,16 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	get grid() { return this.#grid; }
 
+	get ambientLight() { return this.#ambientLight; }
+
 	physics?: PhysicsController;
 
 	get activeCamera() { return this.getActiveCamera(); }
+	set activeCamera(camera: Three.Camera | Actor<Three.Camera>)
+	{
+		this.#activeCamera = camera instanceof Actor ? camera.object3d : camera;
+		this.app?.renderPipeline.onCameraChange(this.#activeCamera);
+	}
 
 	constructor()
 	{
@@ -73,11 +81,6 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 				this.componentsByTag.set(event.tag, new SparseSet);
 
 			this.componentsByTag.get(event.tag)!.add(event.target);
-
-			if(event.tag === ActiveCameraTag && isActor(event.target))
-			{
-				this.app?.renderPipeline.onCameraChange(this.getActiveCamera()!);
-			}
 		})
 
 		ElysiaEventDispatcher.addEventListener(TagRemovedEvent, (event) => {
@@ -106,12 +109,9 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 * Returns the active camera in the scene (if one is set via ActiveCameraTag).
 	 * If multiple cameras are set as active, the first one found is returned.
 	 */
-	public getActiveCamera(): Three.Camera | null
+	public getActiveCamera(): Three.Camera
 	{
-		const activeCamera = this.getComponentsByTag(ActiveCameraTag).last;
-		if(isActor(activeCamera) && activeCamera.object3d instanceof Three.Camera)
-			return activeCamera.object3d as Three.Camera;
-		return null;
+		return this.#activeCamera;
 	}
 
 	onLoad(): void | Promise<void> {}
@@ -124,6 +124,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	onCreate() {
 		ELYSIA_LOGGER.debug("Scene created", this)
+		this.object3d.add(this.#ambientLight);
 	}
 
 	onStart() {
@@ -149,7 +150,11 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	private allActors = new SparseSet<Actor>
 	private allBehaviors = new SparseSet<Behavior>
 
+	#activeCamera: Three.Camera = new Three.PerspectiveCamera();
+
 	#object3d: Three.Scene = new Three.Scene();
 
 	#grid = new GridActor;
+
+	#ambientLight = new Three.AmbientLight(0xffffff, 0.5);
 }

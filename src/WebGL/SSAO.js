@@ -1861,7 +1861,6 @@ class $05f6997e4b65da14$export$2d57db20b5eb5e0a extends (0, $5Whe3$Pass) {
 			format: $5Whe3$RGBAFormat,
 			type: $5Whe3$HalfFloatType,
 			stencilBuffer: false,
-			depthBuffer: false,
 			alpha: true
 		});
 		/** @type {THREE.DataTexture} */ this.bluenoise = new $5Whe3$DataTexture($05f6997e4b65da14$var$bluenoiseBits, 128, 128);

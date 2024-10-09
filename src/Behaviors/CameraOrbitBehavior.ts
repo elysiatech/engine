@@ -31,7 +31,7 @@ export class CameraOrbitBehavior extends Behavior
 	{
 		super.onCreate();
 
-		const camera = this.parent?.getComponentsByType(PerspectiveCameraActor).first ?? this.parent?.getComponentsByType(OrthographicCameraActor).first;
+		const camera = this.parent?.object3d;
 
 		if(!camera)
 		{

@@ -63,7 +63,7 @@ export class EnvironmentActor extends Actor
 		const pmremGenerator = this.#pmremGenerator;
 
 		if (!this.scene || !renderer)
-			throw new Error("Scene or renderer not found");
+			return;
 
 		if (this.#texture) { this.scene.object3d.environment = this.#texture; }
 		else if (this.#envScene && pmremGenerator)

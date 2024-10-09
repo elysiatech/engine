@@ -1,19 +1,19 @@
-import { Application } from "../../src/Core/ApplicationEntry.ts";
-import { Scene } from "../../src/Scene/Scene";
-import { DirectionalLightActor } from "../../src/Actors/DirectionalLightActor.ts";
-import { AmbientLightActor } from "../../src/Actors/AmbientLightActor.ts";
-import { CubeActor, PlaneActor, SphereActor } from "../../src/Actors/Primitives.ts";
-import { HighDefRenderPipeline } from "../../src/RPipeline/HighDefRenderPipeline.ts";
+import { Application } from "../src/Core/ApplicationEntry.ts";
+import { Scene } from "../src/Scene/Scene";
+import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
+import { AmbientLightActor } from "../src/Actors/AmbientLightActor.ts";
+import { CubeActor, PlaneActor, SphereActor } from "../src/Actors/Primitives.ts";
+import { HighDefRenderPipeline } from "../src/RPipeline/HighDefRenderPipeline.ts";
 import * as Three from "three";
-import { SkyActor, SkyDirectionalLightTag } from "../../src/Actors/SkyActor.ts";
-import { RigidBodyBehavior } from "../../src/Physics/RigidBody.ts";
+import { SkyActor, SkyDirectionalLightTag } from "../src/Actors/SkyActor.ts";
+import { RigidBodyBehavior } from "../src/Physics/RigidBody.ts";
 import Rapier from "@dimforge/rapier3d-compat";
-import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
-import { Behavior } from "../../src/Scene/Behavior.ts";
-import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
-import "../../src/UI/ElysiaCrossHair.ts"
-import { Player } from "./Player.ts";
-import { MouseCode } from "../../src/Input/MouseCode.ts";
+import { ColliderBehavior, Colliders } from "../src/Physics/ColliderBehavior.ts";
+import { Behavior } from "../src/Scene/Behavior.ts";
+import { PhysicsController } from "../src/Physics/PhysicsController.ts";
+import "../src/UI/ElysiaCrossHair.ts"
+import { Player } from "../src/Actors/Player.ts";
+import { MouseCode } from "../src/Input/MouseCode.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -88,7 +88,7 @@ const randomColor = () => {
 	return new Three.Color(Math.random(), Math.random(), Math.random());
 }
 
-const createCube = (x: number, y: number, z: number, color: string) =>
+const createCube = (x: number, y: number, z: number, color: Three.Color) =>
 {
 	const i = 1;
 	const cube = new CubeActor;
@@ -102,7 +102,7 @@ const createCube = (x: number, y: number, z: number, color: string) =>
 	scene.addComponent(cube);
 }
 
-for(let i = 0; i < 5; i++)
+for(let i = 0; i < 4; i++)
 {
 	for(let j = 0; j < 5; j++)
 	{
@@ -135,6 +135,7 @@ scene.grid.enable();
 document.body.appendChild(document.createElement("elysia-crosshair"))
 
 const p = new Player;
+scene.activeCamera = p.camera;
 p.position.set(10, 2, 10)
 p.addComponent(new ProjectileBehavior)
 scene.addComponent(p)

@@ -1,13 +1,13 @@
-import { Actor } from "../../src/Scene/Actor.ts";
-import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
-import { KeyCode } from "../../src/Input/KeyCode.ts";
+import { Actor } from "../Scene/Actor.ts";
+import { ColliderBehavior, Colliders } from "../Physics/ColliderBehavior.ts";
+import { KeyCode } from "../Input/KeyCode.ts";
 import Rapier from "@dimforge/rapier3d-compat";
 import * as Three from "three";
-import { RigidBodyBehavior } from "../../src/Physics/RigidBody.ts";
-import { PerspectiveCameraActor } from "../../src/Actors/PerspectiveCameraActor.ts";
-import { ActiveCameraTag } from "../../src/Core/Tags.ts";
-import { Behavior } from "../../src/Scene/Behavior.ts";
-import { clamp } from "../../src/Math/Other.ts";
+import { RigidBodyBehavior } from "../Physics/RigidBody.ts";
+import { PerspectiveCameraActor } from "./PerspectiveCameraActor.ts";
+import { ActiveCameraTag } from "../Core/Tags.ts";
+import { Behavior } from "../Scene/Behavior.ts";
+import { clamp } from "../Math/Other.ts";
 
 const applyFriction = (value: number, decel: number, maxVelocity: number, delta: number) =>
 	clamp(Math.abs(value) < decel*delta ? 0 : value - Math.sign(value) * decel*delta, -maxVelocity, maxVelocity)
@@ -134,7 +134,6 @@ export class Player extends Actor
 		this.controller?.setApplyImpulsesToDynamicBodies(true)
 
 		this.camera.position.set(0, .8, 0)
-		this.camera.addTag(ActiveCameraTag)
 		this.rotationRoot.addComponent(this.camera)
 
 		this.rotationRoot.addComponent(new FPSController)

@@ -1,6 +1,7 @@
 # compiled output
 .build
 dist
+playground/dist
 
 # IDEs and editors
 .idea
