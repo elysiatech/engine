@@ -1,8 +1,5 @@
 import { Application } from "../../src/Core/ApplicationEntry.ts";
 import { Scene } from "../../src/Scene/Scene";
-import { ActiveCameraTag } from "../../src/Core/Tags.ts";
-import { CameraOrbitBehavior } from "../../src/Behaviors/CameraOrbitBehavior.ts";
-import { PerspectiveCameraActor } from "../../src/Actors/PerspectiveCameraActor.ts";
 import { DirectionalLightActor } from "../../src/Actors/DirectionalLightActor.ts";
 import { AmbientLightActor } from "../../src/Actors/AmbientLightActor.ts";
 import { CubeActor, PlaneActor, SphereActor } from "../../src/Actors/Primitives.ts";
@@ -14,9 +11,9 @@ import Rapier from "@dimforge/rapier3d-compat";
 import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
 import { Behavior } from "../../src/Scene/Behavior.ts";
 import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
-import { KeyCode } from "../../src/Input/KeyCode.ts";
 import "../../src/UI/ElysiaCrossHair.ts"
 import { Player } from "./Player.ts";
+import { MouseCode } from "../../src/Input/MouseCode.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -43,42 +40,60 @@ class KillIfOutOfBounds extends Behavior
 class ProjectileBehavior extends Behavior
 {
 	onCreate() {
-		this.app!.input!.onKeyDown(KeyCode.Space, () => this.shoot())
+		this.app!.input!.onKeyDown(MouseCode.MouseLeft, () => this.shoot())
 	}
 
 	private shoot()
 	{
-		return;
 		if(!this.parent || !this.scene) return;
 
+		const camera = this.scene.getActiveCamera();
+		if (!camera) return;
+
 		const actor = new SphereActor;
-		actor.position.copy(this.parent!.position);
-		actor.material.color = new Three.Color("red")
-		actor.scale.setScalar(.1);
+		actor.position.copy(camera.getWorldPosition(new Three.Vector3))
+		actor.position.add(camera.getWorldDirection(new Three.Vector3).multiplyScalar(2));
+		actor.material.color = new Three.Color("red");
+		actor.scale.setScalar(0.1);
 
-		const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
-		const cameraVector = new Three.Vector3(0, 0, -1).applyQuaternion(this.parent!.quaternion);
-		const col = new ColliderBehavior({ type: Colliders.Sphere(.1), density: 100, mass: 10 })
-		rb.setLinearVelocity(cameraVector.multiplyScalar(100))
-		rb.enableContinuousCollisionDetection(true)
+		// Calculate the forward vector of the camera using its world matrix
+		const cameraForward = new Three.Vector3;
+		camera.getWorldDirection(cameraForward);
 
-		actor.addComponent(rb)
-		actor.addComponent(col)
-		actor.addComponent(new KillIfOutOfBounds)
+		// Ensure the forward vector is normalized (although getWorldDirection should return a normalized vector)
+		cameraForward.normalize();
 
-		this.scene?.addComponent(actor)
+		const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic });
+		const col = new ColliderBehavior({ type: Colliders.Sphere(0.1), density: 10, mass: 1 });
+
+		// Apply velocity in the camera's forward direction
+		rb.enableContinuousCollisionDetection(true);
+
+		// rb.applyImpulse(cameraForward.multiplyScalar(20))
+		setTimeout(() => rb.applyImpulse(cameraForward.multiplyScalar(2)), 1);
+
+		actor.addComponent(rb);
+		actor.addComponent(col);
+		actor.addComponent(new KillIfOutOfBounds);
+
+		this.scene.addComponent(actor);
 	}
 }
 
 const scene = new Scene();
 
-scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
+scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: false });
 
-const createCube = (x: number, y: number, z: number, i: number) =>
+const randomColor = () => {
+	return new Three.Color(Math.random(), Math.random(), Math.random());
+}
+
+const createCube = (x: number, y: number, z: number, color: string) =>
 {
+	const i = 1;
 	const cube = new CubeActor;
 	cube.position.set(x + .1*i, y + .1*i, z + .1*i);
-	(cube.material as Three.MeshStandardMaterial).color = new Three.Color("#ee95ff");
+	(cube.material as Three.MeshStandardMaterial).color = new Three.Color(color);
 	const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic })
 	const boxCol = new ColliderBehavior({ type: Colliders.Box({ x: 1, y: 1, z: 1 }) })
 	cube.addComponent(new KillIfOutOfBounds);
@@ -93,7 +108,7 @@ for(let i = 0; i < 5; i++)
 	{
 		for(let k = 0; k < 5; k++)
 		{
-			// createCube(i, j, k, 1)
+			createCube(i, j, k, randomColor())
 		}
 	}
 }
@@ -119,6 +134,9 @@ scene.grid.enable();
 
 document.body.appendChild(document.createElement("elysia-crosshair"))
 
-scene.addComponent(new Player)
+const p = new Player;
+p.position.set(10, 2, 10)
+p.addComponent(new ProjectileBehavior)
+scene.addComponent(p)
 
 app.loadScene(scene);

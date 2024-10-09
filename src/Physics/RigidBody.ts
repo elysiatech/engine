@@ -39,9 +39,16 @@ export class RigidBodyBehavior extends Behavior
 		this.rbodyDescription = new Rapier.RigidBodyDesc(this.rbodyType);
 	}
 
-	onEnterScene() {
+	onEnterScene()
+	{
 		ASSERT(this.scene?.physics, "PhysicsController has not been initialized with a world yet.");
 		this.scene?.physics?.addRigidBody(this)
+		this.rBody!.addForce(this.forceToApply, true);
+		this.forceToApply.set(0, 0, 0);
+		this.rBody!.addTorque(this.torqueToApply, true);
+		this.torqueToApply.set(0, 0, 0);
+		this.rBody!.applyImpulse(this.impulseToApply, true);
+		this.impulseToApply.set(0, 0, 0);
 	}
 
 	setAdditionalMass(mass: number)
@@ -78,15 +85,27 @@ export class RigidBodyBehavior extends Behavior
 
 	resetTorques(){ if(this.rBody) this.rBody.resetTorques(true) }
 
-	addForce(force: Vector3Like) { if(this.rBody) this.rBody.addForce(force, true); }
+	addForce(force: Vector3Like)
+	{
+		if(this.rBody) this.rBody.addForce(force, true);
+		else this.forceToApply.set(force.x, force.y, force.z);
+	}
 
-	addTorque(torque: Vector3Like) { if(this.rBody) this.rBody.addTorque(torque, true); };
+	addTorque(torque: Vector3Like)
+	{
+		if(this.rBody) this.rBody.addTorque(torque, true);
+		else this.torqueToApply.set(torque.x, torque.y, torque.z);
+	};
 
 	applyTorqueImpulse(impulse: Vector3Like) { if(this.rBody) this.rBody.applyTorqueImpulse(impulse, true); };
 
 	addForceAtPoint(force: Vector3Like, point: Vector3Like) { if(this.rBody) this.rBody.addForceAtPoint(force, point, true); };
 
-	applyImpulse(impulse: Vector3Like) { if(this.rBody) this.rBody.applyImpulse(impulse, true); };
+	applyImpulse(impulse: Vector3Like)
+	{
+		if(this.rBody) this.rBody.applyImpulse(impulse, true);
+		else this.impulseToApply.set(impulse.x, impulse.y, impulse.z);
+	};
 
 	applyImpulseAtPoint(impulse: Vector3Like, point: Vector3Like) { if(this.rBody) this.rBody.applyImpulseAtPoint(impulse, point, true); };
 
@@ -109,4 +128,8 @@ export class RigidBodyBehavior extends Behavior
 	}
 
 	onLeaveScene() { this.scene?.physics?.destroyRigidBody(this) }
+
+	private forceToApply = new Three.Vector3;
+	private torqueToApply = new Three.Vector3;
+	private impulseToApply = new Three.Vector3;
 }

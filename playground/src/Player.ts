@@ -133,7 +133,6 @@ export class Player extends Actor
 		)
 		this.controller?.setApplyImpulsesToDynamicBodies(true)
 
-		this.camera.debug = true;
 		this.camera.position.set(0, .8, 0)
 		this.camera.addTag(ActiveCameraTag)
 		this.rotationRoot.addComponent(this.camera)
