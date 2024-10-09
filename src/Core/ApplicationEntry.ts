@@ -168,7 +168,7 @@ export class Application {
 				throw Error("No active camera in scene")
 			}
 
-			const delta = this.#clock.getDelta();
+			const delta = this.#clock.getDelta() || 0.016;
 			const elapsed = this.#clock.getElapsedTime();
 
 			// update mouse intersection

@@ -71,16 +71,8 @@ class ProjectileBehavior extends Behavior
 }
 
 const scene = new Scene();
-scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
-const cameraActor = new PerspectiveCameraActor()
-cameraActor.position.z = 5;
-cameraActor.position.y = 2;
-// cameraActor.addTag(ActiveCameraTag);
-const orbitBehavior = new CameraOrbitBehavior();
-cameraActor.addComponent(orbitBehavior);
-cameraActor.addComponent(new ProjectileBehavior)
-scene.addComponent(cameraActor);
+scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: true });
 
 const createCube = (x: number, y: number, z: number, i: number) =>
 {
@@ -121,16 +113,12 @@ const ambLight = new AmbientLightActor()
 scene.addComponent(ambLight);
 
 const sky = new SkyActor
-sky.elevation = 40;
-sky.azimuth = 38
 scene.addComponent(sky)
 
 scene.grid.enable();
-
 
 document.body.appendChild(document.createElement("elysia-crosshair"))
 
 scene.addComponent(new Player)
 
-// debugger;
 app.loadScene(scene);
