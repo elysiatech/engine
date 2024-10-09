@@ -51,7 +51,7 @@ export class ElysiaStats extends ElysiaElement
 		return h`
 			<nav class=${this.visible ? '' : 'inv'}>
 				<a href="/">Hello World</a>
-				<a href="/physics">Physics Playground</a>
+				<a href="/?physics">Physics Playground</a>
 			</nav>
 		`
 	}

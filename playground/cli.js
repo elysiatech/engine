@@ -16,7 +16,7 @@ const createConfig = (mode) => ({
 	metafile: true,
 	splitting: true,
 	sourcemap: "linked",
-	entryNames: mode === 'build' ? "[name]-[hash].js" : undefined,
+	entryNames: mode === 'build' ? "[name]-[hash]" : undefined,
 	define: {
 		"import.meta.DEV": mode === "dev" ? "true" : "false",
 	},
@@ -48,7 +48,7 @@ async function build()
 	try { await fs.rm("playground/dist", { recursive: true }) } catch {}
 	const output = await esbuild.build(createConfig("build"))
 	const path = Object.entries(output.metafile.outputs).find(([p, lol]) => lol.entryPoint === 'playground/PlaygroundEntry.ts')
-	await fs.writeFile("playground/dist/index.html", constructIndexHtml(path[0]))
+	await fs.writeFile("playground/dist/index.html", constructIndexHtml(path[0].replace('playground/dist', '')))
 	console.log(`Built in ${(performance.now() - t).toFixed(1)} ms`)
 }
 

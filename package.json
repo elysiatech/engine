@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node playground/cli dev",
     "playground:build": "node playground/cli build",
+    "playground:deploy": "npx wrangler pages deploy playground/dist",
     "build": "node build"
   },
   "exports": {},

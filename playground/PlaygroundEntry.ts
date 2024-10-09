@@ -11,14 +11,12 @@ if(import.meta.DEV)
 
 document.body.appendChild(document.createElement("elysia-menu"))
 
-const path = location.pathname;
-
-switch(path)
+switch(location.search)
 {
-	case "/":
+	case "":
 		import("./HelloCube.ts");
 		break;
-	case "/physics":
+	case "?physics":
 		import("./PhysicsSandbox.ts");
 		break;
 }

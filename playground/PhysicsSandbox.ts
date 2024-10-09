@@ -64,13 +64,13 @@ class ProjectileBehavior extends Behavior
 		cameraForward.normalize();
 
 		const rb = new RigidBodyBehavior({ type: Rapier.RigidBodyType.Dynamic });
-		const col = new ColliderBehavior({ type: Colliders.Sphere(0.1), density: 10, mass: 1 });
+		const col = new ColliderBehavior({ type: Colliders.Sphere(0.1), density: 100, mass: 10 });
 
 		// Apply velocity in the camera's forward direction
 		rb.enableContinuousCollisionDetection(true);
 
 		// rb.applyImpulse(cameraForward.multiplyScalar(20))
-		setTimeout(() => rb.applyImpulse(cameraForward.multiplyScalar(2)), 1);
+		setTimeout(() => rb.applyImpulse(cameraForward.multiplyScalar(20)), 1);
 
 		actor.addComponent(rb);
 		actor.addComponent(col);
@@ -130,7 +130,7 @@ scene.addComponent(ambLight);
 const sky = new SkyActor
 scene.addComponent(sky)
 
-scene.grid.enable();
+// scene.grid.enable();
 
 document.body.appendChild(document.createElement("elysia-crosshair"))
 
