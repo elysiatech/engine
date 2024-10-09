@@ -9,8 +9,16 @@ import { ActiveCameraTag } from "../Core/Tags.ts";
 import { Behavior } from "../Scene/Behavior.ts";
 import { clamp } from "../Math/Other.ts";
 
-const applyFriction = (value: number, decel: number, maxVelocity: number, delta: number) =>
-	clamp(Math.abs(value) < decel*delta ? 0 : value - Math.sign(value) * decel*delta, -maxVelocity, maxVelocity)
+function applyFriction(vector: Three.Vector2, decel: number, maxVelocity: number, delta: number)
+{
+	const speed = vector.length();
+	if (speed > 0) {
+		const frictionMagnitude = Math.min(speed, decel * delta);
+		vector.multiplyScalar(Math.max(0, speed - frictionMagnitude) / speed);
+	}
+	return vector.clampLength(0, maxVelocity);
+}
+
 
 class FPSController extends Behavior
 {
@@ -87,11 +95,11 @@ class FPSController extends Behavior
 
 export class Player extends Actor
 {
-	acceleration = 125;
+	acceleration = 80;
 
-	maxVelocity = 10;
+	maxVelocity = 6;
 
-	deceleration = 50;
+	deceleration = 30;
 
 	inputVector = new Three.Vector3(0, 0, 0)
 
@@ -163,37 +171,30 @@ export class Player extends Actor
 		// Normalize input vector if it's not zero
 		if (this.inputVector.lengthSq() > 0) this.inputVector.normalize();
 
-		// Create a rotation matrix from the player's (or camera's) rotation
 		const rotationMatrix = new Three.Matrix4().makeRotationFromQuaternion(this.rotationRoot!.quaternion);
-		// Transform the input vector by the rotation matrix
+
 		this.inputVector.applyMatrix4(rotationMatrix);
 
 		this.velocity.y = clamp(this.velocity.y - 9.81 * delta, -30, 30);
 
-		if(isZero(this.inputVector.x))
-		{
-			this.velocity.x = applyFriction(this.velocity.x, this.deceleration, this.maxVelocity, delta);
-		}
-		else
-		{
-			const bounds = Math.abs(this.maxVelocity * this.inputVector.x);
-			this.velocity.x = clamp(this.velocity.x + this.inputVector.x * this.acceleration * delta, -bounds, bounds);
+		const horizontalVelocity = new Three.Vector2(this.velocity.x, this.velocity.z);
+		const horizontalInput = new Three.Vector2(this.inputVector.x, this.inputVector.z);
+
+		if (horizontalInput.lengthSq() > 0) {
+			const bounds = this.maxVelocity * horizontalInput.length();
+			horizontalVelocity.add(horizontalInput.multiplyScalar(this.acceleration * delta));
+			horizontalVelocity.clampLength(0, bounds);
+		} else {
+			applyFriction(horizontalVelocity, this.deceleration, this.maxVelocity, delta);
 		}
 
-		if(isZero(this.inputVector.z))
-		{
-			this.velocity.z = applyFriction(this.velocity.z, this.deceleration, this.maxVelocity, delta);
-		}
-		else
-		{
-			const bounds = Math.abs(this.maxVelocity * this.inputVector.z);
-			this.velocity.z = clamp(this.velocity.z + this.inputVector.z * this.acceleration * delta, -bounds, bounds);
-		}
+		this.velocity.x = horizontalVelocity.x;
+		this.velocity.z = horizontalVelocity.y;
 
 		this.desiredTranslation.setScalar(0).add(this.velocity.clone().multiplyScalar(delta))
 
 		this.controller.computeColliderMovement(
-			this.collider.collider,    // The collider we would like to move.
+			this.collider.collider,
 			this.desiredTranslation,
 		);
 
@@ -207,5 +208,3 @@ export class Player extends Actor
 }
 
 const isZero = (v: number) => Math.abs(v) < 0.00001;
-
-const neverNaN = (v: number) => isNaN(v) ? 0 : v;

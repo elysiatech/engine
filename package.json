@@ -6,10 +6,10 @@
     "dist"
   ],
   "scripts": {
-    "dev": "node playground/cli dev",
-    "playground:build": "node playground/cli build",
-    "playground:deploy": "npx wrangler pages deploy playground/dist",
-    "build": "node build"
+    "dev": "node cli dev",
+    "playground:build": "node cli build",
+    "playground:deploy": "pnpm playground:build && npx wrangler pages deploy playground/dist",
+    "build": "node cli"
   },
   "exports": {},
   "peerDependencies": {
