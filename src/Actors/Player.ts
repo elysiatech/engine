@@ -18,7 +18,7 @@ class FPSController extends Behavior
 
 	domElement?: HTMLElement;
 
-	sensitivity = 0.005;
+	sensitivity = 0.001;
 
 	get target() { return this.parent?.object3d! }
 
