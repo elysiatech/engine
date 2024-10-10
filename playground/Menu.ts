@@ -1,4 +1,5 @@
 import { c, defineComponent, ElysiaElement, h } from "../src/UI/UI.ts";
+import "../src/UI/Theme.ts"
 
 export class ElysiaStats extends ElysiaElement
 {
@@ -52,6 +53,7 @@ export class ElysiaStats extends ElysiaElement
 			<nav class=${this.visible ? '' : 'inv'}>
 				<a href="/">Hello World</a>
 				<a href="/?physics">Physics Playground</a>
+				<elysia-theme foreground="black"></elysia-theme>
 			</nav>
 		`
 	}

@@ -22,7 +22,7 @@ export class ElysiaUiStats extends ElysiaElement
 			background: rgba(0, 0, 0, 0.5);
 			color: white;
 			padding: 0.5em;
-			font-family: Kode Mono, serif;
+			font-family: Kode Mono, sans;
 			font-size: .7em;
 			font-weight: 300;
 			display: flex;

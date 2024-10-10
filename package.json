@@ -18,16 +18,15 @@
     "three-stdlib": "^2.32.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
     "@types/node": "^20.13.0",
     "@types/three": "^0.165.0",
-    "mkdist": "^1.5.4",
     "tsx": "^4.17.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@dimforge/rapier3d": "^0.14.0",
     "@dimforge/rapier3d-compat": "^0.14.0",
+    "corel-color-picker": "^0.2.3",
     "esbuild": "^0.24.0",
     "lit": "^3.2.0",
     "troika-three-text": "^0.49.1"

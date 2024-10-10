@@ -16,17 +16,6 @@ import { ResizeController } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
 
-class UnhandledUpdateLoopError extends Error
-{
-	constructor(message: string)
-	{
-		super(message)
-		this.stack = this.stack?.split("\n").filter(
-			(line) => !line.startsWith("FrameRequestCallback*update")).filter(
-				(line) => !line.startsWith("UnhandledUpdateLoopError"))?.join("\n")
-	}
-}
-
 interface ApplicationConstructorArguments
 {
 	output?: HTMLCanvasElement,
@@ -42,16 +31,34 @@ interface ApplicationConstructorArguments
 
 export class Application {
 
+	/**
+	 * The application instance's event queue.
+	 */
 	public readonly events: ElysiaEventQueue;
 
+	/**
+	 * The application instance's mouse observer.
+	 */
 	public readonly mouse: MouseObserver;
 
+	/**
+	 * The input queue for this application.
+	 */
 	public readonly input = new InputQueue;
 
+	/**
+	 * Application profiler instance.
+	 */
 	public readonly profiler: Profiler;
 
+	/**
+	 * Applications audio player instance.
+	 */
 	public readonly audio: AudioPlayer;
 
+	/**
+	 * If this App should call Elysia UI's `defaultScheduler.update()` in it's update loop.
+	 */
 	public updateDefaultUiScheduler: boolean;
 
 	/**
@@ -228,4 +235,15 @@ export class Application {
 	#output: HTMLCanvasElement;
 	#scene?: Scene;
 	#rendering = false;
+}
+
+class UnhandledUpdateLoopError extends Error
+{
+	constructor(message: string)
+	{
+		super(message)
+		this.stack = this.stack?.split("\n").filter(
+			(line) => !line.startsWith("FrameRequestCallback*update")).filter(
+			(line) => !line.startsWith("UnhandledUpdateLoopError"))?.join("\n")
+	}
 }

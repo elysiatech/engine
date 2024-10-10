@@ -15,7 +15,8 @@ export {
 	Scheduler,
 	defaultScheduler,
 	ElysiaElement,
-	OffscreenUpdateStrategy
+	OffscreenUpdateStrategy,
+	attribute
 };
 
 const isLitTemplateResult = (value: unknown): value is TemplateResult => !!value && (typeof value === "object") && ("_$litType$" in value);
@@ -37,23 +38,23 @@ const strictEqual = (a: any, b: any) => a === b;
 function attribute(options: {
 	reflect?: boolean,
 	converter?: PropertyDeclaration["converter"],
-	attribute?: string,
-	onChange?: (value: any) => void ,
 	hasChanged?: PropertyDeclaration["hasChanged"]
 } = {})
 {
 	return property({
-		attribute: options.attribute ?? true,
-		reflect: options.reflect,
+		attribute: true,
+		reflect: options.reflect ?? true,
 		converter: options.converter,
-		hasChanged(value: unknown, oldValue: unknown): boolean
-		{
-			const hasChanged = (options.hasChanged ?? strictEqual)(value, oldValue);
-			if(hasChanged && options.onChange) options.onChange(value);
-			return hasChanged;
-		}
+		hasChanged: options.hasChanged ?? strictEqual
 	})
 }
+
+enum OffscreenUpdateStrategy
+{
+	Disabled,
+	HighPriority
+}
+
 
 /**
  * Base class for creating custom elements
@@ -99,15 +100,11 @@ interface ElysiaElement extends LitElement
 	onUnmount?(): void;
 }
 
-enum OffscreenUpdateStrategy
-{
-	Disabled,
-	HighPriority
-}
-
 class ElysiaElement extends LitElement
 {
 	public static Tag: string = "unknown-elysia-element";
+
+	public static AutoUpdate = true;
 
 	public scheduler: Scheduler = defaultScheduler;
 
