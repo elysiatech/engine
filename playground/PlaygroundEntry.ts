@@ -14,7 +14,7 @@ if(import.meta.DEV)
 const theme = document.createElement("elysia-theme")
 document.body.appendChild(document.createElement("elysia-menu"))
 theme.appendChild(document.createElement("elysia-floating-panel-test"))
-document.body.appendChild(theme)
+// document.body.appendChild(theme)
 
 switch(location.search)
 {

@@ -25,7 +25,7 @@ export class ElysiaStats extends ElysiaElement
 			pointer-events: none;
 		}
 		aside {
-			background: rgba(0, 0, 0, 0.5);
+			background: #282a3680;
 			color: white;
 			padding: 0.5em;
 			font-family: Kode Mono, serif;
@@ -44,9 +44,9 @@ export class ElysiaStats extends ElysiaElement
 				font-size: .5em;
 			}
 		}
-		.purple { color: #ee95ff; }
-		.red { color: red; }
-		.white { color: white; }
+		.purple { color: #FF79C6; }
+		.red { color: #FF5555; }
+		.white { color: #f8f8f2; }
 		.inv { opacity: 0; transform: translateY(100%); }
 	`
 

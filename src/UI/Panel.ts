@@ -277,8 +277,6 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 {
 	static override Tag = 'elysia-floating-panel-test';
 
-	static override ManualTracking = true;
-
 	static styles = css`
 		.header {
 			

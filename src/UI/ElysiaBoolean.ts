@@ -67,10 +67,8 @@ export class ElysiaBoolean extends ElysiaElement {
 	{
 		const val = (e.target as HTMLInputElement).checked;
 		if(this.controlled) (this.input as HTMLInputElement).checked = !!this.value;
-		else
-		{
-			this.value = (e.target as HTMLInputElement).checked;
-		}
+		else this.value = (e.target as HTMLInputElement).checked;
+
 		this.dispatchEvent(new CustomEvent("change", { detail: val }));
 	}
 }

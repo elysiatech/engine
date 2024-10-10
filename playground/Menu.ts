@@ -16,7 +16,7 @@ export class ElysiaStats extends ElysiaElement
 			z-index: 2000;
 		}
 		nav {
-			background: rgba(0, 0, 0, 0.5);
+			background: #282a3680;
 			color: white;
 			padding: 0.5em;
 			font-family: Kode Mono, serif;
@@ -31,11 +31,11 @@ export class ElysiaStats extends ElysiaElement
 		.inv { opacity: 0; transform: translateY(-100%); }
 		
 		a {
-			color: white;
+			 color: #f8f8f2;
 		}
 		
 		a:visited {
-			color: #ee95ff;
+			color: #BD93F9;
 		}
 	`
 

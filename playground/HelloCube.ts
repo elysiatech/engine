@@ -7,6 +7,7 @@ import { PerspectiveCameraActor } from "../src/Actors/PerspectiveCameraActor.ts"
 import { CameraOrbitBehavior } from "../src/Behaviors/CameraOrbitBehavior.ts";
 import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
 import { EnvironmentActor } from "../src/Actors/EnvironmentActor.ts";
+import { Colors } from "../src/Core/Colors.ts";
 
 // Create the application.
 const app = new Application({
@@ -18,17 +19,18 @@ const app = new Application({
 const scene = new Scene;
 
 const floor = new CubeActor;
+floor.material.color = new Three.Color(Colors.VonCount)
 floor.position.y = -1;
 floor.scale.x = 10;
 floor.scale.z = 10;
 scene.addComponent(floor)
 
 const cube = new CubeActor;
-cube.material.color = new Three.Color('#ee95ff')
+cube.material.color = new Three.Color(Colors.Purple)
 scene.addComponent(cube)
 
 const camera = new PerspectiveCameraActor;
-camera.position.set(-2, 2, 5);
+camera.position.set(-2, 5, 15);
 camera.addComponent(new CameraOrbitBehavior);
 // set the camera as the active camera
 scene.activeCamera = camera;
