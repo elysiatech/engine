@@ -1,6 +1,6 @@
 import { css, defineComponent, ElysiaElement, html, track } from "./UI.ts";
 import { query } from "lit/decorators.js"
-import { ReactiveController, ReactiveControllerHost } from "lit";
+import { ReactiveController, ReactiveControllerHost, TemplateResult } from "lit";
 import { ref } from "lit/directives/ref.js"
 import "./Widgets.ts";
 
@@ -303,7 +303,7 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 					<elysia-button @click=${() => console.log("clicked")}>Click me</elysia-button>
 					<elysia-number-input .value=${this.number}></elysia-number-input>
 					<elysia-text-input>hello world</elysia-text-input>
-					<elysia-boolean @change=${e =>  this.bool = e.detail} .value=${this.bool}></elysia-boolean>
+					<elysia-boolean @_change=${e => this.bool = e.detail} .value=${this.bool}></elysia-boolean>
 					<elysia-range></elysia-range>
 					<elysia-vector .value=${this.vec} @change=${v => this.vec = v.detail}></elysia-vector>
 					<elysia-enum></elysia-enum>

@@ -1,6 +1,6 @@
-import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { attribute, BooleanConverter, css, defineComponent, ElysiaElement, html } from "./UI.ts";
 import { query } from "lit/decorators.js";
-import { bound } from "../Core/Utilities.ts";
+import { bound, toBoolean } from "../Core/Utilities.ts";
 
 export class ElysiaBoolean extends ElysiaElement {
 	static override Tag = "elysia-boolean";
@@ -50,17 +50,22 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	@query("#input") accessor input: HTMLInputElement | null = null;
 
-	@attribute({ type: Boolean, reflect: false }) accessor value: boolean | undefined;
+	@attribute({ reflect: false, converter: BooleanConverter })
+	accessor value: boolean | undefined;
 
-	@attribute({ type: Boolean }) accessor defaultValue = false;
+	@attribute({ converter: BooleanConverter }) accessor defaultValue = false;
 
 	private controlled = false;
 
-	onMount() { if(typeof this.value !== "undefined") this.controlled = true; }
+	onMount()
+	{
+		if(typeof this.value !== "undefined") this.controlled = true;
+		else this.value = this.defaultValue;
+	}
 
 	public override onRender()
 	{
-		return html`<input id="input" type="checkbox" checked="${this.controlled ? this.value : this.defaultValue}" @change=${this.onChange}>`;
+		return html`<input id="input" type="checkbox" .checked="${this.value}" @change=${this.onChange}>`;
 	}
 
 	@bound private onChange (e: Event)
@@ -68,7 +73,6 @@ export class ElysiaBoolean extends ElysiaElement {
 		const val = (e.target as HTMLInputElement).checked;
 		if(this.controlled) (this.input as HTMLInputElement).checked = !!this.value;
 		else this.value = (e.target as HTMLInputElement).checked;
-
 		this.dispatchEvent(new CustomEvent("change", { detail: val }));
 	}
 }

@@ -270,3 +270,9 @@ class ElysiaElement extends LitElement
 
 	#offscreenUpdateStrategy: OffscreenUpdateStrategy = OffscreenUpdateStrategy.Disabled;
 }
+
+export function BooleanConverter(val: any)
+{
+	if(val && val !== "false") return true;
+	return val === "";
+}
