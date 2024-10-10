@@ -47,7 +47,7 @@ export class ElysiaStats extends ElysiaElement
 		setTimeout(() => this.visible = true, 500);
 	}
 
-	render()
+	onRender()
 	{
 		return h`
 			<nav class=${this.visible ? '' : 'inv'}>

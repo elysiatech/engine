@@ -1,4 +1,4 @@
-import { css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { css, defineComponent, ElysiaElement, html, track } from "./UI.ts";
 import { query } from "lit/decorators.js"
 import { ReactiveController, ReactiveControllerHost } from "lit";
 import { ref } from "lit/directives/ref.js"
@@ -250,7 +250,7 @@ export class ElysiaFloatingPanel extends ElysiaElement
 		this.dropper = new CollapsableController(this);
 	}
 
-	public override render()
+	public override onRender()
 	{
 		return html`
 			<div 
@@ -277,11 +277,12 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 {
 	static override Tag = 'elysia-floating-panel-test';
 
+	static override ManualTracking = true;
+
 	static styles = css`
 		.header {
 			
 		}
-		
 		.body {
 			display: flex;
 			flex-direction: column;
@@ -289,18 +290,24 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 		}
 	`
 
-	public override render()
+	vec = { x: 4, y: 2 };
+
+	number = 5;
+
+	bool = true;
+
+	public override onRender()
 	{
 		return html`
 			<elysia-floating-panel>
 				<div class="header" slot="header">Header</div>
 				<div class="body" slot="body">
 					<elysia-button @click=${() => console.log("clicked")}>Click me</elysia-button>
-					<elysia-number-input></elysia-number-input>
+					<elysia-number-input .value=${this.number}></elysia-number-input>
 					<elysia-text-input>hello world</elysia-text-input>
-					<elysia-boolean></elysia-boolean>
+					<elysia-boolean @change=${e =>  this.bool = e.detail} .value=${this.bool}></elysia-boolean>
 					<elysia-range></elysia-range>
-					<elysia-vector></elysia-vector>
+					<elysia-vector .value=${this.vec} @change=${v => this.vec = v.detail}></elysia-vector>
 					<elysia-enum></elysia-enum>
 					<elysia-color-picker></elysia-color-picker>
 				</div>

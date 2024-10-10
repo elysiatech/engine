@@ -36,27 +36,15 @@ export function tick<T>(callback?: T): T extends Function ? void : Promise<void>
 	else return new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve)))
 }
 
-type DecoratorContext = {
-	kind: 'method' | 'getter' | 'setter' | 'field' | 'class';
-	name: string | symbol;
-	access: {
-		get?(): unknown;
-		set?(value: unknown): void;
-	};
-	private?: boolean;
-	static?: boolean;
-	addInitializer(initializer: () => void): void;
-};
-
 type BoundDecorator = (
 	value: Function,
-	context: DecoratorContext
-) => void | Function;
+	context: any
+) => void | ((...args: any) => any)
 
 /**
  * Binds a method to the instance of the class it is defined in.
  */
-export const bound: BoundDecorator = (_, { name, addInitializer }) => {
+export const bound:  BoundDecorator = (recever, { name, addInitializer }) => {
 	addInitializer(function (this: any) {
 		this[name] = this[name].bind(this);
 	});

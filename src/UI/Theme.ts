@@ -24,7 +24,7 @@ export class ElysiaTheme extends ElysiaElement
 		this.#updateStyles();
 	}
 
-	override render() { return html`<slot></slot>` }
+	override onRender() { return html`<slot></slot>` }
 
 	override attributeChangedCallback(name: string, _old: string | null, value: string | null) {
 		super.attributeChangedCallback(name, _old, value);

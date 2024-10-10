@@ -58,7 +58,7 @@ export class ElysiaStats extends ElysiaElement
 		setTimeout(() => this.visible = true, 500);
 	}
 
-	render()
+	onRender()
 	{
 		return h`
 			<aside id="stats" class=${this.visible ? '' : 'inv'}>

@@ -16,7 +16,8 @@ export {
 	defaultScheduler,
 	ElysiaElement,
 	OffscreenUpdateStrategy,
-	attribute
+	attribute,
+	track
 };
 
 const isLitTemplateResult = (value: unknown): value is TemplateResult => !!value && (typeof value === "object") && ("_$litType$" in value);
@@ -38,6 +39,7 @@ const strictEqual = (a: any, b: any) => a === b;
 function attribute(options: {
 	reflect?: boolean,
 	converter?: PropertyDeclaration["converter"],
+	type?: PropertyDeclaration["type"],
 	hasChanged?: PropertyDeclaration["hasChanged"]
 } = {})
 {
@@ -45,8 +47,17 @@ function attribute(options: {
 		attribute: true,
 		reflect: options.reflect ?? true,
 		converter: options.converter,
-		hasChanged: options.hasChanged ?? strictEqual
+		hasChanged: options.hasChanged ?? strictEqual,
+		type: options.type,
 	})
+}
+
+function track(_, context){
+	if(context.kind !== "getter" && context.kind !== "field" && context.kind !== "accessor")
+		throw new Error("Track decorator can only be applied to fields, getters, and accessors.");
+	context.addInitializer(function () {
+		this.fieldsToCheck.push(context.name);
+	});
 }
 
 enum OffscreenUpdateStrategy
@@ -54,7 +65,6 @@ enum OffscreenUpdateStrategy
 	Disabled,
 	HighPriority
 }
-
 
 /**
  * Base class for creating custom elements
@@ -65,7 +75,7 @@ interface ElysiaElement extends LitElement
 	 * Schedule a possible update, if it's template values have changed.
 	 * If you want to force an update, you can call requestUpdate().
 	 */
-	requestRender(): void;
+	_onUpdate(): void;
 
 	/**
 	 * Set the offscreen update strategy for this element.
@@ -90,6 +100,11 @@ interface ElysiaElement extends LitElement
 	onBeforeUpdate?(): void;
 
 	/**
+	 * Lifecycle hook that returns a UI result.
+	 */
+	onRender(): TemplateResult;
+
+	/**
 	 * Lifecycle hook that is called after the element is updated.
 	 */
 	onAfterUpdate?(): void;
@@ -104,7 +119,7 @@ class ElysiaElement extends LitElement
 {
 	public static Tag: string = "unknown-elysia-element";
 
-	public static AutoUpdate = true;
+	public static ManualTracking = false;
 
 	public scheduler: Scheduler = defaultScheduler;
 
@@ -115,16 +130,16 @@ class ElysiaElement extends LitElement
 	public constructor()
 	{
 		super();
-		this.#providedRenderFunction = this.render as any;
-		this.render = function render(){ return this.#renderResult ?? this.#providedRenderFunction() }
-
 		this.compareRenderOutput = this.compareRenderOutput.bind(this);
-		this.requestRender = this.requestRender.bind(this);
+		this._onUpdate = this._onUpdate.bind(this);
+		this.setOffscreenRenderStrategy = this.setOffscreenUpdateStrategy.bind(this);
+		this.onRender = this.onRender.bind(this);
 	}
 
 	override connectedCallback()
 	{
 		super.connectedCallback();
+
 		this.onMount && this.onMount();
 
 		this.componentVisibilityObserver = new IntersectionObserver((entries) =>
@@ -154,26 +169,44 @@ class ElysiaElement extends LitElement
 		this.onUnmount && this.onUnmount();
 	}
 
-	public requestRender()
+	public _onUpdate()
 	{
 		if(this.isUpdatePending) return;
 
-		const currentRender = this.#providedRenderFunction();
-
-		if (isLitTemplateResult(currentRender))
+		for(const field of this.fieldsToCheck)
 		{
-			if (
-				!this.#renderResult
-				|| this.compareRenderOutput(this.#renderResult.values, currentRender.values)
-				|| this.compareRenderOutput(this.#renderResult.strings, currentRender.strings)
-			)
+			if(field == 'onRender')
 			{
-				this.#renderResult = currentRender;
-				this.requestUpdate();
-				this.onBeforeUpdate && this.onBeforeUpdate();
+				const currentRender = this.onRender();
+
+				if (isLitTemplateResult(currentRender))
+				{
+					if (
+						!this.#renderResult
+						|| this.compareRenderOutput(this.#renderResult.values, currentRender.values)
+						|| this.compareRenderOutput(this.#renderResult.strings, currentRender.strings)
+					)
+					{
+						this.#renderResult = currentRender;
+						this.requestUpdate();
+						this.onBeforeUpdate && this.onBeforeUpdate();
+					}
+				}
+				else { throw Error("ImHTML render method must return a lit-html template result"); }
+			}
+			else
+			{
+				// @ts-ignore
+				if(this[field] !== this[`_elysia_internal_${field}`])
+				{
+					// @ts-ignore
+					this[`_elysia_internal_${field}`] = this[field];
+					this.requestUpdate();
+					this.onBeforeUpdate && this.onBeforeUpdate();
+					break;
+				}
 			}
 		}
-		else { throw Error("ImHTML render method must return a lit-html template result"); }
 	}
 
 	public setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy)
@@ -187,7 +220,11 @@ class ElysiaElement extends LitElement
 		}
 	}
 
+	render(){ return this.#renderResult ?? this.onRender(); }
+
 	protected componentVisibilityObserver?: IntersectionObserver;
+
+	protected fieldsToCheck: string[] = [!this.constructor.ManualTracking && "onRender"].filter(Boolean);
 
 	protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void
 	{
@@ -226,8 +263,6 @@ class ElysiaElement extends LitElement
 
 		return false;
 	}
-
-	readonly #providedRenderFunction: () => TemplateResult;
 
 	#renderResult?: TemplateResult;
 

@@ -20,7 +20,7 @@ export class Scheduler
 	{
 		const t = performance.now();
 		for (const component of this.components) {
-			component.requestRender();
+			component._onUpdate()
 		}
 		this.frametime = performance.now() - t;
 	}
