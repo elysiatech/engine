@@ -12,7 +12,6 @@ import { MeshTransmissionMaterial } from "../src/WebGL/MeshTransmissionMaterial.
 import { GLTFAsset } from "../src/Assets/GLTFAsset.ts";
 import { MeshActor } from "../src/Actors/MeshActor.ts";
 import { FloatBehavior } from "../src/Behaviors/FloatBehavior.ts";
-import { Actor } from "../src/Scene/Actor.ts";
 
 // Create the application.
 const app = new Application({
@@ -39,15 +38,17 @@ const geo = (spring!.clone().children[0] as Three.Mesh).geometry;
 
 const material = new MeshTransmissionMaterial({
 	_transmission: 1,
-	thickness: 2,
-	roughness: 0.4,
-	chromaticAberration: 0.2,
-	anisotropicBlur: 0,
-	distortion: 0,
-	distortionScale: 0,
-	temporalDistortion: 2,
+	thickness: 1,
+	roughness: 0,
+	chromaticAberration: .5,
+	anisotropicBlur: .5,
+	distortion: .5,
+	distortionScale: .5,
+	temporalDistortion: .5,
+	samples: 10,
 })
 
+material.clearcoat = .5;
 
 const obj = new class extends MeshActor
 {
@@ -56,7 +57,7 @@ const obj = new class extends MeshActor
 		super(geo, material);
 		this.rotation.x = Math.PI / 3;
 		this.rotation.z = Math.PI / -1.1;
-		// this.addComponent(new FloatBehavior)
+		this.addComponent(new FloatBehavior())
 	}
 
 	override onUpdate(d: number, e: number)

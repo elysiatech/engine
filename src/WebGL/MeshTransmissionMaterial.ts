@@ -81,11 +81,15 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 			buffer: { value: buffer },
 		}
 
-		this.onBeforeCompile = (shader: any) => {
+		this.onBeforeCompile = (shader: Shader & { defines: { [key: string]: string } }) => {
 			shader.uniforms = {
 				...shader.uniforms,
 				...this.uniforms,
 			}
+
+			// Fix for r153-r156 anisotropy chunks
+			// https://github.com/mrdoob/three.js/pull/26716
+			if ((this as any).anisotropy > 0) shader.defines.USE_ANISOTROPY = ''
 
 			// If the transmission sampler is active inject a flag
 			if (transmissionSampler) shader.defines.USE_SAMPLER = ''
@@ -326,23 +330,23 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 		this.uniforms.buffer = { value: this.fboMain.texture }
 	}
 
-	fboBack = new Three.WebGLRenderTarget(1024, 1024, {
+	fboBack = new Three.WebGLRenderTarget(512, 512, {
 		minFilter: Three.LinearFilter,
 		magFilter: Three.LinearFilter,
 		type: Three.HalfFloatType,
-		samples: 0,
 	})
-	fboMain = new Three.WebGLRenderTarget(1024, 1024, {
+
+	fboMain = new Three.WebGLRenderTarget(512, 512, {
 		minFilter: Three.LinearFilter,
 		magFilter: Three.LinearFilter,
 		type: Three.HalfFloatType,
-		samples: 0,
 	})
+
 	oldBg: any;
 	oldTone: any;
 	oldSide: any;
 	mtmParams = {
-		backside: true,
+		backside: false,
 		thickness: 1,
 		backsideThickness: 0.5,
 	};
@@ -353,7 +357,6 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 		const gl = app.renderPipeline.getRenderer();
 
 		this.uniforms.time.value += time;
-		console.log(this.uniforms.time.value);
 
 		if (this.uniforms.buffer.value === this.fboMain.texture) {
 			// Save defaults
