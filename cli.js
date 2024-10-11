@@ -64,7 +64,17 @@ async function build()
 }
 
 /** @param {string} entry */
-const constructIndexHtml = (entry) => `<!DOCTYPE html><html><head><title>Elysia Playground</title><script type="module" src="${entry}"></script></head><body></body></html>`
+const constructIndexHtml = (entry) => `
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Elysia Playground</title>
+	<script type="module" src="${entry}"></script>
+</head>
+<body></body>
+</html>`
 
 function main()
 {
