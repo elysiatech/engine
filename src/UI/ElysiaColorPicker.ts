@@ -1,6 +1,7 @@
-import { css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
 import "corel-color-picker/corel-color-picker.js"
 import { query } from "lit/decorators.js";
+import { Colors } from "../Core/Colors.ts";
 
 export class ElysiaColorPicker extends ElysiaElement {
 	static override Tag = "elysia-color-picker";
@@ -40,9 +41,31 @@ export class ElysiaColorPicker extends ElysiaElement {
 
 	@query("#picker") accessor picker: Element | null = null;
 
-	open = false;
+	get color() { return this.#internalValue ?? "#000000"; }
 
-	color = "#FF55A7";
+	@attribute() set color(value: string)
+	{
+		if(typeof value === undefined)
+		{
+			this.controlled = false;
+			this.#internalValue = this.picker?.getAttribute("value") ?? Colors.Purple;
+		}
+		else
+		{
+			this.controlled = true;
+			this.#internalValue = value;
+		}
+	}
+
+	@attribute() accessor defaultValue: string = Colors.Purple;
+
+	onMount()
+	{
+		if(typeof this.#internalValue === undefined)
+		{}
+	}
+
+	open = false;
 
 	public override onRender() {
 		return html`
@@ -52,15 +75,18 @@ export class ElysiaColorPicker extends ElysiaElement {
 					<div class="color-text">color</div>
 					<div class="color-text" style=${`color: ${this.color}`}>${this.color}</div>
 				</div>
-				<corel-color-picker id="picker" @change=${this.#onInput} value=${this.color}>
-					<corel-color-picker>
+				<corel-color-picker id="picker" @change=${this.#onInput} value=${this.color}><corel-color-picker>
 			</div>
 		`;
 	}
 
+	private controlled = false;
+
 	#onInput = (e: Event) => {
-		this.color = (this.picker as HTMLInputElement).value;
+
 	}
+
+	#internalValue?: string;
 }
 
 defineComponent(ElysiaColorPicker);

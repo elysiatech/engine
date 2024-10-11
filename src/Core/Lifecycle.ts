@@ -62,12 +62,6 @@ export interface ActorLifecycle
 	 * Called when the actor's destructor is called.
 	 */
 	onDestroy(): void;
-
-	/**
-	 * Called when the actor is reparented.
-	 * @param parent
-	 */
-	onReparent(parent: Actor | null): void;
 }
 
 export interface SceneLifecycle

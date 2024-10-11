@@ -29,7 +29,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	get activeCamera() { return this.getActiveCamera(); }
 	set activeCamera(camera: Three.Camera | Actor<Three.Camera>)
 	{
-		this.#activeCamera = camera instanceof Actor ? camera.object3d : camera;
+		this.#activeCamera = isActor(camera) ? camera.object3d : camera;
 		this.app?.renderPipeline.onCameraChange(this.#activeCamera);
 	}
 

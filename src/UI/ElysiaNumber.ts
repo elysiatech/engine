@@ -2,7 +2,7 @@ import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
 import { query } from "lit/decorators.js";
 import { bound } from "../Core/Utilities.ts";
 
-export class ElysiaNumberInput extends ElysiaElement {
+export class ElysiaNumber extends ElysiaElement {
 	static override Tag = "elysia-number-input";
 
 	static styles = css`
@@ -46,7 +46,20 @@ export class ElysiaNumberInput extends ElysiaElement {
 
 	@query("#input") accessor input: Element | null = null;
 
-	@attribute({ type: Number }) accessor value: number | undefined;
+	public get value() { return this.#internalValue ?? 0; }
+
+	@attribute() public set value(val: number) {
+		if(typeof val === undefined)
+		{
+			this.controlled = false;
+			this.#internalValue = Number(this.input?.value ?? 0);
+		}
+		else
+		{
+			this.controlled = true;
+			this.#internalValue = val;
+		}
+	}
 
 	@attribute({ type: Number }) accessor defaultValue = 0;
 
@@ -58,7 +71,19 @@ export class ElysiaNumberInput extends ElysiaElement {
 
 	private controlled = false;
 
-	onMount() { if(typeof this.value !== "undefined") this.controlled = true; }
+	onMount()
+	{
+		if(typeof this.value !== "undefined")
+		{
+			this.controlled = true;
+			this.#internalValue = Number(this.value);
+		}
+		else
+		{
+			this.value = this.defaultValue;
+			this.controlled = false;
+		}
+	}
 
 	public override onRender()
 	{
@@ -67,7 +92,7 @@ export class ElysiaNumberInput extends ElysiaElement {
 					part="input"
 					id="input"
 					type="number"
-					.value=${this.controlled}
+					.value=${this.#internalValue}
 					min=${this.min}
 					max=${this.max}
 					step=${this.step}
@@ -92,13 +117,11 @@ export class ElysiaNumberInput extends ElysiaElement {
 	onMouseDrag = (e: MouseEvent) => {
 		e.stopPropagation();
 		const step = Number(this.step);
-
 		const value = Number(this.value) + Math.round(e.clientX - this.initialMousePos.x) * step;
-
 		const final = Number(Math.min(Math.max(value, Number(this.min)), Number(this.max)).toFixed(2));
 
-		if(this.controlled) (this.input as HTMLInputElement).value = String(value);
-		else this.value = final;
+		if(this.controlled) (this.input as HTMLInputElement).value = this.value
+		else this.#internalValue = final;
 
 		this.dispatchEvent(new CustomEvent("change", { detail: final }));
 
@@ -112,11 +135,13 @@ export class ElysiaNumberInput extends ElysiaElement {
 
 	@bound private onChange(e: Event)
 	{
-		const val = (this.input as HTMLInputElement).value;
-		if(this.controlled) (this.input as HTMLInputElement).value = val;
-		else this.value = Number(val);
-		this.dispatchEvent(new CustomEvent("change", { detail: val }));
+		const val = Number((this.input as HTMLInputElement).value).toFixed(2);
+		if(this.controlled) (this.input as HTMLInputElement).value = this.value;
+		else this.#internalValue = Number(val);
+		this.dispatchEvent(new CustomEvent("change", { detail: Number(val) }));
 	}
+
+	#internalValue?: number;
 }
 
-defineComponent(ElysiaNumberInput);
+defineComponent(ElysiaNumber);

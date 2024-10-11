@@ -1,4 +1,4 @@
-import { Actor } from "./Actor";
+import { Actor, IsActor } from "./Actor";
 import { Behavior } from "./Behavior";
 
 /**
@@ -12,7 +12,7 @@ export type Component = Actor | Behavior;
  */
 export function isActor(component: any): component is Actor
 {
-	return component instanceof Actor;
+	return IsActor in component;
 }
 
 /**

@@ -292,7 +292,7 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 
 	number = 5;
 
-	bool = true;
+	bool = false;
 
 	public override onRender()
 	{
@@ -301,9 +301,9 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 				<div class="header" slot="header">Header</div>
 				<div class="body" slot="body">
 					<elysia-button @click=${() => console.log("clicked")}>Click me</elysia-button>
-					<elysia-number-input .value=${this.number}></elysia-number-input>
+					<elysia-number-input @change=${e => this.number = e.detail} value=${this.number}></elysia-number-input>
 					<elysia-text-input>hello world</elysia-text-input>
-					<elysia-boolean @_change=${e => this.bool = e.detail} _value=${this.bool}></elysia-boolean>
+					<elysia-boolean @change=${e => this.bool = e.detail} .value=${this.bool}></elysia-boolean>
 					<elysia-range></elysia-range>
 					<elysia-vector .value=${this.vec} @change=${v => this.vec = v.detail}></elysia-vector>
 					<elysia-enum></elysia-enum>

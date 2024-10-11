@@ -50,7 +50,7 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	@query("#input") accessor input: HTMLInputElement | null = null;
 
-	public get value () { return this.#internalValue; }
+	public get value () { return !!this.#internalValue; }
 
 	@attribute() public set value (val: boolean)
 	{
@@ -73,7 +73,8 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	onMount()
 	{
-		if(typeof this.value !== "undefined")
+		console.log(this.value)
+		if(typeof this.#internalValue !== "undefined")
 		{
 			this.controlled = true;
 			this.#internalValue = toBoolean(this.value);
@@ -87,18 +88,18 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	public override onRender()
 	{
-		return html`<input id="input" type="checkbox" .checked="${this.#internalValue}" @change=${this.onChange}>`;
+		return html`${this.controlled}<input id="input" type="checkbox" .checked="${this.#internalValue}" @change=${this.onChange}>`;
 	}
 
 	@bound private onChange (e: Event)
 	{
 		const val = (e.target as HTMLInputElement).checked;
 		if(this.controlled) (this.input as HTMLInputElement).checked = !!this.value;
-		else this.#internalValue = (e.target as HTMLInputElement).checked;
+		else this.#internalValue = val;
 		this.dispatchEvent(new CustomEvent("change", { detail: val }));
 	}
 
-	#internalValue = false;
+	#internalValue?: boolean;
 }
 
 defineComponent(ElysiaBoolean);

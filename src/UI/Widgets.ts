@@ -1,5 +1,5 @@
 import "./ElysiaButton.ts";
-import "./ElysiaNumberInput.ts";
+import "./ElysiaNumber.ts";
 import "./ElysiaTextInput.ts";
 import "./ElysiaBoolean.ts";
 import "./ElysiaRange.ts";
