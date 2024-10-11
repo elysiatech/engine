@@ -15,6 +15,7 @@ import {
 	OnStart, OnUpdate
 } from "../Core/Internal.ts";
 import { bound } from "../Core/Utilities.ts";
+import { reportLifecycleError } from "../Core/Error.ts";
 
 export const IsBehavior = Symbol.for("Elysia::IsBehavior");
 
@@ -134,7 +135,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		destroyed: false,
 	};
 
-	@bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)
+	@reportLifecycleError @bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)
 	{
 		if (this[Internal].enabled && !runEvenIfAlreadyEnabled) return;
 		if(this.destroyed)
@@ -146,7 +147,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onEnable();
 	}
 
-	@bound [OnDisable]() {
+	@reportLifecycleError @bound [OnDisable]() {
 		if (!this[Internal].enabled) return;
 		if(this.destroyed)
 		{
@@ -157,7 +158,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onDisable();
 	}
 
-	@bound [OnCreate]() {
+	@reportLifecycleError @bound [OnCreate]() {
 		if (this[Internal].created) return;
 		if(this.destroyed)
 		{
@@ -168,7 +169,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onCreate();
 	}
 
-	@bound [OnStart]() {
+	@reportLifecycleError @bound [OnStart]() {
 		if (this[Internal].started) return;
 		if(this.destroyed)
 		{
@@ -179,7 +180,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onStart();
 	}
 
-	@bound [OnEnterScene]() {
+	@reportLifecycleError @bound [OnEnterScene]() {
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn("Cannot enter scene a destroyed behavior:", this);
@@ -191,17 +192,17 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onEnterScene();
 	}
 
-	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number) {
+	@reportLifecycleError @bound [OnBeforePhysicsUpdate](delta: number, elapsed: number) {
 		if(this.destroyed) return;
 		this.onBeforePhysicsUpdate(delta, elapsed);
 	}
 
-	@bound [OnUpdate](delta: number, elapsed: number) {
+	@reportLifecycleError @bound [OnUpdate](delta: number, elapsed: number) {
 		if(this.destroyed) return;
 		this.onUpdate(delta, elapsed);
 	}
 
-	@bound [OnLeaveScene]() {
+	@reportLifecycleError @bound [OnLeaveScene]() {
 		if(this.destroyed) return;
 		if(!this[Internal].inScene) return;
 		this[Internal].inScene = false;
@@ -209,7 +210,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onLeaveScene();
 	}
 
-	@bound [OnReparent](parent: Actor | null) {
+	@reportLifecycleError @bound [OnReparent](parent: Actor | null) {
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn("Cannot reparent a destroyed behavior:", this);

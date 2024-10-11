@@ -129,40 +129,43 @@ export class Application {
 			scene,
 		)
 
-		scene[Internal].app = this;
-
-		this.#rendering = false;
-
-		if(this.#scene)
+		try
 		{
-			ELYSIA_LOGGER.debug("Unloading previous scene", this.#scene)
-			await this.#scene[SceneLoadPromise];
-			this.#scene.destructor?.();
+			scene[Internal].app = this;
+
+			this.#rendering = false;
+
+			if(this.#scene)
+			{
+				ELYSIA_LOGGER.debug("Unloading previous scene", this.#scene)
+				await this.#scene[SceneLoadPromise];
+				this.#scene.destructor?.();
+			}
+
+			this.#scene = scene
+			await this.#scene[OnLoad]();
+
+			ELYSIA_LOGGER.debug("Scene loaded", scene)
+
+			this.#renderPipeline!.onCreate(this.#scene, this.#output);
+			this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
+
+			this.#scene[OnCreate]();
+			this.#scene[OnEnable]();
+			this.#scene[OnStart]();
+			this.#scene[OnEnterScene]();
+
+			ELYSIA_LOGGER.debug("Scene started", scene)
+
+			this.#rendering = true;
+		}
+		catch(e)
+		{
+			ELYSIA_LOGGER.error(e)
+			return;
 		}
 
-		this.#scene = scene
-		await this.#scene[OnLoad]();
-
-		ELYSIA_LOGGER.debug("Scene loaded", scene)
-
-		this.#renderPipeline!.onCreate(this.#scene, this.#output);
-		this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
-
-		this.#scene[OnCreate]();
-		this.#scene[OnEnable]();
-		this.#scene[OnStart]();
-		this.#scene[OnEnterScene]();
-
-		ELYSIA_LOGGER.debug("Scene started", scene)
-
-		this.#rendering = true;
-
 		this.update();
-	}
-
-	@bound public reportError(error: Error)
-	{
-		this.#errorCount++;
 	}
 
 	@bound public destructor()
@@ -231,7 +234,7 @@ export class Application {
 		}
 		catch(e)
 		{
-			ELYSIA_LOGGER.error("in update loop:", new UnhandledUpdateLoopError(e instanceof Error ? e.message : String(e)))
+			ELYSIA_LOGGER.error(e)
 			this.#errorCount++;
 		}
 	}
@@ -245,15 +248,4 @@ export class Application {
 	#output: HTMLCanvasElement;
 	#scene?: Scene;
 	#rendering = false;
-}
-
-class UnhandledUpdateLoopError extends Error
-{
-	constructor(message: string)
-	{
-		super(message)
-		this.stack = this.stack?.split("\n").filter(
-			(line) => !line.startsWith("FrameRequestCallback*update")).filter(
-			(line) => !line.startsWith("UnhandledUpdateLoopError"))?.join("\n")
-	}
 }

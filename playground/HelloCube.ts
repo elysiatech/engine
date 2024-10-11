@@ -46,20 +46,11 @@ scene.addComponent(light);
 const env = new EnvironmentActor;
 env.background = true;
 env.backgroundBlur = 4;
+env.backgroundIntensity = .2;
 scene.addComponent(env);
 
-class WillThrow extends Actor
-{
-	onCreate() {
-		super.onCreate();
-		throw new Error("This is a test error");
-	}
-}
-
-scene.addComponent(new WillThrow);
-
 // enable the scene grid in dev mode
-import.meta.DEV && scene.grid.enable()
+ELYSIA_DEV && scene.grid.enable()
 
 // set the default ambient light intensity
 scene.ambientLight.intensity = 0.1;

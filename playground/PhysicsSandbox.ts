@@ -132,7 +132,11 @@ const ambLight = new AmbientLightActor()
 scene.addComponent(ambLight);
 
 const sky = new SkyActor
-sky.elevation = 40
+sky.elevation = 25
+sky.turbidity = 1.1;
+sky.mieCoefficient = 0.03;
+sky.mieDirectionalG = 0.99;
+sky.rayleigh = 0.6;
 scene.addComponent(sky)
 
 // scene.grid.enable();
@@ -144,6 +148,7 @@ document.body.appendChild(crosshair)
 
 const p = new Player;
 scene.activeCamera = p.camera;
+p.camera.fov = 75;
 p.position.set(10, 2, 10)
 p.addComponent(new ProjectileBehavior)
 scene.addComponent(p)

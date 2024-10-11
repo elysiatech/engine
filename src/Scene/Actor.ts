@@ -373,7 +373,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	@bound [OnStart]()
+	@reportLifecycleError @bound [OnStart]()
 	{
 		if(this[Internal].started || !this[Internal].enabled || !this[Internal].created) return;
 		if(this[Internal].destroyed)
@@ -389,7 +389,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	@bound [OnEnterScene]()
+	@reportLifecycleError @bound [OnEnterScene]()
 	{
 		if(this[Internal].inScene) return;
 		if(this.destroyed)
@@ -404,7 +404,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		for(const component of this.components) component[OnEnterScene]();
 	}
 
-	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
+	@reportLifecycleError @bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
 		if(!this[Internal].enabled) return;
 		if(!this[Internal].inScene) return;
@@ -420,7 +420,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	@bound [OnUpdate](delta: number, elapsed: number)
+	@reportLifecycleError @bound [OnUpdate](delta: number, elapsed: number)
 	{
 		if(!this[Internal].enabled) return;
 		if(!this[Internal].inScene) return;
@@ -436,7 +436,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	@bound [OnLeaveScene]()
+	@reportLifecycleError @bound [OnLeaveScene]()
 	{
 		if(this[Internal].destroyed) return;
 		if(!this[Internal].inScene) return;
@@ -446,7 +446,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		for(const component of this.components) component[OnLeaveScene]();
 	}
 
-	@bound [OnReparent](newParent: Actor | null)
+	@reportLifecycleError @bound [OnReparent](newParent: Actor | null)
 	{
 		if(newParent === this[Internal].parent)
 		{

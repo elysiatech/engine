@@ -105,7 +105,7 @@ export class Player extends Actor
 
 	velocity = new Three.Vector3(0, 0, 0)
 
-	inAir = false;
+	grounded = 1;
 
 	desiredTranslation = new Three.Vector3(0, 0, 0)
 
@@ -149,10 +149,10 @@ export class Player extends Actor
 		this.position.y = 2;
 
 		this.app!.input.onKeyDown(KeyCode.Space, () => {
-			if(!this.inAir)
+			if(this.grounded)
 			{
 				this.velocity.y = 5;
-				this.inAir = true;
+				this.grounded = 0;
 			}
 		})
 	}
@@ -162,6 +162,7 @@ export class Player extends Actor
 		if(!this.controller || !this.collider.collider) return;
 
 		this.inputVector.set(0, 0, 0);
+
 
 		if (this.isDown(KeyCode.S)) this.inputVector.z += 1;
 		if (this.isDown(KeyCode.W)) this.inputVector.z -= 1;
@@ -180,9 +181,9 @@ export class Player extends Actor
 		const horizontalVelocity = new Three.Vector2(this.velocity.x, this.velocity.z);
 		const horizontalInput = new Three.Vector2(this.inputVector.x, this.inputVector.z);
 
-		if (horizontalInput.lengthSq() > 0) {
+		if (horizontalInput.lengthSq()) {
 			const bounds = this.maxVelocity * horizontalInput.length();
-			horizontalVelocity.add(horizontalInput.multiplyScalar(this.acceleration * delta));
+			horizontalVelocity.add(horizontalInput.multiplyScalar(this.acceleration * delta * this.grounded ));
 			horizontalVelocity.clampLength(0, bounds);
 		} else {
 			applyFriction(horizontalVelocity, this.deceleration, this.maxVelocity, delta);
@@ -202,7 +203,7 @@ export class Player extends Actor
 
 		this.rBody.setLinearVelocity(this.computedTranslation.divideScalar(delta));
 
-		this.inAir = !this.controller.computedGrounded();
+		this.grounded = this.controller.computedGrounded() ? 1 : 0;
 	}
 
 }

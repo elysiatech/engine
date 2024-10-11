@@ -38,13 +38,13 @@ const geo = (spring!.clone().children[0] as Three.Mesh).geometry;
 
 const material = new MeshTransmissionMaterial({
 	_transmission: 1,
-	thickness: 1,
+	thickness: 4,
 	roughness: 0,
-	chromaticAberration: .5,
-	anisotropicBlur: .5,
-	distortion: .5,
-	distortionScale: .5,
-	temporalDistortion: .5,
+	chromaticAberration: .05,
+	anisotropicBlur: 0,
+	distortion: 0,
+	distortionScale: 0,
+	temporalDistortion: 0,
 	samples: 10,
 })
 
@@ -72,10 +72,9 @@ scene.addComponent(obj)
 
 // Create an actor that holds the environment map / scene
 const env = new EnvironmentActor;
-env.background = true;
-env.backgroundBlur = 4;
-env.backgroundIntensity = .1;
 scene.addComponent(env);
+
+scene.object3d.background = new Three.Color(Colors.Aro);
 
 const dirLight = new DirectionalLightActor;
 dirLight.intensity = 1;
