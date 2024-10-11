@@ -15,6 +15,15 @@ import { ELYSIA_LOGGER } from "./Logger";
 import { ResizeController } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
+import { Actor } from "../Scene/Actor.ts";
+
+declare module 'three'
+{
+	export interface Object3D
+	{
+		actor?: Actor<any>;
+	}
+}
 
 interface ApplicationConstructorArguments
 {

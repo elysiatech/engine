@@ -1,13 +1,12 @@
+import * as Three from "three";
 // @ts-ignore
-import { Mesh } from 'three'
-import { Text as TextMeshImpl, preloadFont } from 'troika-three-text'
+import { Text, preloadFont } from 'troika-three-text'
+import { OverrideMaterialManager } from 'postprocessing'
+import { Actor } from "../Scene/Actor.ts";
 
-export type TextProps = {
-	/** The content of text */
+export type TextActorConstructorArguments = {
 	text: string
-	characters?: string
 	color?: number | string
-	/** Font size, default: 1 */
 	fontSize?: number
 	maxWidth?: number
 	lineHeight?: number
@@ -33,67 +32,106 @@ export type TextProps = {
 	fillOpacity?: number
 	sdfGlyphSize?: number
 	debugSDF?: boolean
-	onSync?: (troika: any) => void
-	onPreloadEnd?: () => void
 }
 
-const externalProps = ['onSync', 'onPreloadEnd', 'characters']
+export class TextActor extends Actor<Text>
+{
+	get text() { return this.object3d.text }
+	set text(val) { this.object3d.text = val; this.object3d.sync(); }
 
-function removeExternalProps(props: Partial<TextProps>) {
-	return Object.keys(props).reduce((result, key) => {
-		if (externalProps.indexOf(key) === -1) {
-			result[key] = props[key]
-		}
-		return result
-	}, {} as Partial<TextProps>)
-}
+	get color() { return this.object3d.color }
+	set color(val) { this.object3d.color = val; this.object3d.sync(); }
 
-export type TextType = {
-	mesh: Mesh
-	updateProps: (newProps: Partial<TextProps>) => void
-	dispose: () => void
-}
+	get fontSize() { return this.object3d.fontSize }
+	set fontSize(val) { this.object3d.fontSize = val; this.object3d.sync(); }
 
-export const Text = ({
-						 sdfGlyphSize = 64,
-						 anchorX = 'center',
-						 anchorY = 'middle',
-						 fontSize = 1,
-						 ...restProps
-					 }: TextProps): TextType => {
-	const props: TextProps = {
-		sdfGlyphSize,
-		anchorX,
-		anchorY,
-		fontSize,
-		...restProps,
-	}
-	const troikaMesh = new TextMeshImpl()
+	get maxWidth() { return this.object3d.maxWidth }
+	set maxWidth(val) { this.object3d.maxWidth = val; this.object3d.sync(); }
 
-	Object.assign(troikaMesh, removeExternalProps(props))
+	get lineHeight() { return this.object3d.lineHeight }
+	set lineHeight(val) { this.object3d.lineHeight = val; this.object3d.sync(); }
 
-	if (props.font && props.characters) {
-		preloadFont(
-			{
-				font: props.font,
-				characters: props.characters,
-			},
-			() => {
-				props.onPreloadEnd && props.onPreloadEnd()
-			}
-		)
-	}
+	get letterSpacing() { return this.object3d.letterSpacing }
+	set letterSpacing(val) { this.object3d.letterSpacing = val; this.object3d.sync(); }
 
-	return {
-		mesh: troikaMesh,
-		updateProps(newProps) {
-			Object.assign(troikaMesh, removeExternalProps(newProps))
-			troikaMesh.sync(() => {
-				props.onSync && props.onSync(troikaMesh)
-			})
-		},
-		dispose() {
-			troikaMesh.dispose()
-		},
+	get textAlign() { return this.object3d.textAlign }
+	set textAlign(val) { this.object3d.textAlign = val; this.object3d.sync(); }
+
+	get font() { return this.object3d.font }
+	set font(val) { this.object3d.font = val; this.object3d.sync(); }
+
+	get anchorX() { return this.object3d.anchorX }
+	set anchorX(val) { this.object3d.anchorX = val; this.object3d.sync(); }
+
+	get anchorY() { return this.object3d.anchorY }
+	set anchorY(val) { this.object3d.anchorY = val; this.object3d.sync(); }
+
+	get clipRect() { return this.object3d.clipRect }
+	set clipRect(val) { this.object3d.clipRect = val; this.object3d.sync(); }
+
+	get depthOffset() { return this.object3d.depthOffset }
+	set depthOffset(val) { this.object3d.depthOffset = val; this.object3d.sync(); }
+
+	get direction() { return this.object3d.direction }
+	set direction(val) { this.object3d.direction = val; this.object3d.sync(); }
+
+	get overflowWrap() { return this.object3d.overflowWrap }
+	set overflowWrap(val) { this.object3d.overflowWrap = val; this.object3d.sync(); }
+
+	get whiteSpace() { return this.object3d.whiteSpace }
+	set whiteSpace(val) { this.object3d.whiteSpace = val; this.object3d.sync(); }
+
+	get outlineWidth() { return this.object3d.outlineWidth }
+	set outlineWidth(val) { this.object3d.outlineWidth = val; this.object3d.sync(); }
+
+	get outlineOffsetX() { return this.object3d.outlineOffsetX }
+	set outlineOffsetX(val) { this.object3d.outlineOffsetX = val; this.object3d.sync(); }
+
+	get outlineOffsetY() { return this.object3d.outlineOffsetY }
+	set outlineOffsetY(val) { this.object3d.outlineOffsetY = val; this.object3d.sync(); }
+
+	get outlineBlur() { return this.object3d.outlineBlur }
+	set outlineBlur(val) { this.object3d.outlineBlur = val; this.object3d.sync(); }
+
+	get outlineColor() { return this.object3d.outlineColor }
+	set outlineColor(val) { this.object3d.outlineColor = val; this.object3d.sync(); }
+
+	get outlineOpacity() { return this.object3d.outlineOpacity }
+	set outlineOpacity(val) { this.object3d.outlineOpacity = val; this.object3d.sync(); }
+
+	get strokeWidth() { return this.object3d.strokeWidth }
+	set strokeWidth(val) { this.object3d.strokeWidth = val; this.object3d.sync(); }
+
+	get strokeColor() { return this.object3d.strokeColor }
+	set strokeColor(val) { this.object3d.strokeColor = val; this.object3d.sync(); }
+
+	get strokeOpacity() { return this.object3d.strokeOpacity }
+	set strokeOpacity(val) { this.object3d.strokeOpacity = val; this.object3d.sync(); }
+
+	get fillOpacity() { return this.object3d.fillOpacity }
+	set fillOpacity(val) { this.object3d.fillOpacity = val; this.object3d.sync(); }
+
+	get sdfGlyphSize() { return this.object3d.sdfGlyphSize }
+	set sdfGlyphSize(val) { this.object3d.sdfGlyphSize = val; this.object3d.sync(); }
+
+	get debugSDF() { return this.object3d.debugSDF }
+	set debugSDF(val) { this.object3d.debugSDF = val; this.object3d.sync(); }
+
+	loaded = false;
+
+	constructor(props: TextActorConstructorArguments)
+	{
+		super();
+		this.object3d = new Text();
+		Object.assign(this.object3d, {
+			font: "https://fonts.gstatic.com/s/kodemono/v2/A2BLn5pb0QgtVEPFnlYkkaoBgw4qv9odq5my9Do.ttf",
+			sdfGlyphSize: 64,
+			anchorX: 'center',
+			anchorY: 'middle',
+			fontSize: .2,
+			...props
+		})
+		this.object3d.sync();
+		OverrideMaterialManager.workaroundEnabled = true
 	}
 }

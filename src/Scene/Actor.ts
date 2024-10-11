@@ -7,32 +7,19 @@ import { Component, isActor } from "./Component";
 import { Scene } from "./Scene";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { isDev } from "../Core/Asserts";
-import { Constructor } from "../Core/Utilities";
+import { bound, Constructor } from "../Core/Utilities";
 import { SparseSet } from "../Containers/SparseSet.ts";
-import { track } from "../Core/Track.ts";
-
-declare module 'three'
-{
-	export interface Object3D
-	{
-		actor?: Actor<any>;
-	}
-}
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
 	public readonly type: string = "Actor";
 
+	/**
+	 * The underlying Three.js object.
+	 * This should be used with caution, as it can break the internal state of the actor in some cases.
+	 */
 	get object3d() { return this.#object3d; }
-
-	set object3d(object3d: T)
-	{
-		if(this.#object3d === object3d) return;
-		this.#object3d.parent?.remove(this.#object3d);
-		this.#object3d.children.forEach(child => object3d.add(child));
-		this.#object3d.actor = undefined;
-		this.#object3d = object3d;
-	}
+	set object3d(object3d: T) { this.updateObject3d(object3d); }
 
 	get created() { return this.#created; }
 
@@ -43,10 +30,6 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	get inScene() { return this.#inScene; }
 
 	get destroyed() { return this.#destroyed; }
-
-	readonly components = new Set<Component>;
-
-	readonly tags = new Set<any>;
 
 	get position() { return this.#object3d.position; }
 	set position(position: Three.Vector3) { this.#object3d.position.copy(position); }
@@ -59,6 +42,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	get quaternion() { return this.#object3d.quaternion; }
 	set quaternion(quaternion: Three.Quaternion) { this.#object3d.quaternion.copy(quaternion); }
+
+	readonly components = new Set<Component>;
+
+	readonly tags = new Set<any>;
 
 	/**
 	 * The parent actor of this behavior.
@@ -76,54 +63,61 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	app: Application | null = null;
 
-	constructor()
-	{
-		this.#object3d.actor = this;
-	}
-
 	/* **********************************************************
 	    Lifecycle methods
 	************************************************************/
 
-	onCreate() {}
+	@bound onCreate() {}
 
-	onEnable() {}
+	@bound onEnable() {}
 
-	onStart() {}
+	@bound onStart() {}
 
-	onEnterScene() {}
+	@bound onEnterScene() {}
 
-	onBeforePhysicsUpdate(delta: number, elapsed: number) {}
+	@bound onBeforePhysicsUpdate(delta: number, elapsed: number) {}
 
-	onUpdate(delta: number, elapsed: number) {}
+	@bound onUpdate(delta: number, elapsed: number) {}
 
-	onLeaveScene() {}
+	@bound onLeaveScene() {}
 
-	onDisable() {}
+	@bound onDisable() {}
 
-	onDestroy() {}
+	@bound onDestroy() {}
 
-	onReparent(parent: Actor | null) {}
+	@bound onReparent(parent: Actor | null) {}
 
 	/* **********************************************************
 	    Public methods
 	************************************************************/
 
+	@bound updateObject3d(object3d: T)
+	{
+		if(this.#object3d === object3d) return;
+
+		this.#object3d.parent?.remove(this.#object3d);
+		this.#object3d.actor = undefined;
+
+		// set this actor as the actor of the object3d
+		object3d.actor = this;
+		this.#object3d = object3d;
+	}
+
 	/**
 	 * Enables this actor. This means it receives updates and is visible.
 	 */
-	enable() { this._onEnable(); }
+	@bound enable() { this._onEnable(); }
 
 	/**
 	 * Disables this actor. This means it does not receive updates and is not visible.
 	 */
-	disable() { this._onDisable(); }
+	@bound disable() { this._onDisable(); }
 
 	/**
 	 * Adds a tag to this actor.
 	 * @param tag
 	 */
-	addTag(tag: any)
+	@bound addTag(tag: any)
 	{
 		ElysiaEventDispatcher.dispatchEvent(new TagAddedEvent({ tag, target: this }));
 		this.tags.add(tag);
@@ -133,7 +127,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * Removes a tag from this actor.
 	 * @param tag
 	 */
-	removeTag(tag: any)
+	@bound removeTag(tag: any)
 	{
 		ElysiaEventDispatcher.dispatchEvent(new TagAddedEvent({ tag, target: this }));
 		this.tags.delete(tag);
@@ -144,7 +138,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * @param component
 	 * @returns `true` if the component was successfully added, `false` otherwise.
 	 */
-	addComponent(component: Component): boolean
+	@bound addComponent(component: Component): boolean
 	{
 		if(this.#destroyed)
 		{
@@ -198,7 +192,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * @param component
 	 * @returns `true` if the component was successfully removed, `false` otherwise.
 	 */
-	removeComponent(component: Component): boolean
+	@bound removeComponent(component: Component): boolean
 	{
 		if(this.#destroyed)
 		{
@@ -230,7 +224,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * @param component
 	 * @returns `true` if the component was successfully reparented, `false` otherwise.
 	 */
-	stealComponent(component: Component): boolean
+	@bound stealComponent(component: Component): boolean
 	{
 		if(this.#destroyed)
 		{
@@ -262,7 +256,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * @param newParent
 	 * @returns `true` if the component was successfully reparented, `false` otherwise.
 	 */
-	giveComponent(component: Component, newParent: Actor): boolean
+	@bound giveComponent(component: Component, newParent: Actor): boolean
 	{
 		if(this.#destroyed)
 		{
@@ -296,7 +290,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	/**
 	 * Gets all components of a certain type directly attached to this actor.
 	 */
-	getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>
+	@bound getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>
 	{
 		return (this.#componentsByType.get(type) as SparseSet<T>) ?? new SparseSet<T>;
 	}
@@ -304,7 +298,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	/**
 	 * Gets all components with a certain tag directly attached to this actor.
 	 */
-	getComponentsByTag(tag: any): SparseSet<Component>
+	@bound getComponentsByTag(tag: any): SparseSet<Component>
 	{
 		return this.#componentsByTag.get(tag) ?? new SparseSet;
 	}
@@ -313,7 +307,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * Destroys this actor and all its components.
 	 * Recursively destroys all children actors, starting from the deepest children.
 	 */
-	destructor() {
+	@bound destructor() {
 		if(this.#destroyed) return;
 		for(const component of this.components)
 		{
@@ -334,7 +328,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	    Internal methods
 	************************************************************/
 
-	/** @internal */ _onEnable(runEvenIfAlreadyEnabled: boolean = false)
+	/** @internal */ @bound _onEnable(runEvenIfAlreadyEnabled: boolean = false)
 	{
 		if(this.#enabled && !runEvenIfAlreadyEnabled) return;
 		this.#enabled = true;
@@ -344,7 +338,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this._onEnterScene();
 	}
 
-	/** @internal */ _onDisable()
+	/** @internal */ @bound _onDisable()
 	{
 		if(!this.#enabled) return;
 		this.#enabled = false;
@@ -352,7 +346,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.onDisable();
 	}
 
-	/** @internal */ _onCreate()
+	/** @internal */ @bound _onCreate()
 	{
 		if(this.#created) return;
 		if(this.#destroyed)
@@ -370,7 +364,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onStart()
+	/** @internal */ @bound _onStart()
 	{
 		if(this.#started || !this.#enabled || !this.#created) return;
 		if(this.#destroyed)
@@ -386,7 +380,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onEnterScene()
+	/** @internal */ @bound _onEnterScene()
 	{
 		if(this.#inScene) return;
 		if(this.destroyed)
@@ -404,7 +398,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onBeforePhysicsUpdate(delta: number, elapsed: number)
+	/** @internal */ @bound _onBeforePhysicsUpdate(delta: number, elapsed: number)
 	{
 		if(!this.#enabled) return;
 		if(!this.#inScene) return;
@@ -420,7 +414,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onUpdate(delta: number, elapsed: number)
+	/** @internal */ @bound _onUpdate(delta: number, elapsed: number)
 	{
 		if(!this.#enabled) return;
 		if(!this.#inScene) return;
@@ -436,7 +430,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onLeaveScene()
+	/** @internal */ @bound _onLeaveScene()
 	{
 		if(this.#destroyed) return;
 		if(!this.#inScene) return;
@@ -449,7 +443,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	/** @internal */ _onReparent(newParent: Actor | null)
+	/** @internal */ @bound _onReparent(newParent: Actor | null)
 	{
 		if(newParent === this.parent)
 		{
@@ -462,7 +456,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.onReparent(newParent);
 	}
 
-	#object3d: T = new Three.Object3D as T;
+	#object3d: T = ((e: Three.Object3D) => (e.actor = this, e))(new Three.Object3D) as T;
 	#created: boolean = false;
 	#started: boolean = false;
 	#enabled: boolean = true;

@@ -20,8 +20,6 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	readonly loadPromise = new Future<void>(noop)
 
-	get object3d() { return this.#object3d; }
-
 	get grid() { return this.#grid; }
 
 	get ambientLight() { return this.#ambientLight; }
@@ -38,7 +36,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	constructor()
 	{
 		super();
-		this.object3d.actor = this;
+		this.object3d = this.#object3d;
 		this.scene = this;
 
 		this.#grid.disable();

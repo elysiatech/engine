@@ -37,7 +37,7 @@ export interface ActorLifecycle
 	 * @param delta
 	 * @param elapsed
 	 */
-	onBeforePhysicsUpdate?(delta: number, elapsed: number): void;
+	onBeforePhysicsUpdate(delta: number, elapsed: number): void;
 
 	/**
 	 * Called every frame when the actor is updated. This is the last step before rendering.
@@ -61,13 +61,13 @@ export interface ActorLifecycle
 	/**
 	 * Called when the actor's destructor is called.
 	 */
-	onDestroy?(): void;
+	onDestroy(): void;
 
 	/**
 	 * Called when the actor is reparented.
 	 * @param parent
 	 */
-	onReparent?(parent: Actor | null): void;
+	onReparent(parent: Actor | null): void;
 }
 
 export interface SceneLifecycle

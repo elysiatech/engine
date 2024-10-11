@@ -303,7 +303,7 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 					<elysia-button @click=${() => console.log("clicked")}>Click me</elysia-button>
 					<elysia-number-input .value=${this.number}></elysia-number-input>
 					<elysia-text-input>hello world</elysia-text-input>
-					<elysia-boolean @_change=${e => this.bool = e.detail} .value=${this.bool}></elysia-boolean>
+					<elysia-boolean @_change=${e => this.bool = e.detail} _value=${this.bool}></elysia-boolean>
 					<elysia-range></elysia-range>
 					<elysia-vector .value=${this.vec} @change=${v => this.vec = v.detail}></elysia-vector>
 					<elysia-enum></elysia-enum>

@@ -38,7 +38,6 @@ export class MeshActor extends Actor<Three.Mesh>
 	{
 		super();
 		this.object3d = new Three.Mesh(geometry, material);
-		this.object3d.actor = this;
 		this.castShadow = castShadow;
 		this.receiveShadow = receiveShadow;
 	}

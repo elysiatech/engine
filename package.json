@@ -13,22 +13,22 @@
   },
   "exports": {},
   "peerDependencies": {
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "lit": "^3.2.0",
     "postprocessing": "^6.35.4",
     "three": "^0.165.0",
-    "three-stdlib": "^2.32.2"
+    "three-stdlib": "^2.32.2",
+    "troika-three-text": "^0.49.1"
   },
   "devDependencies": {
     "@types/node": "^20.13.0",
     "@types/three": "^0.165.0",
+    "esbuild": "^0.24.0",
     "tsx": "^4.17.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@dimforge/rapier3d": "^0.14.0",
-    "@dimforge/rapier3d-compat": "^0.14.0",
     "corel-color-picker": "^0.2.3",
-    "esbuild": "^0.24.0",
-    "lit": "^3.2.0",
-    "troika-three-text": "^0.49.1"
+    "esbuild-plugin-copy": "^2.1.1"
   }
 }

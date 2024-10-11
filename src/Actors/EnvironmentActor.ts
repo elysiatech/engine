@@ -146,7 +146,6 @@ export class EnvironmentActor extends Actor
 	get rotation() { return this.#rotation; }
 	set rotation(v) { this.#rotation = v; this.updateState(); }
 
-
 	get intensity() { return this.#environmentIntensity; }
 	set intensity(v) { this.#environmentIntensity = v; this.updateState(); }
 

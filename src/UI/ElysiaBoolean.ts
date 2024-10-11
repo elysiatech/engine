@@ -50,8 +50,22 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	@query("#input") accessor input: HTMLInputElement | null = null;
 
-	@attribute({ reflect: false, converter: BooleanConverter })
-	accessor value: boolean | undefined;
+	public get value () { return this.#internalValue; }
+
+	@attribute() public set value (val: boolean)
+	{
+		if(typeof val === undefined)
+		{
+			this.controlled = false;
+			this.#internalValue = !!this.input?.checked;
+		}
+		else
+		{
+			this.controlled = true;
+			this.#internalValue = BooleanConverter(val);
+			if(this.input) this.input.checked = BooleanConverter(val);
+		}
+	}
 
 	@attribute({ converter: BooleanConverter }) accessor defaultValue = false;
 
@@ -59,22 +73,32 @@ export class ElysiaBoolean extends ElysiaElement {
 
 	onMount()
 	{
-		if(typeof this.value !== "undefined") this.controlled = true;
-		else this.value = this.defaultValue;
+		if(typeof this.value !== "undefined")
+		{
+			this.controlled = true;
+			this.#internalValue = toBoolean(this.value);
+		}
+		else
+		{
+			this.value = this.defaultValue;
+			this.controlled = false;
+		}
 	}
 
 	public override onRender()
 	{
-		return html`<input id="input" type="checkbox" .checked="${this.value}" @change=${this.onChange}>`;
+		return html`<input id="input" type="checkbox" .checked="${this.#internalValue}" @change=${this.onChange}>`;
 	}
 
 	@bound private onChange (e: Event)
 	{
 		const val = (e.target as HTMLInputElement).checked;
 		if(this.controlled) (this.input as HTMLInputElement).checked = !!this.value;
-		else this.value = (e.target as HTMLInputElement).checked;
+		else this.#internalValue = (e.target as HTMLInputElement).checked;
 		this.dispatchEvent(new CustomEvent("change", { detail: val }));
 	}
+
+	#internalValue = false;
 }
 
 defineComponent(ElysiaBoolean);

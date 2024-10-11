@@ -24,4 +24,10 @@ switch(location.search)
 	case "?physics":
 		import("./PhysicsSandbox.ts");
 		break;
+	case "?transmission":
+		import("./TransmissionMaterial.ts");
+		break;
+	default:
+		import("./HelloCube.ts");
+		break;
 }

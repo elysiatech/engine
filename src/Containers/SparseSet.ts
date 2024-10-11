@@ -109,7 +109,7 @@ export class SparseSet<T>
 	 * @param index The index of the value to return.
 	 * @returns The value at the given index, or undefined if the index is out of bounds.
 	 */
-	at(index: number): T | undefined
+	public at(index: number): T | undefined
 	{
 		return this.dense[index];
 	}
@@ -120,6 +120,13 @@ export class SparseSet<T>
 		{
 			yield value;
 		}
+	}
+
+	/** * Clears the set */
+	public clear()
+	{
+		this.dense.length = 0;
+		this.sparse.clear();
 	}
 
 	public get length() { return this.dense.length; }

@@ -141,7 +141,6 @@ export class TorusActor extends MeshActor
 	constructor(color?: Three.ColorRepresentation, position?: Three.Vector3, radius = 1, tube = 0.4)
 	{
 		super(new Three.TorusGeometry(), new Three.MeshStandardMaterial({ color }));
-		this.object3d.actor = this;
 
 		if(position)
 		{

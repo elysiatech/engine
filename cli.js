@@ -1,5 +1,6 @@
 import * as esbuild from "esbuild"
 import * as fs from "node:fs/promises";
+import { copy } from "esbuild-plugin-copy";
 
 function parseCommand() { return process.argv[2]; }
 
@@ -21,6 +22,16 @@ const createConfig = (mode) => ({
 		"import.meta.DEV": mode === "dev" ? "true" : "false",
 	},
 	logLevel: "error",
+	plugins: [
+		copy({
+			resolveFrom: 'cwd',
+			assets: {
+				from: ['./playground/assets/*'],
+				to: ['./playground/dist/assets'],
+			},
+			watch: true,
+		}),
+	],
 })
 
 async function dev()

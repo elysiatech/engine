@@ -6,12 +6,38 @@
 ************************************************************/
 
 import * as Three from 'three'
+import { Application } from "../Core/ApplicationEntry.ts";
+import { Scene } from "../Scene/Scene.ts";
 
-interface Uniform<T> {
+interface Uniform<T>
+{
 	value: T
 }
 
-export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial {
+class DiscardMaterial extends Three.ShaderMaterial
+{
+	constructor()
+	{
+		super({
+			uniforms: {},
+			vertexShader: /* glsl */ `
+				void main() {
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: /* glsl */ `
+				void main() {
+					gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+					discard;
+				}
+			`
+		})
+	}
+}
+
+export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
+{
+
 	uniforms: {
 		chromaticAberration: Uniform<number>
 		transmission: Uniform<number>
@@ -30,25 +56,8 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial {
 		buffer: Uniform<Three.Texture | null>
 	}
 
-	constructor({
-					samples = 6,
-					transmissionSampler = false,
-					chromaticAberration = 0.05,
-					transmission = 0,
-					_transmission = 1,
-					transmissionMap = null,
-					roughness = 0,
-					thickness = 0,
-					thicknessMap = null,
-					attenuationDistance = Infinity,
-					attenuationColor = new Three.Color('white'),
-					anisotropicBlur = 0.1,
-					time = 0,
-					distortion = 0.0,
-					distortionScale = 0.5,
-					temporalDistortion = 0.0,
-					buffer = null,
-				} = {}) {
+	constructor({ samples = 6, transmissionSampler = false, chromaticAberration = 0.05, transmission = 0, _transmission = 1, transmissionMap = null, roughness = 0, thickness = 0, thicknessMap = null, attenuationDistance = Infinity, attenuationColor = new Three.Color('white'), anisotropicBlur = 0.1, time = 0, distortion = 0.0, distortionScale = 0.5, temporalDistortion = 0.0, buffer = null } = {})
+	{
 		super()
 
 		this.uniforms = {
@@ -72,8 +81,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial {
 			buffer: { value: buffer },
 		}
 
-		// @ts-ignore
-		this.onBeforeCompile = (shader: Three.Shader & { defines: { [key: string]: string } }) => {
+		this.onBeforeCompile = (shader: any) => {
 			shader.uniforms = {
 				...shader.uniforms,
 				...this.uniforms,
@@ -315,11 +323,74 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial {
 			)
 		}
 
-		Object.keys(this.uniforms).forEach((name) =>
-			Object.defineProperty(this, name, {
-				get: () => this.uniforms[name as keyof typeof this.uniforms].value,
-				set: (v) => (this.uniforms[name as keyof typeof this.uniforms].value = v),
-			})
-		)
+		this.uniforms.buffer = { value: this.fboMain.texture }
+	}
+
+	fboBack = new Three.WebGLRenderTarget(1024, 1024, {
+		minFilter: Three.LinearFilter,
+		magFilter: Three.LinearFilter,
+		type: Three.HalfFloatType,
+		samples: 0,
+	})
+	fboMain = new Three.WebGLRenderTarget(1024, 1024, {
+		minFilter: Three.LinearFilter,
+		magFilter: Three.LinearFilter,
+		type: Three.HalfFloatType,
+		samples: 0,
+	})
+	oldBg: any;
+	oldTone: any;
+	oldSide: any;
+	mtmParams = {
+		backside: true,
+		thickness: 1,
+		backsideThickness: 0.5,
+	};
+	discardMat = new DiscardMaterial;
+
+	onUpdate(time: number, app: Application, scene: Scene, mesh: Three.Mesh)
+	{
+		const gl = app.renderPipeline.getRenderer();
+
+		this.uniforms.time.value += time;
+		console.log(this.uniforms.time.value);
+
+		if (this.uniforms.buffer.value === this.fboMain.texture) {
+			// Save defaults
+			this.oldTone = gl.toneMapping;
+			this.oldBg = scene.object3d.background;
+			this.oldSide = mesh.material.side;
+
+			// Switch off tonemapping lest it double tone maps
+			// Save the current background and set the HDR as the new BG
+			// Use discardMaterial, the parent will be invisible, but it's shadows will still be cast
+			gl.toneMapping = Three.NoToneMapping;
+			mesh.material = this.discardMat;
+
+			if (this.mtmParams.backside) {
+				// Render into the backside buffer
+				gl.setRenderTarget(this.fboBack);
+				gl.render(scene.object3d, scene.getActiveCamera());
+				// And now prepare the material for the main render using the backside buffer
+				mesh.material = this;
+				this.uniforms.buffer.value = this.fboBack.texture;
+				this.uniforms.thickness.value = this.mtmParams.backsideThickness;
+				mesh.material.side = Three.BackSide;
+			}
+
+			// Render into the main buffer
+			gl.setRenderTarget(this.fboMain);
+			gl.render(scene.object3d, scene.getActiveCamera());
+
+			mesh.material = this;
+			this.uniforms.thickness.value = this.mtmParams.thickness;
+			this.side = this.oldSide;
+			this.uniforms.buffer.value = this.fboMain.texture;
+
+			// Set old state back
+			scene.object3d.background = this.oldBg;
+			gl.setRenderTarget(null);
+			gl.toneMapping = this.oldTone;
+		}
 	}
 }
