@@ -1,5 +1,5 @@
-import { Actor } from "./Actor";
-import { Behavior } from "./Behavior";
+import { Actor, IsActor } from "./Actor";
+import { Behavior, IsBehavior } from "./Behavior";
 
 /**
  * A Component is an Actor or Behavior that satisfies the ActorLifecycle interface.
@@ -12,7 +12,7 @@ export type Component = Actor | Behavior;
  */
 export function isActor(component: any): component is Actor
 {
-	return component instanceof Actor;
+	return IsActor in component;
 }
 
 /**
@@ -21,7 +21,7 @@ export function isActor(component: any): component is Actor
  */
 export function isBehavior(component: any): component is Behavior
 {
-	return component instanceof Behavior;
+	return IsBehavior in component;
 }
 
 /**

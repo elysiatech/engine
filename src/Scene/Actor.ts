@@ -18,6 +18,7 @@ import {
 	OnStart,
 	OnUpdate
 } from "../Core/Internal.ts";
+import { reportLifecycleError } from "../Core/Error.ts";
 
 export const IsActor = Symbol.for("Elysia::IsActor");
 
@@ -336,7 +337,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		componentsByTag: new Map<any, SparseSet<Component>>,
 	};
 
-	[OnEnable](runEvenIfAlreadyEnabled: boolean = false)
+	@bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)
 	{
 		if(this[Internal].enabled && !runEvenIfAlreadyEnabled) return;
 		this[Internal].enabled = true;
@@ -346,7 +347,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this[OnEnterScene]();
 	}
 
-	[OnDisable]()
+	@bound [OnDisable]()
 	{
 		if(!this[Internal].enabled) return;
 		this[Internal].enabled = false;
@@ -354,7 +355,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.onDisable();
 	}
 
-	[OnCreate]()
+	@reportLifecycleError @bound [OnCreate]()
 	{
 		if(this[Internal].created) return;
 		if(this[Internal].destroyed)
@@ -372,7 +373,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	[OnStart]()
+	@bound [OnStart]()
 	{
 		if(this[Internal].started || !this[Internal].enabled || !this[Internal].created) return;
 		if(this[Internal].destroyed)
@@ -388,7 +389,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	[OnEnterScene]()
+	@bound [OnEnterScene]()
 	{
 		if(this[Internal].inScene) return;
 		if(this.destroyed)
@@ -403,7 +404,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		for(const component of this.components) component[OnEnterScene]();
 	}
 
-	[OnBeforePhysicsUpdate](delta: number, elapsed: number)
+	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
 		if(!this[Internal].enabled) return;
 		if(!this[Internal].inScene) return;
@@ -419,7 +420,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	[OnUpdate](delta: number, elapsed: number)
+	@bound [OnUpdate](delta: number, elapsed: number)
 	{
 		if(!this[Internal].enabled) return;
 		if(!this[Internal].inScene) return;
@@ -435,7 +436,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 	}
 
-	[OnLeaveScene]()
+	@bound [OnLeaveScene]()
 	{
 		if(this[Internal].destroyed) return;
 		if(!this[Internal].inScene) return;
@@ -445,7 +446,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		for(const component of this.components) component[OnLeaveScene]();
 	}
 
-	[OnReparent](newParent: Actor | null)
+	@bound [OnReparent](newParent: Actor | null)
 	{
 		if(newParent === this[Internal].parent)
 		{

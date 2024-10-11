@@ -14,6 +14,7 @@ import {
 	OnEnterScene, OnLeaveScene, OnReparent,
 	OnStart, OnUpdate
 } from "../Core/Internal.ts";
+import { bound } from "../Core/Utilities.ts";
 
 export const IsBehavior = Symbol.for("Elysia::IsBehavior");
 
@@ -86,25 +87,25 @@ export class Behavior implements ActorLifecycle, Destroyable
 	    Lifecycle methods
 	************************************************************/
 
-	onCreate() {}
+	@bound onCreate() {}
 
-	onEnable() {}
+	@bound onEnable() {}
 
-	onStart() {}
+	@bound onStart() {}
 
-	onEnterScene() {}
+	@bound onEnterScene() {}
 
-	onBeforePhysicsUpdate(delta: number, elapsed: number) {}
+	@bound onBeforePhysicsUpdate(delta: number, elapsed: number) {}
 
-	onUpdate(delta: number, elapsed: number) {}
+	@bound onUpdate(delta: number, elapsed: number) {}
 
-	onDisable() {}
+	@bound onDisable() {}
 
-	onLeaveScene() {}
+	@bound onLeaveScene() {}
 
-	onDestroy() {}
+	@bound onDestroy() {}
 
-	onReparent(parent: Actor | null) {}
+	@bound onReparent(parent: Actor | null) {}
 
 	destructor()
 	{
@@ -133,7 +134,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		destroyed: false,
 	};
 
-	[OnEnable](runEvenIfAlreadyEnabled: boolean = false)
+	@bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)
 	{
 		if (this[Internal].enabled && !runEvenIfAlreadyEnabled) return;
 		if(this.destroyed)
@@ -145,7 +146,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onEnable();
 	}
 
-	[OnDisable]() {
+	@bound [OnDisable]() {
 		if (!this[Internal].enabled) return;
 		if(this.destroyed)
 		{
@@ -156,7 +157,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onDisable();
 	}
 
-	[OnCreate]() {
+	@bound [OnCreate]() {
 		if (this[Internal].created) return;
 		if(this.destroyed)
 		{
@@ -167,7 +168,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onCreate();
 	}
 
-	[OnStart]() {
+	@bound [OnStart]() {
 		if (this[Internal].started) return;
 		if(this.destroyed)
 		{
@@ -178,7 +179,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onStart();
 	}
 
-	[OnEnterScene]() {
+	@bound [OnEnterScene]() {
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn("Cannot enter scene a destroyed behavior:", this);
@@ -190,17 +191,17 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onEnterScene();
 	}
 
-	[OnBeforePhysicsUpdate](delta: number, elapsed: number) {
+	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number) {
 		if(this.destroyed) return;
 		this.onBeforePhysicsUpdate(delta, elapsed);
 	}
 
-	[OnUpdate](delta: number, elapsed: number) {
+	@bound [OnUpdate](delta: number, elapsed: number) {
 		if(this.destroyed) return;
 		this.onUpdate(delta, elapsed);
 	}
 
-	[OnLeaveScene]() {
+	@bound [OnLeaveScene]() {
 		if(this.destroyed) return;
 		if(!this[Internal].inScene) return;
 		this[Internal].inScene = false;
@@ -208,7 +209,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onLeaveScene();
 	}
 
-	[OnReparent](parent: Actor | null) {
+	@bound [OnReparent](parent: Actor | null) {
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn("Cannot reparent a destroyed behavior:", this);

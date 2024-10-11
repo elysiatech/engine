@@ -2,7 +2,7 @@ import { Actor } from "./Actor";
 import * as Three from "three";
 import { Destroyable, SceneLifecycle } from "../Core/Lifecycle";
 import { Future } from "../Containers/Future";
-import { Constructor, noop } from "../Core/Utilities";
+import { bound, Constructor, noop } from "../Core/Utilities";
 import { Behavior } from "./Behavior";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
@@ -92,7 +92,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 * Returns all actors in the scene with the given tag.
 	 * @param tag
 	 */
-	public override getComponentsByTag(tag: any): SparseSet<Component>
+	@bound public override getComponentsByTag(tag: any): SparseSet<Component>
 	{
 		return this.#componentsByTag.get(tag) || new SparseSet<Component>;
 	}
@@ -100,7 +100,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	/**
 	 * Returns all actors in the scene with the given type.
 	 */
-	public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>
+	@bound public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>
 	{
 		return (this.#componentsByType.get(type) as SparseSet<T>) || new SparseSet<T>;
 	}
@@ -109,42 +109,42 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 * Returns the active camera in the scene (if one is set via ActiveCameraTag).
 	 * If multiple cameras are set as active, the first one found is returned.
 	 */
-	public getActiveCamera(): Three.Camera
+	@bound public getActiveCamera(): Three.Camera
 	{
 		return this[ActiveCamera];
 	}
 
-	async [OnLoad]()
-	{
-		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
-		this[SceneLoadPromise].resolve()
-	}
+	@bound onLoad(): void | Promise<void> {}
 
-	onLoad(): void | Promise<void> {}
-
-	onCreate() {
+	@bound onCreate() {
 		ELYSIA_LOGGER.debug("Scene created", this)
 		this.object3d.add(this.#ambientLight);
 		this.#grid.disable();
 		this.addComponent(this.#grid);
 	}
 
-	onStart() {
+	@bound onStart() {
 		super.onStart();
 		this.physics?.start();
 	}
 
-	onUpdate(delta: number, elapsed: number) {
+	@bound onUpdate(delta: number, elapsed: number) {
 		super.onUpdate(delta, elapsed);
 		const t = performance.now();
 		this.physics?.updatePhysicsWorld(this, delta, elapsed)
 		// console.log("Physics update time", performance.now() - t)
 	}
 
-	onEnd(): void
+	@bound onEnd(): void
 	{
 		this.#componentsByTag.clear();
 		this.#componentsByType.clear();
+	}
+
+	@bound async [OnLoad]()
+	{
+		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
+		this[SceneLoadPromise].resolve()
 	}
 
 	[SceneLoadPromise] = new Future<void>(noop);

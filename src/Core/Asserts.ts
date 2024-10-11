@@ -165,10 +165,16 @@ export function isNode()
 	);
 }
 
+declare global {
+	var ELYSIA_DEV: boolean | undefined;
+}
+
+globalThis.ELYSIA_DEV = undefined;
+
 export function isDev()
 {
 	// @ts-ignore
-	return process.env.NODE_ENV === "development" || import.meta.DEV;
+	return typeof globalThis.ELYSIA_DEV === "boolean" ? globalThis.ELYSIA_DEV : process.env.NODE_ENV === "development" || import.meta.DEV;
 }
 
 export function hasTTY() { return toBoolean(globalThis.process?.stdout && globalThis.process?.stdout.isTTY); }

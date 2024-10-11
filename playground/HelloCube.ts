@@ -8,6 +8,7 @@ import { CameraOrbitBehavior } from "../src/Behaviors/CameraOrbitBehavior.ts";
 import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
 import { EnvironmentActor } from "../src/Actors/EnvironmentActor.ts";
 import { Colors } from "../src/Core/Colors.ts";
+import { Actor } from "../src/Scene/Actor.ts";
 
 // Create the application.
 const app = new Application({
@@ -46,6 +47,16 @@ const env = new EnvironmentActor;
 env.background = true;
 env.backgroundBlur = 4;
 scene.addComponent(env);
+
+class WillThrow extends Actor
+{
+	onCreate() {
+		super.onCreate();
+		throw new Error("This is a test error");
+	}
+}
+
+scene.addComponent(new WillThrow);
 
 // enable the scene grid in dev mode
 import.meta.DEV && scene.grid.enable()

@@ -44,7 +44,7 @@ type BoundDecorator = (
 /**
  * Binds a method to the instance of the class it is defined in.
  */
-export const bound:  BoundDecorator = (recever, { name, addInitializer }) => {
+export const bound: BoundDecorator = (recever, { name, addInitializer }) => {
 	addInitializer(function (this: any) {
 		this[name] = this[name].bind(this);
 	});

@@ -17,6 +17,7 @@ import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
 import { Actor } from "../Scene/Actor.ts";
 import { Internal, OnCreate, OnEnable, OnEnterScene, OnLoad, OnStart, OnUpdate, SceneLoadPromise } from "./Internal.ts";
+import { bound } from "./Utilities.ts";
 
 declare module 'three'
 {
@@ -120,7 +121,7 @@ export class Application {
 		}
 	}
 
-	public async loadScene(scene: Scene)
+	@bound public async loadScene(scene: Scene)
 	{
 		ASSERT(
 			this.renderPipeline &&
@@ -159,7 +160,12 @@ export class Application {
 		this.update();
 	}
 
-	public destructor()
+	@bound public reportError(error: Error)
+	{
+		this.#errorCount++;
+	}
+
+	@bound public destructor()
 	{
 		ELYSIA_LOGGER.debug("Destroying application")
 		this.#rendering = false;
@@ -167,7 +173,7 @@ export class Application {
 		for(const prop of Object.values(this)) if(isDestroyable(prop)) prop.destructor()
 	}
 
-	private update()
+	@bound private update()
 	{
 		try {
 			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")
@@ -230,6 +236,7 @@ export class Application {
 		}
 	}
 
+	#errors: Error[] = [];
 	#mouseIntersectionController = new MouseIntersections;
 	#errorCount = 0;
 	#stats: boolean | ElysiaStats = false;
