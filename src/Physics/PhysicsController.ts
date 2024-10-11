@@ -9,6 +9,7 @@ import { Actor } from "../Scene/Actor";
 import { ASSERT } from "../Core/Asserts.ts";
 import { isActor } from "../Scene/Component.ts";
 import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
+import { OnBeforePhysicsUpdate } from "../Core/Internal.ts";
 
 export interface PhysicsControllerConstructorArguments
 {
@@ -198,7 +199,7 @@ export class PhysicsController implements Destroyable
 	{
 		if(!this.world) return;
 
-		this.scene?._onBeforePhysicsUpdate(delta, elapsed);
+		this.scene?.[OnBeforePhysicsUpdate](delta, elapsed);
 
 		this.world.timestep = delta;
 

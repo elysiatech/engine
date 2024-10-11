@@ -13,76 +13,78 @@ import { GridActor } from "../Actors/GridActor.ts";
 import { SparseSet } from "../Containers/SparseSet.ts";
 import { PhysicsController } from "../Physics/PhysicsController.ts";
 import { EnvironmentActor } from "../Actors/EnvironmentActor.ts";
+import { ActiveCamera, Internal, OnLoad, SceneLoadPromise } from "../Core/Internal.ts";
+
+export const IsScene = Symbol.for("Elysia::IsScene");
 
 export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroyable
 {
+	[IsScene] = true;
+
 	override type = "Scene";
 
-	readonly loadPromise = new Future<void>(noop)
+	physics?: PhysicsController;
 
 	get grid() { return this.#grid; }
 
 	get ambientLight() { return this.#ambientLight; }
 
-	physics?: PhysicsController;
-
 	get activeCamera() { return this.getActiveCamera(); }
+
 	set activeCamera(camera: Three.Camera | Actor<Three.Camera>)
 	{
-		this.#activeCamera = camera instanceof Actor ? camera.object3d : camera;
-		this.app?.renderPipeline.onCameraChange(this.#activeCamera);
+		this[ActiveCamera] = camera instanceof Actor ? camera.object3d : camera;
+		this.app?.renderPipeline.onCameraChange(this[ActiveCamera]);
 	}
 
 	constructor()
 	{
 		super();
-		this.object3d = this.#object3d;
-		this.scene = this;
 
-		this.#grid.disable();
-		this.addComponent(this.#grid);
+		this.object3d = this[Internal].object3d = new Three.Scene();
+		this[Internal].scene = this;
 
 		ElysiaEventDispatcher.addEventListener(ComponentAddedEvent, (e) => {
 			const type = e.child.constructor;
 
-			if(!this.componentsByType.has(type))
-				this.componentsByType.set(type, new SparseSet);
+			if(!this.#componentsByType.has(type))
+				this.#componentsByType.set(type, new SparseSet);
 
-			this.componentsByType.get(type)!.add(e.child);
+			this.#componentsByType.get(type)!.add(e.child);
 
 			if(isActor(e.child))
 			{
-				this.allActors.add(e.child);
+				this.#allActors.add(e.child);
 			}
 			else
 			{
-				this.allBehaviors.add(e.child);
+				this.#allBehaviors.add(e.child);
 			}
 		})
 
 		ElysiaEventDispatcher.addEventListener(ComponentRemovedEvent, (e) => {
 			const type = e.child.constructor;
-			this.componentsByType.get(type)?.delete(e.child);
+			this.#componentsByType.get(type)?.delete(e.child);
 
 			if(isActor(e.child))
 			{
-				this.allActors.delete(e.child);
+				this.#allActors.delete(e.child);
 			}
 			else
 			{
-				this.allBehaviors.delete(e.child);
+				this.#allBehaviors.delete(e.child);
 			}
 		})
 
 		ElysiaEventDispatcher.addEventListener(TagAddedEvent, (event) => {
-			if(!this.componentsByTag.has(event.tag))
-				this.componentsByTag.set(event.tag, new SparseSet);
+			if(!this.#componentsByTag.has(event.tag))
+				this.#componentsByTag.set(event.tag, new SparseSet);
 
-			this.componentsByTag.get(event.tag)!.add(event.target);
+			this.#componentsByTag.get(event.tag)!.add(event.target);
 		})
 
 		ElysiaEventDispatcher.addEventListener(TagRemovedEvent, (event) => {
-			this.componentsByTag.get(event.tag)?.delete(event.target);
+			this.#componentsByTag.get(event.tag)?.delete(event.target);
 		})
 	}
 
@@ -92,7 +94,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 */
 	public override getComponentsByTag(tag: any): SparseSet<Component>
 	{
-		return this.componentsByTag.get(tag) || new SparseSet<Component>;
+		return this.#componentsByTag.get(tag) || new SparseSet<Component>;
 	}
 
 	/**
@@ -100,7 +102,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 */
 	public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>
 	{
-		return (this.componentsByType.get(type) as SparseSet<T>) || new SparseSet<T>;
+		return (this.#componentsByType.get(type) as SparseSet<T>) || new SparseSet<T>;
 	}
 
 	/**
@@ -109,20 +111,22 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 */
 	public getActiveCamera(): Three.Camera
 	{
-		return this.#activeCamera;
+		return this[ActiveCamera];
+	}
+
+	async [OnLoad]()
+	{
+		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
+		this[SceneLoadPromise].resolve()
 	}
 
 	onLoad(): void | Promise<void> {}
 
-	async _load()
-	{
-		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
-		this.loadPromise.resolve()
-	}
-
 	onCreate() {
 		ELYSIA_LOGGER.debug("Scene created", this)
 		this.object3d.add(this.#ambientLight);
+		this.#grid.disable();
+		this.addComponent(this.#grid);
 	}
 
 	onStart() {
@@ -139,20 +143,17 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	onEnd(): void
 	{
-		this.componentsByTag.clear();
-		this.componentsByType.clear();
+		this.#componentsByTag.clear();
+		this.#componentsByType.clear();
 	}
 
-	private componentsByTag = new Map<any, SparseSet<Component>>
-	private componentsByType = new Map<any, SparseSet<Component>>
-	private allActors = new SparseSet<Actor>
-	private allBehaviors = new SparseSet<Behavior>
-
-	#activeCamera: Three.Camera = new Three.PerspectiveCamera();
-
-	#object3d: Three.Scene = new Three.Scene();
+	[SceneLoadPromise] = new Future<void>(noop);
+	[ActiveCamera]: Three.Camera = new Three.PerspectiveCamera();
 
 	#grid = new GridActor;
-
 	#ambientLight = new Three.AmbientLight(0xffffff, 0.5);
+	#componentsByTag = new Map<any, SparseSet<Component>>
+	#componentsByType = new Map<any, SparseSet<Component>>
+	#allActors = new SparseSet<Actor>
+	#allBehaviors = new SparseSet<Behavior>
 }

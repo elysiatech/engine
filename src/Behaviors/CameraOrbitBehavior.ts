@@ -45,7 +45,7 @@ export class CameraOrbitBehavior extends Behavior
 			return
 		}
 
-		this.controls = new OrbitControls(camera, this.app!.renderPipeline.getRenderer().domElement);
+		this.controls = new OrbitControls(camera, this.app.renderPipeline.getRenderer().domElement);
 
 		this.controls.enableDamping = this.#smooth;
 	}

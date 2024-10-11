@@ -1,5 +1,5 @@
 import { LogLevel } from "../Logging/Levels";
-import { isDestroyable, isDev } from "./Asserts";
+import { ASSERT, isDestroyable, isDev } from "./Asserts";
 import { MouseIntersections } from "../Input/MouseIntersections";
 import { ElysiaEventQueue } from "../Events/EventQueue";
 import { InputQueue } from "../Input/InputQueue";
@@ -16,6 +16,7 @@ import { ResizeController } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
 import { Actor } from "../Scene/Actor.ts";
+import { Internal, OnCreate, OnEnable, OnEnterScene, OnLoad, OnStart, OnUpdate, SceneLoadPromise } from "./Internal.ts";
 
 declare module 'three'
 {
@@ -110,8 +111,6 @@ export class Application {
 
 		this.mouse = new MouseObserver(this.#output);
 
-		this.#resizeController = new ResizeController();
-
 		this.updateDefaultUiScheduler = config.updateDefaultUiScheduler ?? true;
 
 		if(config.stats)
@@ -123,26 +122,40 @@ export class Application {
 
 	public async loadScene(scene: Scene)
 	{
-		ELYSIA_LOGGER.debug("Loading scene", scene)
-		scene.app = this;
+		ASSERT(
+			this.renderPipeline &&
+			this.#output &&
+			scene,
+		)
+
+		scene[Internal].app = this;
+
 		this.#rendering = false;
+
 		if(this.#scene)
 		{
 			ELYSIA_LOGGER.debug("Unloading previous scene", this.#scene)
-			await this.#scene.loadPromise;
+			await this.#scene[SceneLoadPromise];
 			this.#scene.destructor?.();
 		}
+
 		this.#scene = scene
-		await this.#scene?._load();
+		await this.#scene[OnLoad]();
+
 		ELYSIA_LOGGER.debug("Scene loaded", scene)
+
 		this.#renderPipeline!.onCreate(this.#scene, this.#output);
 		this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
-		this.#scene._onCreate();
-		this.#scene._onEnable();
-		this.#scene._onStart();
-		this.#scene._onEnterScene();
+
+		this.#scene[OnCreate]();
+		this.#scene[OnEnable]();
+		this.#scene[OnStart]();
+		this.#scene[OnEnterScene]();
+
 		ELYSIA_LOGGER.debug("Scene started", scene)
+
 		this.#rendering = true;
+
 		this.update();
 	}
 
@@ -150,46 +163,29 @@ export class Application {
 	{
 		ELYSIA_LOGGER.debug("Destroying application")
 		this.#rendering = false;
-		for(const prop of Object.values(this))
-		{
-			if(isDestroyable(prop))
-			{
-				prop.destructor()
-			}
-		}
+
+		for(const prop of Object.values(this)) if(isDestroyable(prop)) prop.destructor()
 	}
 
 	private update()
 	{
 		try {
-			if(!this.#scene || !this.#rendering)
-			{
-				throw Error("No scene loaded")
-			}
+			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")
 
-			if(this.#errorCount <= this.maxErrorCount)
-			{
-				requestAnimationFrame(this.update);
-			}
+			if(this.#errorCount <= this.maxErrorCount) requestAnimationFrame(this.update);
+
 			else
 			{
 				ELYSIA_LOGGER.critical("Too many consecutive errors, stopping update loop.")
 				return;
 			}
 
-			const camera = this.#scene.getActiveCamera();
-
-			if(!camera)
-			{
-				throw Error("No active camera in scene")
-			}
-
 			const delta = this.#clock.getDelta() || 0.016;
 			const elapsed = this.#clock.getElapsedTime();
 
 			// update mouse intersection
-			this.mouseIntersectionController.cast(
-				camera,
+			this.#mouseIntersectionController.cast(
+				this.#scene.getActiveCamera(),
 				this.#scene.object3d,
 				this.mouse.x / this.#output.clientWidth * 2 -1,
 				this.mouse.y / this.#output.clientHeight * 2 -1
@@ -213,10 +209,10 @@ export class Application {
 			}
 
 			// scene update
-			this.#scene._onUpdate(delta, elapsed);
+			this.#scene[OnUpdate](delta, elapsed);
 
-			// scene update
-			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera()!);
+			// scene render
+			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera());
 
 			// update default UI scheduler
 			this.updateDefaultUiScheduler && defaultScheduler.update();
@@ -234,10 +230,8 @@ export class Application {
 		}
 	}
 
-	private mouseIntersectionController = new MouseIntersections;
-
+	#mouseIntersectionController = new MouseIntersections;
 	#errorCount = 0;
-	#resizeController: ResizeController;
 	#stats: boolean | ElysiaStats = false;
 	#clock = new Three.Clock;
 	#renderPipeline?: RenderPipeline;

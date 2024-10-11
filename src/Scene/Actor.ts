@@ -9,59 +9,62 @@ import { Application } from "../Core/ApplicationEntry.ts";
 import { isDev } from "../Core/Asserts";
 import { bound, Constructor } from "../Core/Utilities";
 import { SparseSet } from "../Containers/SparseSet.ts";
+import {
+	Internal,
+	OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable,
+	OnEnterScene,
+	OnLeaveScene,
+	OnReparent,
+	OnStart,
+	OnUpdate
+} from "../Core/Internal.ts";
+
+export const IsActor = Symbol.for("Elysia::IsActor");
 
 export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable
 {
+	[IsActor] = true;
+
 	public readonly type: string = "Actor";
 
 	/**
 	 * The underlying Three.js object.
 	 * This should be used with caution, as it can break the internal state of the actor in some cases.
 	 */
-	get object3d() { return this.#object3d; }
+	get object3d() { return this[Internal].object3d; }
 	set object3d(object3d: T) { this.updateObject3d(object3d); }
 
-	get created() { return this.#created; }
+	get created() { return this[Internal].created; }
 
-	get enabled() { return this.#enabled; }
+	get enabled() { return this[Internal].enabled; }
 
-	get started() { return this.#started; }
+	get started() { return this[Internal].started; }
 
-	get inScene() { return this.#inScene; }
+	get inScene() { return this[Internal].inScene; }
 
-	get destroyed() { return this.#destroyed; }
+	get destroyed() { return this[Internal].destroyed; }
 
-	get position() { return this.#object3d.position; }
-	set position(position: Three.Vector3) { this.#object3d.position.copy(position); }
+	get app() { return this[Internal].app; }
 
-	get rotation() { return this.#object3d.rotation; }
-	set rotation(rotation: Three.Euler) { this.#object3d.rotation.copy(rotation); }
+	get scene() { return this[Internal].scene; }
 
-	get scale() { return this.#object3d.scale; }
-	set scale(scale: Three.Vector3) { this.#object3d.scale.copy(scale); }
+	get parent() { return this[Internal].parent; }
 
-	get quaternion() { return this.#object3d.quaternion; }
-	set quaternion(quaternion: Three.Quaternion) { this.#object3d.quaternion.copy(quaternion); }
+	get position() { return this[Internal].object3d.position; }
+	set position(position: Three.Vector3) { this[Internal].object3d.position.copy(position); }
+
+	get rotation() { return this[Internal].object3d.rotation; }
+	set rotation(rotation: Three.Euler) { this[Internal].object3d.rotation.copy(rotation); }
+
+	get scale() { return this[Internal].object3d.scale; }
+	set scale(scale: Three.Vector3) { this[Internal].object3d.scale.copy(scale); }
+
+	get quaternion() { return this[Internal].object3d.quaternion; }
+	set quaternion(quaternion: Three.Quaternion) { this[Internal].object3d.quaternion.copy(quaternion); }
 
 	readonly components = new Set<Component>;
 
 	readonly tags = new Set<any>;
-
-	/**
-	 * The parent actor of this behavior.
-	 */
-	parent: Actor<any> | null = null;
-
-	/**
-	 * The scene this behavior belongs
-	 * to, if any.
-	 */
-	scene: Scene | null = null;
-
-	/**
-	 * The application this behavior belongs to.
-	 */
-	app: Application | null = null;
 
 	/* **********************************************************
 	    Lifecycle methods
@@ -93,25 +96,25 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	@bound updateObject3d(object3d: T)
 	{
-		if(this.#object3d === object3d) return;
+		if(this[Internal].object3d === object3d) return;
 
-		this.#object3d.parent?.remove(this.#object3d);
-		this.#object3d.actor = undefined;
+		this[Internal].object3d.parent?.remove(this[Internal].object3d);
+		this[Internal].object3d.actor = undefined;
 
 		// set this actor as the actor of the object3d
 		object3d.actor = this;
-		this.#object3d = object3d;
+		this[Internal].object3d = object3d;
 	}
 
 	/**
 	 * Enables this actor. This means it receives updates and is visible.
 	 */
-	@bound enable() { this._onEnable(); }
+	@bound enable() { this[OnEnable](); }
 
 	/**
 	 * Disables this actor. This means it does not receive updates and is not visible.
 	 */
-	@bound disable() { this._onDisable(); }
+	@bound disable() { this[OnDisable](); }
 
 	/**
 	 * Adds a tag to this actor.
@@ -140,7 +143,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound addComponent(component: Component): boolean
 	{
-		if(this.#destroyed)
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn("Trying to add component to a destroyed actor");
 			return false;
@@ -151,39 +154,30 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			return false;
 		}
 		this.components.add(component);
-		if(!this.#componentsByType.has(component.constructor as Constructor<Component>))
+		if(!this[Internal].componentsByType.has(component.constructor as Constructor<Component>))
 		{
-			this.#componentsByType.set(component.constructor as Constructor<Component>, new SparseSet);
+			this[Internal].componentsByType.set(component.constructor as Constructor<Component>, new SparseSet);
 		}
-		this.#componentsByType.get(component.constructor as Constructor<Component>)!.add(component);
+		this[Internal].componentsByType.get(component.constructor as Constructor<Component>)!.add(component);
 		if(isActor(component))
 		{
 			for(const tag of component.tags)
 			{
-				if(!this.#componentsByTag.has(tag))
+				if(!this[Internal].componentsByTag.has(tag))
 				{
-					this.#componentsByTag.set(tag, new SparseSet);
+					this[Internal].componentsByTag.set(tag, new SparseSet);
 				}
-				this.#componentsByTag.get(tag)!.add(component);
+				this[Internal].componentsByTag.get(tag)!.add(component);
 			}
 			this.object3d.add(component.object3d);
 		}
 		ElysiaEventDispatcher.dispatchEvent(new ComponentAddedEvent({ parent: this, child: component }));
-		component.parent = this;
-		component.scene = this.scene;
-		component.app = this.app;
-		if(this.#created)
-		{
-			component._onCreate();
-		}
-		if(this.#started)
-		{
-			component._onStart();
-		}
-		if(this.#inScene)
-		{
-			component._onEnterScene();
-		}
+		component[Internal].parent = this;
+		component[Internal].scene = this[Internal].scene;
+		component[Internal].app = this[Internal].app;
+		if(this[Internal].created) component[OnCreate]();
+		if(this[Internal].started) component[OnStart]();
+		if(this[Internal].inScene) component[OnEnterScene]();
 		return true;
 	}
 
@@ -194,7 +188,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound removeComponent(component: Component): boolean
 	{
-		if(this.#destroyed)
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn("Trying to remove component from a destroyed actor");
 			return false;
@@ -206,16 +200,16 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		ElysiaEventDispatcher.dispatchEvent(new ComponentRemovedEvent({ parent: this, child: component }));
 		this.components.delete(component);
-		this.#componentsByType.get(component.constructor as Constructor<Component>)?.delete(component);
+		this[Internal].componentsByType.get(component.constructor as Constructor<Component>)?.delete(component);
 		if(isActor(component))
 		{
 			for(const tag of component.tags)
 			{
-				this.#componentsByTag.get(tag)?.delete(component);
+				this[Internal].componentsByTag.get(tag)?.delete(component);
 			}
 			this.object3d.remove(component.object3d);
 		}
-		component._onLeaveScene();
+		component[OnLeaveScene]();
 		return true;
 	}
 
@@ -226,7 +220,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound stealComponent(component: Component): boolean
 	{
-		if(this.#destroyed)
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn("Trying to reparent component to a destroyed actor");
 			return false;
@@ -241,12 +235,12 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		{
 			this.object3d.add(component.object3d);
 		}
-		component.parent = this;
-		component._onReparent(this);
-		component._onCreate();
-		component._onEnable();
-		component._onStart();
-		component._onEnterScene();
+		component[Internal].parent = this;
+		component[OnReparent](this);
+		component[OnCreate]();
+		component[OnEnable]();
+		component[OnStart]();
+		component[OnEnterScene]();
 		return true;
 	}
 
@@ -258,7 +252,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound giveComponent(component: Component, newParent: Actor): boolean
 	{
-		if(this.#destroyed)
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn("Trying to give component to a destroyed actor");
 			return false;
@@ -273,17 +267,17 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		{
 			this.object3d.remove(component.object3d);
 		}
-		component.parent = newParent;
-		component._onReparent(newParent);
+		component[Internal].parent = newParent;
+		component[OnReparent](newParent);
 		newParent.components.add(component);
 		if(isActor(component))
 		{
 			newParent.object3d.add(component.object3d);
 		}
-		component._onCreate();
-		component._onEnable();
-		component._onStart();
-		component._onEnterScene();
+		component[OnCreate]();
+		component[OnEnable]();
+		component[OnStart]();
+		component[OnEnterScene]();
 		return true;
 	}
 
@@ -292,7 +286,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>
 	{
-		return (this.#componentsByType.get(type) as SparseSet<T>) ?? new SparseSet<T>;
+		return (this[Internal].componentsByType.get(type) as SparseSet<T>) ?? new SparseSet<T>;
 	}
 
 	/**
@@ -300,7 +294,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 */
 	@bound getComponentsByTag(tag: any): SparseSet<Component>
 	{
-		return this.#componentsByTag.get(tag) ?? new SparseSet;
+		return this[Internal].componentsByTag.get(tag) ?? new SparseSet;
 	}
 
 	/**
@@ -308,100 +302,111 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	 * Recursively destroys all children actors, starting from the deepest children.
 	 */
 	@bound destructor() {
-		if(this.#destroyed) return;
+		if(this[Internal].destroyed) return;
 		for(const component of this.components)
 		{
 			component.destructor()
 		}
-		this._onLeaveScene();
+		this[OnLeaveScene]();
 		this.onDestroy();
-		this.parent?.removeComponent(this);
-		this.#object3d.actor = undefined;
-		this.#object3d.parent?.remove(this.#object3d);
-		this.parent = null;
-		this.scene = null;
-		this.app = null;
-		this.#destroyed = true;
+		this[Internal].parent?.removeComponent(this);
+		this[Internal].object3d.actor = undefined;
+		this[Internal].object3d.parent?.remove(this[Internal].object3d);
+		this[Internal].parent = null;
+		this[Internal].scene = null;
+		this[Internal].app = null;
+		this[Internal].destroyed = true;
 	}
 
 	/* **********************************************************
-	    Internal methods
+	    Internal
 	************************************************************/
 
-	/** @internal */ @bound _onEnable(runEvenIfAlreadyEnabled: boolean = false)
+	[Internal] = {
+		object3d: ((e: Three.Object3D) => (e.actor = this, e))(new Three.Object3D) as T,
+		parent: null as Actor | null,
+		scene: null as Scene | null,
+		app: null as Application | null,
+		created: false,
+		started: false,
+		enabled: true,
+		inScene: false,
+		destroyed: false,
+		componentsByType: new Map<Constructor<Component>, SparseSet<Component>>,
+		componentsByTag: new Map<any, SparseSet<Component>>,
+	};
+
+	[OnEnable](runEvenIfAlreadyEnabled: boolean = false)
 	{
-		if(this.#enabled && !runEvenIfAlreadyEnabled) return;
-		this.#enabled = true;
+		if(this[Internal].enabled && !runEvenIfAlreadyEnabled) return;
+		this[Internal].enabled = true;
 		this.object3d.visible = true;
 		this.onEnable();
-		this._onStart();
-		this._onEnterScene();
+		this[OnStart]();
+		this[OnEnterScene]();
 	}
 
-	/** @internal */ @bound _onDisable()
+	[OnDisable]()
 	{
-		if(!this.#enabled) return;
-		this.#enabled = false;
+		if(!this[Internal].enabled) return;
+		this[Internal].enabled = false;
 		this.object3d.visible = false;
 		this.onDisable();
 	}
 
-	/** @internal */ @bound _onCreate()
+	[OnCreate]()
 	{
-		if(this.#created) return;
-		if(this.#destroyed)
+		if(this[Internal].created) return;
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to create a destroyed actor: ${this}`);
 			return;
 		}
-		this.#created = true;
+		this[Internal].created = true;
 		this.onCreate();
 		for(const component of this.components)
 		{
-			component.scene = this.scene;
-			component.app = this.app;
-			component._onCreate();
+			component[Internal].scene = this[Internal].scene;
+			component[Internal].app = this[Internal].app;
+			component[OnCreate]();
 		}
 	}
 
-	/** @internal */ @bound _onStart()
+	[OnStart]()
 	{
-		if(this.#started || !this.#enabled || !this.#created) return;
-		if(this.#destroyed)
+		if(this[Internal].started || !this[Internal].enabled || !this[Internal].created) return;
+		if(this[Internal].destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to start a destroyed actor: ${this}`);
 			return;
 		}
-		this.#started = true;
+		this[Internal].started = true;
 		this.onStart();
 		for(const component of this.components)
 		{
-			component._onStart();
+			component[OnStart]();
 		}
 	}
 
-	/** @internal */ @bound _onEnterScene()
+	[OnEnterScene]()
 	{
-		if(this.#inScene) return;
+		if(this[Internal].inScene) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to add a destroyed actor to scene: ${this}`);
 			return;
 		}
-		if(!this.#started) return;
-		if(!this.#enabled) return;
-		this.#inScene = true;
-		this._onEnable(true);
-		for(const component of this.components)
-		{
-			component._onEnterScene();
-		}
+		if(!this[Internal].started) return;
+		if(!this[Internal].enabled) return;
+		this[Internal].inScene = true;
+		this[OnEnable](true);
+		for(const component of this.components) component[OnEnterScene]();
 	}
 
-	/** @internal */ @bound _onBeforePhysicsUpdate(delta: number, elapsed: number)
+	[OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
-		if(!this.#enabled) return;
-		if(!this.#inScene) return;
+		if(!this[Internal].enabled) return;
+		if(!this[Internal].inScene) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
@@ -410,14 +415,14 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.onBeforePhysicsUpdate(delta, elapsed);
 		for(const component of this.components)
 		{
-			component._onBeforePhysicsUpdate(delta, elapsed);
+			component[OnBeforePhysicsUpdate](delta, elapsed);
 		}
 	}
 
-	/** @internal */ @bound _onUpdate(delta: number, elapsed: number)
+	[OnUpdate](delta: number, elapsed: number)
 	{
-		if(!this.#enabled) return;
-		if(!this.#inScene) return;
+		if(!this[Internal].enabled) return;
+		if(!this[Internal].inScene) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
@@ -426,42 +431,27 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.onUpdate(delta, elapsed);
 		for(const component of this.components)
 		{
-			component._onUpdate(delta, elapsed);
+			component[OnUpdate](delta, elapsed);
 		}
 	}
 
-	/** @internal */ @bound _onLeaveScene()
+	[OnLeaveScene]()
 	{
-		if(this.#destroyed) return;
-		if(!this.#inScene) return;
-		this.#inScene = false;
-		this._onDisable();
+		if(this[Internal].destroyed) return;
+		if(!this[Internal].inScene) return;
+		this[Internal].inScene = false;
+		this[OnDisable]();
 		this.onLeaveScene();
-		for(const component of this.components)
-		{
-			component._onLeaveScene();
-		}
+		for(const component of this.components) component[OnLeaveScene]();
 	}
 
-	/** @internal */ @bound _onReparent(newParent: Actor | null)
+	[OnReparent](newParent: Actor | null)
 	{
-		if(newParent === this.parent)
+		if(newParent === this[Internal].parent)
 		{
-			if(isDev())
-			{
-				ELYSIA_LOGGER.warn(`Trying to reparent actor to the same parent: ${this}`);
-			}
+			if(isDev()) ELYSIA_LOGGER.warn(`Trying to reparent actor to the same parent: ${this}`);
 		}
-		this.parent = newParent;
+		this[Internal].parent = newParent;
 		this.onReparent(newParent);
 	}
-
-	#object3d: T = ((e: Three.Object3D) => (e.actor = this, e))(new Three.Object3D) as T;
-	#created: boolean = false;
-	#started: boolean = false;
-	#enabled: boolean = true;
-	#inScene: boolean = false;
-	#destroyed: boolean = false;
-	#componentsByType = new Map<Constructor<Component>, SparseSet<Component>>;
-	#componentsByTag = new Map<any, SparseSet<Component>>;
 }
