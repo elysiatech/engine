@@ -12,11 +12,21 @@ import { RenderPipeline } from "../RPipeline/RenderPipeline";
 import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline";
 import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger";
-import { ResizeController } from "./Resize";
+import { ResizeController, ResizeEvent } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
 import { Actor } from "../Scene/Actor.ts";
-import { Internal, OnCreate, OnEnable, OnEnterScene, OnLoad, OnStart, OnUpdate, SceneLoadPromise } from "./Internal.ts";
+import {
+	Internal,
+	OnCreate,
+	OnEnable,
+	OnEnterScene,
+	OnLoad,
+	OnResize,
+	OnStart,
+	OnUpdate,
+	SceneLoadPromise
+} from "./Internal.ts";
 import { bound } from "./Utilities.ts";
 
 declare module 'three'
@@ -51,7 +61,7 @@ export class Application {
 	 * The application instance's mouse observer.
 	 */
 	public readonly mouse: MouseObserver;
-
+	
 	/**
 	 * The input queue for this application.
 	 */
@@ -82,6 +92,8 @@ export class Application {
 	 */
 	public get renderPipeline() { return this.#renderPipeline!; }
 
+	get assets() { return this.#assets; }
+
 	constructor(config: ApplicationConstructorArguments = {})
 	{
 		this.loadScene = this.loadScene.bind(this)
@@ -93,7 +105,7 @@ export class Application {
 		this.events = config.eventQueue ?? new ElysiaEventQueue
 		this.profiler = config.profiler ?? new Profiler
 		this.audio = config.audio ?? new AudioPlayer
-
+		this.#assets = config.assets;
 		this.#renderPipeline = config.renderPipeline ?? new BasicRenderPipeline;
 		this.#stats = config.stats ?? false;
 		this.#output = config.output ?? document.createElement("canvas");
@@ -109,6 +121,10 @@ export class Application {
 			this.#output.style.padding = "0";
 			this.#output.style.position = "relative";
 		}
+
+		this.#resizeController = new ResizeController(this.#output);
+
+		this.#resizeController.addEventListener(ResizeEvent, () => this.#sizeHasChanged = true);
 
 		this.mouse = new MouseObserver(this.#output);
 
@@ -142,20 +158,25 @@ export class Application {
 				this.#scene.destructor?.();
 			}
 
+			await this.#assets?.load();
+
 			this.#scene = scene
 			await this.#scene[OnLoad]();
 
 			ELYSIA_LOGGER.debug("Scene loaded", scene)
 
 			this.#renderPipeline!.onCreate(this.#scene, this.#output);
-			this.#renderPipeline!.onResize(this.#output.clientWidth, this.#output.clientHeight);
+			this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 
 			this.#scene[OnCreate]();
+			this.#scene[OnResize](this.#output.clientWidth, this.#output.clientHeight);
 			this.#scene[OnEnable]();
 			this.#scene[OnStart]();
 			this.#scene[OnEnterScene]();
 
 			ELYSIA_LOGGER.debug("Scene started", scene)
+
+			this.#sizeHasChanged = false;
 
 			this.#rendering = true;
 		}
@@ -217,6 +238,13 @@ export class Application {
 				this.#renderPipeline!.getRenderer().info.reset();
 			}
 
+			if(this.#sizeHasChanged)
+			{
+				this.#scene[OnResize](this.#resizeController.width, this.#resizeController.height);
+				this.#renderPipeline?.onResize(this.#resizeController.width, this.#resizeController.height);
+				this.#sizeHasChanged = false;
+			}
+
 			// scene update
 			this.#scene[OnUpdate](delta, elapsed);
 
@@ -239,7 +267,9 @@ export class Application {
 		}
 	}
 
-	#errors: Error[] = [];
+	#resizeController: ResizeController;
+	#sizeHasChanged = false;
+	#assets?: AssetLoader<any>;
 	#mouseIntersectionController = new MouseIntersections;
 	#errorCount = 0;
 	#stats: boolean | ElysiaStats = false;

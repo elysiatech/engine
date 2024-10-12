@@ -14,7 +14,7 @@ import {
 	OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable,
 	OnEnterScene,
 	OnLeaveScene,
-	OnReparent,
+	OnReparent, OnResize,
 	OnStart,
 	OnUpdate
 } from "../Core/Internal.ts";
@@ -45,11 +45,11 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 
 	get destroyed() { return this[Internal].destroyed; }
 
-	get app() { return this[Internal].app; }
+	get app() { return this[Internal].app!; }
 
-	get scene() { return this[Internal].scene; }
+	get scene() { return this[Internal].scene!; }
 
-	get parent() { return this[Internal].parent; }
+	get parent() { return this[Internal].parent!; }
 
 	get position() { return this[Internal].object3d.position; }
 	set position(position: Three.Vector3) { this[Internal].object3d.position.copy(position); }
@@ -90,6 +90,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	@bound onDestroy() {}
 
 	@bound onReparent(parent: Actor | null) {}
+
+	@bound onResize(width: number, height: number) {}
 
 	/* **********************************************************
 	    Public methods
@@ -454,5 +456,11 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		this[Internal].parent = newParent;
 		this.onReparent(newParent);
+	}
+
+	@reportLifecycleError @bound [OnResize](width: number, height: number)
+	{
+		this.onResize(width, height);
+		for(const component of this.components) component[OnResize](width, height);
 	}
 }

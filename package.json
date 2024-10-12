@@ -1,15 +1,15 @@
 {
   "name": "elysiatech",
-  "version": "2024.1",
+  "version": "2024.1.1",
   "type": "module",
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "node cli dev",
+    "build": "node cli",
     "playground:build": "node cli build",
-    "playground:deploy": "pnpm playground:build && npx wrangler pages deploy playground/dist",
-    "build": "node cli"
+    "playground:deploy": "pnpm playground:build && npx wrangler pages deploy playground/dist"
   },
   "exports": {},
   "peerDependencies": {

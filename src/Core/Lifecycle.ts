@@ -125,4 +125,11 @@ export interface RenderPipelineLifecycle
 	 * @param camera
 	 */
 	onRender(scene: Scene, camera: Three.Camera): void;
+
+	/**
+	 * Called when the container is resized.
+	 * @param width
+	 * @param height
+	 */
+	onResize(width: number, height: number): void;
 }

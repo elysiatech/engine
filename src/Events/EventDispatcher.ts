@@ -119,6 +119,16 @@ export class ElysiaEventDispatcher
 		}
 	}
 
+	/**
+	 * Clear all listeners.
+	 */
+	static clear() { this.listeners.clear(); }
+
+	/**
+	 * Clear all listeners.
+	 */
+	clear() { this.listeners.clear(); }
+
 	private static listeners = new Map<Constructor<ElysiaEvent<any>>, Set<Function>>;
 	private listeners = new Map<Constructor<ElysiaEvent<any>>, Set<Function>>;
 }

@@ -69,11 +69,6 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 
 	override onCreate()
 	{
-		ElysiaEventDispatcher.addEventListener(ResizeEvent, this.onResize);
-		this.onResize({
-			x: this.app?.renderPipeline.getRenderer().domElement.width ?? 0,
-			y: this.app?.renderPipeline.getRenderer().domElement.height ?? 0
-		});
 		if(this.debug) this.scene!.object3d.add(this.#debugHelper!);
 	}
 
@@ -89,9 +84,10 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 		this.#debugHelper?.dispose();
 	}
 
-	private onResize(e: { x: number, y: number })
+	override onResize(x: number, y: number)
 	{
-		this.object3d.aspect = e.x / e.y;
+		console.log("Resizing camera", x, y);
+		this.object3d.aspect = x / y;
 		this.object3d.updateProjectionMatrix();
 	}
 

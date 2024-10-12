@@ -11,7 +11,7 @@ import {
 	OnCreate,
 	OnDisable,
 	OnEnable,
-	OnEnterScene, OnLeaveScene, OnReparent,
+	OnEnterScene, OnLeaveScene, OnReparent, OnResize,
 	OnStart, OnUpdate
 } from "../Core/Internal.ts";
 import { bound } from "../Core/Utilities.ts";
@@ -40,18 +40,18 @@ export class Behavior implements ActorLifecycle, Destroyable
 	/**
 	 * The parent actor of this behavior.
 	 */
-	get parent() { return this[Internal].parent; }
+	get parent() { return this[Internal].parent!; }
 
 	/**
 	 * The scene this behavior belongs
 	 * to, if any.
 	 */
-	get scene() { return this[Internal].scene; }
+	get scene() { return this[Internal].scene!; }
 
 	/**
 	 * The application this behavior belongs to.
 	 */
-	get app() { return this[Internal].app; }
+	get app() { return this[Internal].app!; }
 
 	/**
 	 * The tags associated with this behavior.
@@ -107,6 +107,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 	@bound onDestroy() {}
 
 	@bound onReparent(parent: Actor | null) {}
+
+	@bound onResize(width: number, height: number) {}
 
 	destructor()
 	{
@@ -217,5 +219,10 @@ export class Behavior implements ActorLifecycle, Destroyable
 			return;
 		}
 		this.onReparent(parent);
+	}
+
+	@reportLifecycleError @bound [OnResize](width: number, height: number)
+	{
+		this.onResize(width, height);
 	}
 }

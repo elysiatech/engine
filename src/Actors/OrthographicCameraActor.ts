@@ -48,23 +48,13 @@ export class OrthographicCameraActor extends Actor<Three.OrthographicCamera>
 	constructor() {
 		super();
 		this.object3d = new Three.OrthographicCamera();
-		this.object3d.actor = this;
 	}
 
-	onCreate()
+	onResize(x: number, y: number)
 	{
-		ElysiaEventDispatcher.addEventListener(ResizeEvent, this.onResize);
-		this.onResize({
-			x: this.app?.renderPipeline.getRenderer().domElement.width ?? 0,
-			y: this.app?.renderPipeline.getRenderer().domElement.height ?? 0
-		});
-	}
-
-	private onResize(e: { x: number, y: number })
-	{
-		const aspect = e.x / e.y;
+		const aspect = x / y;
 		this.object3d.left = -1 * aspect;
-		this.object3d.right = 1 * aspect;
+		this.object3d.right = aspect;
 		this.object3d.top = 1;
 		this.object3d.bottom = -1;
 		this.object3d.updateProjectionMatrix();

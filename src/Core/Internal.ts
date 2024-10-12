@@ -26,4 +26,6 @@ export const SceneLoadPromise = Symbol.for("Elysia::SceneLoadPromise");
 
 export const ActiveCamera = Symbol.for("Elysia::ActiveCamera");
 
+export const OnResize = Symbol.for("Elysia::OnResize");
+
 
