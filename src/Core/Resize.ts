@@ -10,7 +10,7 @@ export class ResizeController implements Destroyable
 	width = 0;
 	height = 0;
 
-	constructor(element?: HTMLElement) {
+	constructor(private element?: HTMLElement) {
 		if(!isBrowser()) return;
 
 		if(element)
@@ -21,13 +21,15 @@ export class ResizeController implements Destroyable
 				this.height = cr.height;
 				this.#event.dispatchEvent(new ResizeEvent({ x: this.width, y: this.height }));
 			})
+			this.#observer.observe(element);
 			const bounds = element.getBoundingClientRect();
 			this.width = bounds.width;
 			this.height = bounds.height;
+
+			window.addEventListener("resize", this.#onResize);
 		}
 		else
 		{
-			window.addEventListener("resize", this.#onResize);
 			this.width = window.innerWidth;
 			this.height = window.innerHeight;
 		}
@@ -52,8 +54,18 @@ export class ResizeController implements Destroyable
 
 	#onResize = (e: Event) =>
 	{
-		this.width = window.innerWidth;
-		this.height = window.innerHeight;
-		this.#event.dispatchEvent(new ResizeEvent({ x: this.width, y: this.height }));
+		if(this.element)
+		{
+			const bounds = this.element.getBoundingClientRect();
+			this.width = bounds.width;
+			this.height = bounds.height;
+			this.#event.dispatchEvent(new ResizeEvent({ x: this.width, y: this.height }));
+		}
+		else
+		{
+			this.width = window.innerWidth;
+			this.height = window.innerHeight;
+			this.#event.dispatchEvent(new ResizeEvent({ x: this.width, y: this.height }));
+		}
 	}
 }

@@ -2,6 +2,7 @@ import { Asset } from "./Asset";
 import { Constructor } from "../Core/Utilities";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { LoadedEvent, ProgressEvent, ErrorEvent } from "../Events/Event";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
 
 export class AssetLoader<A extends Record<string, Asset<any>>>
 {
@@ -27,6 +28,7 @@ export class AssetLoader<A extends Record<string, Asset<any>>>
 	{
 		if(this.#loaded || this.#loading) return;
 		this.#loading = true;
+		ELYSIA_LOGGER.debug("Loading assets", this.#assets);
 
 		const promises = Object.values(this.#assets).map(asset => {
 			asset.addEventListener(ProgressEvent, () => {
@@ -43,9 +45,11 @@ export class AssetLoader<A extends Record<string, Asset<any>>>
 			this.#progress = 1;
 			this.#eventDispatcher.dispatchEvent(new LoadedEvent);
 		}).catch(e => {
+			ELYSIA_LOGGER.error('Error loading asset:', e);
 			this.#error = e;
 			this.#loading = false;
 			this.#eventDispatcher.dispatchEvent(new ErrorEvent(e));
+			throw e;
 		})
 	}
 

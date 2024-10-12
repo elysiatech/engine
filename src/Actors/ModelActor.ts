@@ -1,6 +1,7 @@
 import { Actor } from "../Scene/Actor";
 import * as Three from "three";
 import { GLTF } from "three-stdlib";
+import { bound } from "../Core/Utilities.ts";
 
 /**
  * A model actor is an actor that represents a 3D model, usually loaded from a GLTF file.
@@ -41,23 +42,45 @@ export class ModelActor extends Actor
 		this.#debug = value;
 	}
 
-	constructor(model: GLTF | Three.Object3D, castShadow = true, receiveShadow = true)
+	constructor(model: GLTF)
 	{
 		super();
-		if(model instanceof Three.Object3D)
-		{
-			this.object3d = model;
-		}
-		else if ('scene' in model)
-		{
-			this.object3d = model.scene;
-		}
-		else
-		{
-			throw new Error("Invalid model");
-		}
-		this.object3d.actor = this;
+		this.loadModel(model);
 	}
+
+	@bound public getAction(name: string)
+	{
+		const clip = Three.AnimationClip.findByName(this.clips, name);
+		return this.mixer?.clipAction(clip);
+	}
+
+	@bound loadModel(model: GLTF)
+	{
+		const clips = model.animations ?? [];
+		const scene = model.scene ?? model.scenes[0];
+
+		if(!scene) throw new Error("No scene found in model.");
+
+		this.object3d = scene;
+
+		this.clips = clips;
+
+		if (this.mixer) {
+			this.mixer.stopAllAction();
+			this.mixer.uncacheRoot(this.mixer.getRoot());
+			this.mixer = undefined;
+		}
+
+		this.mixer = new Three.AnimationMixer(scene);
+	}
+
+	@bound onUpdate(delta: number, elapsed: number)
+	{
+		this.mixer?.update(delta);
+	}
+
+	protected clips: Three.AnimationClip[] = [];
+	protected mixer?: Three.AnimationMixer;
 
 	#debug = false;
 	#debugHelper?: Three.BoxHelper;

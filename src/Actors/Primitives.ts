@@ -2,7 +2,7 @@ import { MeshActor } from "./MeshActor";
 import * as Three from "three";
 
 /**
- * A basic cube actor.
+ * A basic modelRoot actor.
  */
 export class CubeActor extends MeshActor
 {

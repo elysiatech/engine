@@ -86,7 +86,6 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 
 	override onResize(x: number, y: number)
 	{
-		console.log("Resizing camera", x, y);
 		this.object3d.aspect = x / y;
 		this.object3d.updateProjectionMatrix();
 	}

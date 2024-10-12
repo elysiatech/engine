@@ -29,8 +29,11 @@ export class BasicRenderPipeline extends RenderPipeline
 		if (this.args.toneMappingExposure) { this.renderer.toneMappingExposure = this.args.toneMappingExposure; }
 	}
 
-	onResize(width: number, height: number) {
-		this.renderer?.setSize(width, height);
+	onResize(width: number, height: number)
+	{
+		console.log("Resizing " + width + " " + height);
+		this.renderer?.setSize(width, height, false);
+		this.renderer?.setPixelRatio(window.devicePixelRatio);
 	}
 
 	onRender(scene: Scene, camera: Three.Camera) { this.renderer!.render(scene.object3d, camera); }

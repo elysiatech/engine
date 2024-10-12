@@ -105,7 +105,7 @@ export class Application {
 		this.events = config.eventQueue ?? new ElysiaEventQueue
 		this.profiler = config.profiler ?? new Profiler
 		this.audio = config.audio ?? new AudioPlayer
-		this.#assets = config.assets;
+		this.#assets = config.assets ?? new AssetLoader({});
 		this.#renderPipeline = config.renderPipeline ?? new BasicRenderPipeline;
 		this.#stats = config.stats ?? false;
 		this.#output = config.output ?? document.createElement("canvas");
@@ -116,6 +116,7 @@ export class Application {
 			document.body.appendChild(this.#output)
 			this.#output.style.width = "100%";
 			this.#output.style.height = "100vh";
+			this.#output.style.minHeight = "100vh";
 			this.#output.style.display = "block";
 			this.#output.style.margin = "0";
 			this.#output.style.padding = "0";
@@ -240,8 +241,9 @@ export class Application {
 
 			if(this.#sizeHasChanged)
 			{
+				console.log("Resizing", this.#resizeController.width, this.#resizeController.height)
 				this.#scene[OnResize](this.#resizeController.width, this.#resizeController.height);
-				this.#renderPipeline?.onResize(this.#resizeController.width, this.#resizeController.height);
+				this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 				this.#sizeHasChanged = false;
 			}
 
@@ -269,7 +271,7 @@ export class Application {
 
 	#resizeController: ResizeController;
 	#sizeHasChanged = false;
-	#assets?: AssetLoader<any>;
+	#assets: AssetLoader<any>;
 	#mouseIntersectionController = new MouseIntersections;
 	#errorCount = 0;
 	#stats: boolean | ElysiaStats = false;

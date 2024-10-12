@@ -20,8 +20,10 @@ import { ElysiaCrossHair } from "../src/UI/ElysiaCrossHair.ts";
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
 		ssao: {
-			intensity: 1.5,
+			intensity: 1,
 			aoRadius: 0.5,
+			halfResolution: true,
+			qualityMode: "Ultra",
 		}
 	}),
 	stats: true,
@@ -118,7 +120,7 @@ for(let i = 0; i < 4; i++)
 
 const floor = new PlaneActor()
 floor.scale.set(50, 50, 1);
-floor.material.color = new Three.Color(Colors.Aro);
+floor.material.color = new Three.Color(Colors.Cullen);
 floor.position.y = -0.01;
 floor.rotation.x = -Math.PI / 2;
 floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 50, y: 50, z: 0.01 }) }))

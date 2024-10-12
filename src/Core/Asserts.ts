@@ -228,3 +228,20 @@ export function isMaterial(obj: any): obj is Material { return "isMaterial" in o
 export function isTexture(obj: any): obj is Texture { return "isTexture" in obj; }
 
 export function isRenderItem(obj: any): obj is RenderItem { return "isRenderItem" in obj; }
+
+declare global {
+	interface Object {
+		contains<T extends PropertyKey>(key: T): this is Record<T, unknown>;
+	}
+}
+
+Object.prototype.contains = function<T extends PropertyKey>(key: T): boolean {
+	return key in this;
+}
+
+const x: Record<string, number> = { a: 1, b: 2, c: 3 };
+
+if(x.contains("a"))
+{
+x
+}

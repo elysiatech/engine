@@ -194,7 +194,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 
 	onCameraChange(camera: Three.Camera) { this.effectComposer.setMainCamera(camera); }
 
-	onResize(width: number, height: number) { this.effectComposer.setSize(width, height); }
+	onResize(width: number, height: number) { this.effectComposer.setSize(width, height, false); }
 
 	onRender()
 	{
