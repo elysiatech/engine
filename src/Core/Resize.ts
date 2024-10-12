@@ -34,6 +34,8 @@ export class ResizeController implements Destroyable
 			this.height = window.innerHeight;
 		}
 
+		window.addEventListener("resize", this.#onResize);
+
 		this.addEventListener = this.#event.addEventListener.bind(this.#event);
 		this.removeEventListener = this.#event.removeEventListener.bind(this.#event);
 	}

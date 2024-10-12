@@ -57,7 +57,7 @@ class FirstPersonWeaponRig extends Actor
 
 		this.addComponent(this.modelRoot);
 
-		this.modelRoot.getAction("06 Walk")?.setEffectiveTimeScale(.1).play();
+		this.modelRoot.getAction("06 Walk")?.setEffectiveTimeScale(.3).play();
 	}
 }
 

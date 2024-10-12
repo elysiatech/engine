@@ -116,14 +116,14 @@ export class Application {
 			document.body.appendChild(this.#output)
 			this.#output.style.width = "100%";
 			this.#output.style.height = "100vh";
-			this.#output.style.minHeight = "100vh";
 			this.#output.style.display = "block";
+			this.#output.style.position = "relative";
 			this.#output.style.margin = "0";
 			this.#output.style.padding = "0";
-			this.#output.style.position = "relative";
 		}
 
-		this.#resizeController = new ResizeController(this.#output);
+		// if config.output is undefined, we want the canvas sized to the window
+		this.#resizeController = new ResizeController(config.output);
 
 		this.#resizeController.addEventListener(ResizeEvent, () => this.#sizeHasChanged = true);
 
@@ -241,7 +241,7 @@ export class Application {
 
 			if(this.#sizeHasChanged)
 			{
-				console.log("Resizing", this.#resizeController.width, this.#resizeController.height)
+				console.log(this.#resizeController.width, this.#resizeController.height)
 				this.#scene[OnResize](this.#resizeController.width, this.#resizeController.height);
 				this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 				this.#sizeHasChanged = false;
