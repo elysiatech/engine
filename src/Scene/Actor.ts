@@ -5,10 +5,10 @@ import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent } from "../Core/ElysiaEvents";
 import { Component, isActor } from "./Component";
 import { Scene } from "./Scene";
-import { Application } from "../Core/ApplicationEntry.ts";
+import { Application } from "../Core/ApplicationEntry";
 import { isDev } from "../Core/Asserts";
 import { bound, Constructor } from "../Core/Utilities";
-import { SparseSet } from "../Containers/SparseSet.ts";
+import { SparseSet } from "../Containers/SparseSet";
 import {
 	Internal,
 	OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable,
@@ -17,8 +17,8 @@ import {
 	OnReparent, OnResize,
 	OnStart,
 	OnUpdate
-} from "../Core/Internal.ts";
-import { reportLifecycleError } from "../Core/Error.ts";
+} from "../Core/Internal";
+import { reportLifecycleError } from "../Core/Error";
 
 export const IsActor = Symbol.for("Elysia::IsActor");
 

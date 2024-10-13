@@ -1,7 +1,7 @@
-import { Actor } from "../Scene/Actor.ts";
+import { Actor } from "../Scene/Actor";
 import * as Three from "three";
 import { Sky } from "three-stdlib";
-import { isActor } from "../Scene/Component.ts";
+import { isActor } from "../Scene/Component";
 
 export const SkyDirectionalLightTag = Symbol.for("Elysia::SkyDirectionalLight");
 

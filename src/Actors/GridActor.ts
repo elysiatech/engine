@@ -5,7 +5,7 @@
  */
 
 import * as Three from 'three'
-import { Actor } from "../Scene/Actor.ts";
+import { Actor } from "../Scene/Actor";
 
 type UniformValue =
 	| Three.CubeTexture

@@ -1,5 +1,5 @@
-import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
-import { bound } from "../Core/Utilities.ts";
+import { attribute, css, defineComponent, ElysiaElement, html } from "./UI";
+import { bound } from "../Core/Utilities";
 
 export class ElysiaVector extends ElysiaElement {
 	static override Tag = "elysia-vector";
@@ -9,11 +9,11 @@ export class ElysiaVector extends ElysiaElement {
 			display: flex;
 			gap: 4px;
 		}
-		
+
         elysia-number-input::part(input) {
             max-width: 50px;
         }
-		
+
 		.title {
 			position: absolute;
 			right: 8px;
@@ -23,13 +23,13 @@ export class ElysiaVector extends ElysiaElement {
             font-size: .75rem;
             color: var(--elysia-color-purple);
 		}
-		
+
 		.vec {
 			position: relative;
 		}
 	`
 
-	@attribute({ converter: (v) => (console.log(v), JSON.parse(v)) }) accessor value: Record<string, number> = { x: 0, y: 0, z: 0, w: 12 }
+	@attribute({ converter: (v) => (console.log(v), JSON.parse(v!)) }) accessor value: Record<string, number> = { x: 0, y: 0, z: 0, w: 12 }
 
 	public override onRender()
 	{

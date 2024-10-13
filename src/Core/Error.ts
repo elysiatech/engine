@@ -1,5 +1,6 @@
-import { ELYSIA_LOGGER } from "./Logger.ts";
-import { isDev } from "./Asserts.ts";
+//@ts-nocheck
+import { ELYSIA_LOGGER } from "./Logger";
+import { isDev } from "./Asserts";
 
 export class LifeCycleError extends Error
 {

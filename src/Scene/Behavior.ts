@@ -1,7 +1,7 @@
 import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
 import { Actor } from "./Actor";
 import { Scene } from "./Scene";
-import { Application } from "../Core/ApplicationEntry.ts";
+import { Application } from "../Core/ApplicationEntry";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { TagAddedEvent } from "../Core/ElysiaEvents";
@@ -13,9 +13,9 @@ import {
 	OnEnable,
 	OnEnterScene, OnLeaveScene, OnReparent, OnResize,
 	OnStart, OnUpdate
-} from "../Core/Internal.ts";
-import { bound } from "../Core/Utilities.ts";
-import { reportLifecycleError } from "../Core/Error.ts";
+} from "../Core/Internal";
+import { bound } from "../Core/Utilities";
+import { reportLifecycleError } from "../Core/Error";
 
 export const IsBehavior = Symbol.for("Elysia::IsBehavior");
 

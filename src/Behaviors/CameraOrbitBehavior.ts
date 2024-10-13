@@ -2,8 +2,8 @@ import { OrbitControls } from "three-stdlib";
 import { Behavior } from "../Scene/Behavior";
 import { ELYSIA_LOGGER } from "../Core/Logger";
 import { isOrthographicCamera, isPerspectiveCamera } from "../Core/Asserts";
-import { PerspectiveCameraActor } from "../Actors/PerspectiveCameraActor.ts";
-import { OrthographicCameraActor } from "../Actors/OrthographicCameraActor.ts";
+import { PerspectiveCameraActor } from "../Actors/PerspectiveCameraActor";
+import { OrthographicCameraActor } from "../Actors/OrthographicCameraActor";
 
 /**
  * Implements the standard orbit controls for a camera.

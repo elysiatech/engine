@@ -1,4 +1,4 @@
-import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { attribute, css, defineComponent, ElysiaElement, html } from "./UI";
 
 export class ElysiaTextInput extends ElysiaElement {
 	static override Tag = "elysia-text-input";

@@ -4,7 +4,7 @@ import * as Three from "three";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { ResizeEvent } from "../Core/Resize";
 import { ELYSIA_LOGGER } from "../Core/Logger";
-import { bound } from "../Core/Utilities.ts";
+import { bound } from "../Core/Utilities";
 
 /**
  * A render pipeline is a class that is responsible for rendering a scene.

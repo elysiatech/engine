@@ -9,7 +9,7 @@ import {
 	PointLight,
 	Scene,
 } from 'three';
-import { Colors } from "../Core/Colors.ts";
+import { Colors } from "../Core/Colors";
 
 class RoomEnvironment extends Scene {
 	constructor()
@@ -107,7 +107,7 @@ class RoomEnvironment extends Scene {
 	}
 }
 
-function createAreaLightMaterial( intensity ) {
+function createAreaLightMaterial( intensity: number ) {
 
 	const material = new MeshBasicMaterial();
 	material.color.setScalar( intensity );

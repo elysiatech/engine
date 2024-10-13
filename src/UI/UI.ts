@@ -5,7 +5,7 @@ import { isFunction } from "../Core/Asserts";
 import { property } from "lit/decorators/property.js";
 
 export {
-	css, 
+	css,
 	css as c,
 	svg,
 	svg as s,
@@ -52,10 +52,12 @@ function attribute(options: {
 	})
 }
 
+// @ts-ignore todo: type decorators
 function track(_, context){
 	if(context.kind !== "getter" && context.kind !== "field" && context.kind !== "accessor")
 		throw new Error("Track decorator can only be applied to fields, getters, and accessors.");
 	context.addInitializer(function () {
+		// @ts-ignore
 		this.fieldsToCheck.push(context.name);
 	});
 }
@@ -224,6 +226,7 @@ class ElysiaElement extends LitElement
 
 	protected componentVisibilityObserver?: IntersectionObserver;
 
+	// @ts-ignore
 	protected fieldsToCheck: string[] = [!this.constructor.ManualTracking && "onRender"].filter(Boolean);
 
 	protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void

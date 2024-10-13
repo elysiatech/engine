@@ -1,7 +1,7 @@
 import { Actor } from "../Scene/Actor";
 import * as Three from "three";
-import { GLTF } from "three-stdlib";
-import { bound } from "../Core/Utilities.ts";
+import { type GLTF } from "three-stdlib";``
+import { bound } from "../Core/Utilities";
 
 /**
  * A model actor is an actor that represents a 3D model, usually loaded from a GLTF file.

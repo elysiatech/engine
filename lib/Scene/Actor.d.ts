@@ -1,0 +1,117 @@
+import * as Three from "three";
+import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
+import { Component } from "./Component";
+import { Scene } from "./Scene";
+import { Application } from "../Core/ApplicationEntry";
+import { Constructor } from "../Core/Utilities";
+import { SparseSet } from "../Containers/SparseSet";
+export declare const IsActor: unique symbol;
+export declare class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable {
+    [x: number]: {
+        object3d: T;
+        parent: Actor | null;
+        scene: Scene | null;
+        app: Application | null;
+        created: boolean;
+        started: boolean;
+        enabled: boolean;
+        inScene: boolean;
+        destroyed: boolean;
+        componentsByType: Map<Constructor<Component>, SparseSet<Component>>;
+        componentsByTag: Map<any, SparseSet<Component>>;
+    } | ((runEvenIfAlreadyEnabled?: boolean) => void) | ((delta: number, elapsed: number) => void) | ((newParent: Actor | null) => void);
+    [IsActor]: boolean;
+    readonly type: string;
+    /**
+     * The underlying Three.js object.
+     * This should be used with caution, as it can break the internal state of the actor in some cases.
+     */
+    get object3d(): T;
+    set object3d(object3d: T);
+    get created(): any;
+    get enabled(): any;
+    get started(): any;
+    get inScene(): any;
+    get destroyed(): any;
+    get app(): any;
+    get scene(): any;
+    get parent(): any;
+    get position(): Three.Vector3;
+    set position(position: Three.Vector3);
+    get rotation(): Three.Euler;
+    set rotation(rotation: Three.Euler);
+    get scale(): Three.Vector3;
+    set scale(scale: Three.Vector3);
+    get quaternion(): Three.Quaternion;
+    set quaternion(quaternion: Three.Quaternion);
+    readonly components: Set<Component>;
+    readonly tags: Set<any>;
+    onCreate(): void;
+    onEnable(): void;
+    onStart(): void;
+    onEnterScene(): void;
+    onBeforePhysicsUpdate(delta: number, elapsed: number): void;
+    onUpdate(delta: number, elapsed: number): void;
+    onLeaveScene(): void;
+    onDisable(): void;
+    onDestroy(): void;
+    onReparent(parent: Actor | null): void;
+    onResize(width: number, height: number): void;
+    updateObject3d(object3d: T): void;
+    /**
+     * Enables this actor. This means it receives updates and is visible.
+     */
+    enable(): void;
+    /**
+     * Disables this actor. This means it does not receive updates and is not visible.
+     */
+    disable(): void;
+    /**
+     * Adds a tag to this actor.
+     * @param tag
+     */
+    addTag(tag: any): void;
+    /**
+     * Removes a tag from this actor.
+     * @param tag
+     */
+    removeTag(tag: any): void;
+    /**
+     * Adds a component to this actor.
+     * @param component
+     * @returns `true` if the component was successfully added, `false` otherwise.
+     */
+    addComponent(component: Component): boolean;
+    /**
+     * Removes a component from this actor.
+     * @param component
+     * @returns `true` if the component was successfully removed, `false` otherwise.
+     */
+    removeComponent(component: Component): boolean;
+    /**
+     * Reparents a component to this actor.
+     * @param component
+     * @returns `true` if the component was successfully reparented, `false` otherwise.
+     */
+    stealComponent(component: Component): boolean;
+    /**
+     * Reparents a component to another actor.
+     * @param component
+     * @param newParent
+     * @returns `true` if the component was successfully reparented, `false` otherwise.
+     */
+    giveComponent(component: Component, newParent: Actor): boolean;
+    /**
+     * Gets all components of a certain type directly attached to this actor.
+     */
+    getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>;
+    /**
+     * Gets all components with a certain tag directly attached to this actor.
+     */
+    getComponentsByTag(tag: any): SparseSet<Component>;
+    /**
+     * Destroys this actor and all its components.
+     * Recursively destroys all children actors, starting from the deepest children.
+     */
+    destructor(): void;
+}

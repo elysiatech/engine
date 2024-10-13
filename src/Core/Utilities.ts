@@ -1,16 +1,5 @@
 export function toBoolean(val: any) { return val ? val !== "false" : false; }
 
-export function clamp(val: number, min: number, max: number) {
-	try
-	{
-		return Math.min(Math.max(Number(val), Number(min)), Number(max));
-	}
-	catch
-	{
-		return min;
-	}
-}
-
 export function toError(err: unknown)
 {
 	if (err instanceof Error) { return err }

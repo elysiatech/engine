@@ -2,7 +2,7 @@ import { Asset } from "./Asset";
 import { Constructor } from "../Core/Utilities";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
 import { LoadedEvent, ProgressEvent, ErrorEvent } from "../Events/Event";
-import { ELYSIA_LOGGER } from "../Core/Logger.ts";
+import { ELYSIA_LOGGER } from "../Core/Logger";
 
 export class AssetLoader<A extends Record<string, Asset<any>>>
 {

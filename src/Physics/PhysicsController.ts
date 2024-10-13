@@ -1,15 +1,15 @@
 import { Scene } from "../Scene/Scene";
 import * as Three from "three"
-import { ColliderBehavior } from "./ColliderBehavior.ts";
+import { ColliderBehavior } from "./ColliderBehavior";
 import { RigidBodyBehavior } from "./RigidBody";
 import { Destroyable, } from "../Core/Lifecycle";
 import Rapier from '@dimforge/rapier3d-compat'
 import { PhysicsDebugRenderer } from "./Debug";
 import { Actor } from "../Scene/Actor";
-import { ASSERT } from "../Core/Asserts.ts";
-import { isActor } from "../Scene/Component.ts";
-import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
-import { OnBeforePhysicsUpdate } from "../Core/Internal.ts";
+import { ASSERT } from "../Core/Asserts";
+import { isActor } from "../Scene/Component";
+import { findAncestorRigidbody } from "./FindAncestorRigidbody";
+import { OnBeforePhysicsUpdate } from "../Core/Internal";
 
 export interface PhysicsControllerConstructorArguments
 {

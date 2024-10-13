@@ -6,8 +6,8 @@
 ************************************************************/
 
 import * as Three from 'three'
-import { Application } from "../Core/ApplicationEntry.ts";
-import { Scene } from "../Scene/Scene.ts";
+import { Application } from "../Core/ApplicationEntry";
+import { Scene } from "../Scene/Scene";
 
 interface Uniform<T>
 {
@@ -81,7 +81,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 			buffer: { value: buffer },
 		}
 
-		this.onBeforeCompile = (shader: Shader & { defines: { [key: string]: string } }) => {
+		this.onBeforeCompile = (shader: any) => {
 			shader.uniforms = {
 				...shader.uniforms,
 				...this.uniforms,
@@ -100,8 +100,8 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 			// Head
 			shader.fragmentShader =
 				/*glsl*/ `
-      uniform float chromaticAberration;         
-      uniform float anisotropicBlur;      
+      uniform float chromaticAberration;
+      uniform float anisotropicBlur;
       uniform float time;
       uniform float distortion;
       uniform float distortionScale;
@@ -228,7 +228,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
             return roughness * clamp( ior * 2.0 - 2.0, 0.0, 1.0 );
           }
           vec4 getTransmissionSample( const in vec2 fragCoord, const in float roughness, const in float ior ) {
-            float framebufferLod = log2( transmissionSamplerSize.x ) * applyIorToRoughness( roughness, ior );            
+            float framebufferLod = log2( transmissionSamplerSize.x ) * applyIorToRoughness( roughness, ior );
             #ifdef USE_SAMPLER
               #ifdef texture2DLodEXT
                 return texture2DLodEXT(transmissionSamplerMap, fragCoord.xy, framebufferLod);
@@ -274,7 +274,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 			// Add refraction
 			shader.fragmentShader = shader.fragmentShader.replace(
 				'#include <transmission_fragment>',
-				/*glsl*/ `  
+				/*glsl*/ `
         // Improve the refraction to use the world pos
         material.transmission = _transmission;
         material.transmissionAlpha = 1.0;
@@ -287,7 +287,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
         #ifdef USE_THICKNESSMAP
           material.thickness *= texture2D( thicknessMap, vUv ).g;
         #endif
-        
+
         vec3 pos = vWorldPosition;
         float runningSeed = 0.0;
         vec3 v = normalize( cameraPosition - pos );
@@ -362,7 +362,8 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 			// Save defaults
 			this.oldTone = gl.toneMapping;
 			this.oldBg = scene.object3d.background;
-			this.oldSide = mesh.material.side;
+			if(Array.isArray(mesh.material)) this.oldSide = mesh.material[0].side;
+			else this.oldSide = mesh.material.side;
 
 			// Switch off tonemapping lest it double tone maps
 			// Save the current background and set the HDR as the new BG

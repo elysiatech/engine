@@ -1,13 +1,13 @@
-import { Actor } from "../Scene/Actor.ts";
-import { ColliderBehavior, Colliders } from "../Physics/ColliderBehavior.ts";
-import { KeyCode } from "../Input/KeyCode.ts";
+import { Actor } from "../Scene/Actor";
+import { ColliderBehavior, Colliders } from "../Physics/ColliderBehavior";
+import { KeyCode } from "../Input/KeyCode";
 import Rapier from "@dimforge/rapier3d-compat";
 import * as Three from "three";
-import { RigidBodyBehavior } from "../Physics/RigidBody.ts";
-import { PerspectiveCameraActor } from "./PerspectiveCameraActor.ts";
-import { ActiveCameraTag } from "../Core/Tags.ts";
-import { Behavior } from "../Scene/Behavior.ts";
-import { clamp } from "../Math/Other.ts";
+import { RigidBodyBehavior } from "../Physics/RigidBody";
+import { PerspectiveCameraActor } from "./PerspectiveCameraActor";
+import { ActiveCameraTag } from "../Core/Tags";
+import { Behavior } from "../Scene/Behavior";
+import { clamp } from "../Math/Other";
 
 function applyFriction(vector: Three.Vector2, decel: number, maxVelocity: number, delta: number)
 {

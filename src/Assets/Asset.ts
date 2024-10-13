@@ -1,6 +1,7 @@
 import { Future } from "../Containers/Future";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { clamp, Maybe, MaybePromise } from "../Core/Utilities";
+import { Maybe, MaybePromise } from "../Core/Utilities";
+import { clamp } from "../Math/Other";
 import { BeginLoadEvent, LoadedEvent, ErrorEvent, ProgressEvent } from "../Events/Event";
 
 export abstract class Asset<T> {

@@ -1,8 +1,8 @@
-import { css, defineComponent, ElysiaElement, html, track } from "./UI.ts";
+import { css, defineComponent, ElysiaElement, html, track } from "./UI";
 import { query } from "lit/decorators.js"
 import { ReactiveController, ReactiveControllerHost, TemplateResult } from "lit";
-import { ref } from "lit/directives/ref.js"
-import "./Widgets.ts";
+import { ref, type Ref } from "lit/directives/ref.js"
+import "./Widgets";
 
 export class DraggableController implements ReactiveController
 {
@@ -30,7 +30,7 @@ export class DraggableController implements ReactiveController
 		return ref((childContainer) => {
 			if (!childContainer) return;
 			this.#handle = childContainer as HTMLElement;
-		});
+		}) as Ref;
 	}
 
 	public hostConnected(): void { window.addEventListener("resize", this.#onWindowResize); }
@@ -118,7 +118,7 @@ export class CollapsableController implements ReactiveController
 			this.#trigger = trigger as HTMLElement;
 			this.#trigger.addEventListener("mousedown", this.#onMouseDown);
 			this.#trigger.addEventListener("mouseup", this.#onMouseUp);
-		});
+		}) as Ref;
 	}
 
 	bindContainer()
@@ -126,7 +126,7 @@ export class CollapsableController implements ReactiveController
 		return ref((container) => {
 			if(!container) return;
 			this.#container = container as HTMLElement;
-		});
+		}) as Ref;
 	}
 
 	open({immediate = false} = {})
@@ -221,7 +221,7 @@ export class ElysiaFloatingPanel extends ElysiaElement
 			font-family: var(--elysia-font-family);
 			filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
 		}
-		
+
 		.header {
 			background: var(--elysia-color-aro);
 			color: var(--elysia-color-purple);
@@ -230,7 +230,7 @@ export class ElysiaFloatingPanel extends ElysiaElement
             -webkit-user-select: none;
 			cursor: grab;
 		}
-		
+
 		.body {
 			padding: 8px;
 			max-height: 85vh;
@@ -253,14 +253,14 @@ export class ElysiaFloatingPanel extends ElysiaElement
 	public override onRender()
 	{
 		return html`
-			<div 
+			<div
 				class="header"
 				${this.dragger.bindHandle()}
 				${this.dropper.bindTrigger()}
 			>
 				<slot name="header"></slot>
 			</div>
-			<div 
+			<div
 				class="body"
 				${this.dropper.bindContainer()}
 			>
@@ -279,7 +279,7 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 
 	static styles = css`
 		.header {
-			
+
 		}
 		.body {
 			display: flex;
@@ -303,9 +303,9 @@ export class ElysiaFloatingPanelTest extends ElysiaElement
 					<elysia-button @click=${() => console.log("clicked")}>Click me</elysia-button>
 					<elysia-number-input .value=${this.number}></elysia-number-input>
 					<elysia-text-input>hello world</elysia-text-input>
-					<elysia-boolean @_change=${e => this.bool = e.detail} _value=${this.bool}></elysia-boolean>
+					<elysia-boolean @_change=${(e: any) => this.bool = e.detail} _value=${this.bool}></elysia-boolean>
 					<elysia-range></elysia-range>
-					<elysia-vector .value=${this.vec} @change=${v => this.vec = v.detail}></elysia-vector>
+					<elysia-vector .value=${this.vec} @change=${(v: any) => this.vec = v.detail}></elysia-vector>
 					<elysia-enum></elysia-enum>
 					<elysia-color-picker></elysia-color-picker>
 				</div>

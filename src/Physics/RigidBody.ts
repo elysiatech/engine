@@ -1,7 +1,7 @@
 import { Behavior } from "../Scene/Behavior";
 import Rapier from "@dimforge/rapier3d-compat"
-import { Vector3Like } from "../Math/Vectors.ts";
-import { ASSERT } from "../Core/Asserts.ts";
+import { Vector3Like } from "../Math/Vectors";
+import { ASSERT } from "../Core/Asserts";
 import * as Three from "three";
 
 const temp = {

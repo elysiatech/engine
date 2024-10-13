@@ -1,12 +1,12 @@
 import * as Three from "three";
 import Rapier from "@dimforge/rapier3d-compat";
 import { Behavior } from "../Scene/Behavior";
-import { Vector3Like } from "../Math/Vectors.ts";
-import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
+import { Vector3Like } from "../Math/Vectors";
+import { findAncestorRigidbody } from "./FindAncestorRigidbody";
 
 export const Colliders = {
     Box: (scale: Vector3Like) => (ws: Vector3Like) =>
-        Rapier.ColliderDesc.cuboid((scale.x * ws.x) / 2, (scale.y * ws.y) / 2, (scale.z * ws.z) / 2),
+    	Rapier.ColliderDesc.cuboid((scale.x * ws.x) / 2, (scale.y * ws.y) / 2, (scale.z * ws.z) / 2),
     Cylinder: (height: number, radius: number) => (ws: Vector3Like) =>
         Rapier.ColliderDesc.cylinder(height / 2, radius),
     Sphere: (radius: number) => (ws: Vector3Like) =>

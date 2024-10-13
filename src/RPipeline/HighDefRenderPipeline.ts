@@ -169,6 +169,7 @@ export class HighDefRenderPipeline extends RenderPipeline
 			if(this.#ssaoDistanceFalloff) this.#ssaoPass.configuration.distanceFalloff = this.#ssaoDistanceFalloff;
 			if(this.#ssaoIntensity) this.#ssaoPass.configuration.intensity = this.#ssaoIntensity;
 			if(this.#ssaoColor) this.#ssaoPass.configuration.color = this.#ssaoColor;
+			// @ts-ignore
 			this.#ssaoPass.setQualityMode(this.#ssaoQualityMode);
 			this.#ssaoPass.configuration.halfRes = this.#ssaoHalfResolution;
 			this.effectComposer.addPass(this.#ssaoPass);

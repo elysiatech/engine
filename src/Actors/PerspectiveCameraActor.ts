@@ -80,7 +80,6 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 
 	override onDestroy()
 	{
-		ElysiaEventDispatcher.removeEventListener(ResizeEvent, this.onResize);
 		this.#debugHelper?.dispose();
 	}
 
@@ -93,4 +92,3 @@ export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 	#debug = false;
 	#debugHelper?: Three.CameraHelper;
 }
-

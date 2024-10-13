@@ -1,4 +1,4 @@
-import { Actor } from "../Scene/Actor.ts";
+import { Actor } from "../Scene/Actor";
 import * as Three from "three";
 
 export class DebugActor extends Actor
@@ -6,7 +6,7 @@ export class DebugActor extends Actor
 	static Debug(a: Actor)
 	{
 		const d = new DebugActor;
-		d.parent = a;
+		a.addComponent(d)
 		return d;
 	}
 

@@ -3,7 +3,7 @@ import { ASSERT, isDestroyable, isDev } from "./Asserts";
 import { MouseIntersections } from "../Input/MouseIntersections";
 import { ElysiaEventQueue } from "../Events/EventQueue";
 import { InputQueue } from "../Input/InputQueue";
-import { AssetLoader } from "../Assets/AssetLoader.ts";
+import { AssetLoader } from "../Assets/AssetLoader";
 import { Profiler } from "./Profiler";
 import { AudioPlayer } from "../Audio/AudioPlayer";
 import { MouseObserver } from "../Input/Mouse";
@@ -15,7 +15,7 @@ import { ELYSIA_LOGGER } from "./Logger";
 import { ResizeController, ResizeEvent } from "./Resize";
 import { defaultScheduler } from "../UI/Scheduler";
 import { ElysiaStats } from "../UI/ElysiaStats";
-import { Actor } from "../Scene/Actor.ts";
+import { Actor } from "../Scene/Actor";
 import {
 	Internal,
 	OnCreate,
@@ -26,8 +26,8 @@ import {
 	OnStart,
 	OnUpdate,
 	SceneLoadPromise
-} from "./Internal.ts";
-import { bound } from "./Utilities.ts";
+} from "./Internal";
+import { bound } from "./Utilities";
 
 declare module 'three'
 {
@@ -61,7 +61,7 @@ export class Application {
 	 * The application instance's mouse observer.
 	 */
 	public readonly mouse: MouseObserver;
-	
+
 	/**
 	 * The input queue for this application.
 	 */

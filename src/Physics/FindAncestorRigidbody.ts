@@ -1,5 +1,5 @@
-import { Actor } from "../Scene/Actor.ts";
-import { RigidBodyBehavior } from "./RigidBody.ts";
+import { Actor } from "../Scene/Actor";
+import { RigidBodyBehavior } from "./RigidBody";
 
 export function findAncestorRigidbody(actor?: Actor): RigidBodyBehavior | undefined {
 	if (!actor) return undefined;

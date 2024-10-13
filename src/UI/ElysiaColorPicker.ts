@@ -1,4 +1,4 @@
-import { css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { css, defineComponent, ElysiaElement, html } from "./UI";
 import "corel-color-picker/corel-color-picker.js"
 import { query } from "lit/decorators.js";
 
