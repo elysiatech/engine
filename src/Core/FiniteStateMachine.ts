@@ -1,5 +1,5 @@
-import { ReverseMap } from "../Containers/ReverseMap.js";
-import { ELYSIA_LOGGER } from "./Logger.js";
+import { ReverseMap } from "../Containers/ReverseMap.ts";
+import { ELYSIA_LOGGER } from "./Logger.ts";
 
 const ExitCurrentState = Symbol.for("Elysia::FiniteStateMachine::ExitCurrentState");
 const onEnter = Symbol.for("Elysia::FiniteStateMachine::onEnter");
