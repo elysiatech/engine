@@ -138,9 +138,9 @@ class ElysiaElement extends LitElement
 		this.onRender = this.onRender.bind(this);
 	}
 
-	override connectedCallback()
+	override firstUpdated()
 	{
-		super.connectedCallback();
+		super.firstUpdated(new Map);
 
 		this.onMount && this.onMount();
 
