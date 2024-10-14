@@ -142,7 +142,7 @@ async function main()
 		case "playground:deploy":
 			console.log("Deploying playground to Cloudflare Pages");
 			child_process.execSync(
-				`pnpm playground:build && wrangler pages deploy playground/dist`,
+				`wrangler pages deploy playground/dist`,
 			)
 			break;
 		default:

@@ -1200,7 +1200,6 @@ class $87431ee93b037844$export$2489f9981ab0fa82 extends (0, $5Whe3$Pass1) {
 			format: $5Whe3$RGBAFormat,
 			type: $5Whe3$HalfFloatType,
 			stencilBuffer: false,
-			depthBuffer: false,
 			alpha: true
 		});
 		this.accumulationQuad = new (0, $e4ca8dcb0218f846$export$dcd670d73db751f5)(new $5Whe3$ShaderMaterial({

@@ -9,9 +9,9 @@
     "dev": "tsx cli.ts playground:dev",
     "genmod": "tsx cli.ts gen:modfiles",
     "typecheck": "tsc --noEmit",
-    "build": "tsx cli.ts build",
+    "build": "pnpm typecheck && pnpm genmod && tsx cli.ts build",
     "playground:build": "tsx cli.ts playground:build",
-    "playground:deploy": "tsx cli.ts playground:deploy"
+    "playground:deploy": "tsx cli.ts playground:build && tsx cli.ts playground:deploy"
   },
   "exports": {},
   "peerDependencies": {
