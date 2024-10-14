@@ -308,7 +308,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		if(this[Internal].destroyed) return;
 		for(const component of this.components)
 		{
-			component.destructor()
+			component.destructor();
 		}
 		this[OnLeaveScene]();
 		this.onDestroy();

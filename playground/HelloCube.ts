@@ -11,15 +11,15 @@ const app = new Elysia.Core.Application({
 const scene = new Elysia.Scene.Scene;
 
 const floor = new Elysia.Actors.CubeActor;
-floor.material.color = new Three.Color(Elysia.Core.Colors.VonCount)
+floor.material.color = new Three.Color(Elysia.Core.Colors.VonCount);
 floor.position.y = -1;
 floor.scale.x = 10;
 floor.scale.z = 10;
-scene.addComponent(floor)
+scene.addComponent(floor);
 
 const cube = new Elysia.Actors.CubeActor;
-cube.material.color = new Three.Color(Elysia.Core.Colors.Purple)
-scene.addComponent(cube)
+cube.material.color = new Three.Color(Elysia.Core.Colors.Purple);
+scene.addComponent(cube);
 
 const camera = new Elysia.Actors.PerspectiveCameraActor;
 camera.position.set(-2, 5, 15);
@@ -41,7 +41,7 @@ env.backgroundIntensity = .2;
 scene.addComponent(env);
 
 // enable the scene grid in dev mode
-ELYSIA_DEV && scene.grid.enable()
+ELYSIA_DEV && scene.grid.enable();
 
 // set the default ambient light intensity
 scene.ambientLight.intensity = 0.1;

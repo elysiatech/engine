@@ -48,6 +48,7 @@ interface ApplicationConstructorArguments
 	renderPipeline?: RenderPipeline
 	stats?: boolean
 	updateDefaultUiScheduler?: boolean
+	manualUpdate?: boolean
 }
 
 export class Application {
@@ -88,6 +89,11 @@ export class Application {
 	public maxErrorCount = 10;
 
 	/**
+	 * If the application should not schedule updates automatically.
+	*/
+	public manualUpdate: boolean;
+
+	/**
 	 * The active render pipeline.
 	 */
 	public get renderPipeline() { return this.#renderPipeline!; }
@@ -102,6 +108,7 @@ export class Application {
 
 		SET_ELYSIA_LOGLEVEL(config.logLevel ?? isDev() ? LogLevel.Debug : LogLevel.Production)
 
+		this.manualUpdate = config.manualUpdate ?? false;
 		this.events = config.eventQueue ?? new ElysiaEventQueue
 		this.profiler = config.profiler ?? new Profiler
 		this.audio = config.audio ?? new AudioPlayer
@@ -203,7 +210,7 @@ export class Application {
 		try {
 			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")
 
-			if(this.#errorCount <= this.maxErrorCount) requestAnimationFrame(this.update);
+			if(this.#errorCount <= this.maxErrorCount && !this.manualUpdate) requestAnimationFrame(this.update);
 
 			else
 			{

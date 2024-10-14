@@ -148,7 +148,8 @@ export class Player extends Actor
 
 		this.position.y = 2;
 
-		this.app!.input.onKeyDown(KeyCode.Space, () => {
+		this.app!.input.onKeyDown(KeyCode.Space, (event) => {
+
 			if(this.grounded)
 			{
 				this.velocity.y = 5;

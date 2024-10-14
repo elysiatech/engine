@@ -2,6 +2,7 @@ import * as esbuild from "esbuild"
 import * as fs from "node:fs/promises";
 import * as child_process from "node:child_process";
 import { copy } from "esbuild-plugin-copy";
+import { createLogger } from "./src/Logging/Logger";
 
 function parseCommand() { return process.argv[2]; }
 
