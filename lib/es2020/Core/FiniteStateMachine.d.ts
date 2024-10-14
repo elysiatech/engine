@@ -124,8 +124,9 @@ export declare class FiniteStateMachine {
     /**
      * Set the state of the state machine directly.
      * @param name
+     * @param instant If true, the state will be set without waiting for an exit function.
      */
-    setState(name: string): this;
+    setState(name: string, instant?: boolean): this;
     /**
      * Call an action on the current state.
      * @param action

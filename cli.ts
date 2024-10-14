@@ -5,9 +5,9 @@ import { copy } from "esbuild-plugin-copy";
 
 function parseCommand() { return process.argv[2]; }
 
-class Playground
+const playground =
 {
-	createConfig = (mode: string): esbuild.BuildOptions => ({
+	createConfig: (mode: string): esbuild.BuildOptions => ({
 		entryPoints: ["./playground/PlaygroundEntry.ts"],
 		outdir: "./playground/dist",
 		bundle: true,
@@ -34,8 +34,7 @@ class Playground
 				watch: true,
 			}),
 		],
-	})
-
+	}),
 	async dev()
 	{
 		const t = performance.now()
@@ -52,8 +51,7 @@ class Playground
 		})
 
 		console.log(`Dev server started in ${(performance.now() - t).toFixed(1)} ms`)
-	}
-
+	},
 	async build()
 	{
 		console.info("Building playground for production")
@@ -63,9 +61,8 @@ class Playground
 		const path = Object.entries(output.metafile!.outputs).find(([p, lol]) => lol.entryPoint === 'playground/PlaygroundEntry.ts')
 		await fs.writeFile("playground/dist/index.html", this.constructPlaygroundHtml(path![0].replace('playground/dist', '')))
 		console.log(`Built in ${(performance.now() - t).toFixed(1)} ms`)
-	}
-
-	constructPlaygroundHtml = (entry: string) => `
+	},
+	constructPlaygroundHtml: (entry: string) => `
 		<!DOCTYPE html>
 		<html>
 		<head>
@@ -134,16 +131,14 @@ async function main()
 			await generateModuleFiles();
 			break;
 		case "playground:dev":
-			 await new Playground().dev();
+			 await playground.dev();
 			break;
 		case "playground:build":
-			await new Playground().build();
+			await playground.build();
 			break;
 		case "playground:deploy":
 			console.log("Deploying playground to Cloudflare Pages");
-			child_process.execSync(
-				`wrangler pages deploy playground/dist`,
-			)
+			child_process.execSync(`wrangler pages deploy playground/dist`)
 			break;
 		default:
 			console.log(
@@ -157,4 +152,4 @@ async function main()
 	}
 }
 
-main();
+main().catch(console.error)

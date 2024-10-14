@@ -221,12 +221,23 @@ export class FiniteStateMachine
 	/**
 	 * Set the state of the state machine directly.
 	 * @param name
+	 * @param instant If true, the state will be set without waiting for an exit function.
 	 */
-	public setState(name: string): this
+	public setState(name: string, instant = false): this
 	{
 		const to = this.states.get(name);
 		if(!to) ELYSIA_LOGGER.error("Invalid state.");
-		else this[RunTransition](this.states.getKey(this.currentState), name)
+		else
+		{
+			if(!instant)
+				this[RunTransition](this.states.getKey(this.currentState), name)
+			else
+			{
+				this[ExitCurrentState]();
+				this.currentState = to;
+				this.currentState[onEnter]?.();
+			}
+		}
 		return this;
 	}
 
