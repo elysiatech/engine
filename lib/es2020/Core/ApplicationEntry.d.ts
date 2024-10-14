@@ -23,6 +23,7 @@ interface ApplicationConstructorArguments {
     renderPipeline?: RenderPipeline;
     stats?: boolean;
     updateDefaultUiScheduler?: boolean;
+    manualUpdate?: boolean;
 }
 export declare class Application {
     #private;
@@ -54,6 +55,10 @@ export declare class Application {
      * The maximum number of consecutive errors that can occur inside update() before stopping.
      */
     maxErrorCount: number;
+    /**
+     * If the application should not schedule updates automatically.
+    */
+    manualUpdate: boolean;
     /**
      * The active render pipeline.
      */

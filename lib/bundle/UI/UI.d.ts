@@ -64,7 +64,7 @@ declare class ElysiaElement extends LitElement {
     get offscreen(): boolean;
     get offscreenUpdateStrategy(): OffscreenUpdateStrategy;
     constructor();
-    connectedCallback(): void;
+    firstUpdated(): void;
     disconnectedCallback(): void;
     setOffscreenUpdateStrategy(value: OffscreenUpdateStrategy): void;
     render(): TemplateResult;

@@ -3,6 +3,7 @@ export * from "./Asserts.ts";
 export * from "./Colors.ts";
 export * from "./Constants.ts";
 export * from "./Container.ts";
+export * from "./DisposeThreeObject.ts";
 export * from "./ElysiaEvents.ts";
 export * from "./Error.ts";
 export * from "./FiniteStateMachine.ts";
