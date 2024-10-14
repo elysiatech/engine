@@ -1,80 +1,58 @@
 {
   "name": "elysiatech",
-  "version": "2024.1",
+  "version": "2024.1.1",
   "type": "module",
   "files": [
-    "dist"
+    "lib/es2020"
   ],
   "scripts": {
-    "dev:node": "tsx playground/node",
-    "dev:browser": "cd playground/browser && pnpm run dev",
-    "build": "mkdist --src=src --dist=dist --format=esm -d --ext=js",
-    "lint": "pnpm biome check src --write"
+    "dev": "tsx cli.ts playground:dev",
+    "genmod": "tsx cli.ts gen:modfiles",
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm typecheck && pnpm genmod && tsx cli.ts build",
+    "playground:build": "tsx cli.ts playground:build",
+    "playground:deploy": "tsx cli.ts playground:build && tsx cli.ts playground:deploy"
   },
-  "exports": {
-    ".": {
-      "import": "./dist/mod.js",
-      "types": "./dist/mod.d.ts"
-    },
-    "./actors/*": {
-      "import": "./dist/actors/*.js",
-      "types": "./dist/actors/*.d.ts"
-    },
-    "./behaviors/*": {
-      "import": "./dist/behaviors/*.js",
-      "types": "./dist/behaviors/*.d.ts"
-    },
-    "./render_pipelines/*": {
-      "import": "./dist/render_pipelines/*.js",
-      "types": "./dist/render_pipelines/*.d.ts"
-    },
-    "./logger": {
-      "import": "./dist/logger.js",
-      "types": "./dist/logger.d.ts"
-    },
-    "./errors": {
-      "import": "./dist/errors.js",
-      "types": "./dist/errors.d.ts"
-    },
-    "./asserts": {
-      "import": "./dist/asserts.js",
-      "types": "./dist/asserts.d.ts"
-    },
-    "./assets": {
-      "import": "./dist/assets.js",
-      "types": "./dist/assets.d.ts"
-    },
-    "./audio": {
-      "import": "./dist/audio.js",
-      "types": "./dist/audio.d.ts"
-    },
-    "./ui": {
-      "import": "./dist/ui.js",
-      "types": "./dist/ui.d.ts"
-    },
-    "./input": {
-      "import": "./dist/input.js",
-      "types": "./dist/input.d.ts"
-    },
-    "./events": {
-      "import": "./dist/events.js",
-      "types": "./dist/events.d.ts"
-    }
-  },
+  "module": "lib/es2020/mod.ts",
+  "types": "lib/es2020/mod.d.ts",
   "peerDependencies": {
+    "@dimforge/rapier3d-compat": "^0.14.0",
+    "corel-color-picker": "^0.2.3",
+    "lit": "^3.2.0",
     "postprocessing": "^6.35.4",
     "three": "^0.165.0",
-    "three-stdlib": "^2.32.2"
+    "troika-three-text": "^0.49.1"
+  },
+  "peerDependenciesMeta": {
+    "@dimforge/rapier3d-compat": {
+      "optional": true
+    },
+    "lit": {
+      "optional": false
+    },
+    "postprocessing": {
+      "optional": true
+    },
+    "three": {
+      "optional": false
+    },
+    "troika-three-text": {
+      "optional": true
+    },
+    "corel-color-picker": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
+    "@microsoft/api-extractor": "^7.47.9",
     "@types/node": "^20.13.0",
     "@types/three": "^0.165.0",
-    "mkdist": "^1.5.4",
-    "tsx": "^4.17.0",
-    "typescript": "^5.4.5"
-  },
-  "dependencies": {
-    "lit": "^3.2.0"
+    "esbuild": "^0.24.0",
+    "esbuild-plugin-copy": "^2.1.1",
+    "typedoc": "^0.26.9",
+    "typescript": "5.7.0-beta",
+    "esbuild-plugin-file-path-extensions": "^2.1.3",
+    "mkdist": "^1.6.0",
+    "tsx": "^4.19.1"
   }
 }

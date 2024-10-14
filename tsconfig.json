@@ -1,20 +1,22 @@
 {
 	"compilerOptions": {
-		"jsx": "react",
+	  "outDir": "lib",
 		"target": "ESNext",
 		"useDefineForClassFields": true,
 		"experimentalDecorators": false,
-		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"module": "ESNext",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "NodeNext",
 		"skipLibCheck": true,
+	    "allowImportingTsExtensions": true,
+	  	"allowJs": true,
 
 		/* Bundler mode */
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
+		"moduleResolution": "NodeNext",
+	  	"declaration": true,
 
 		/* Linting */
 		"strict": true,
-		"noFallthroughCasesInSwitch": true
-	}
+		"noFallthroughCasesInSwitch": true,
+	},
+	"include": ["src"]
 }

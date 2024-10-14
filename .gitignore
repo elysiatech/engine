@@ -1,6 +1,8 @@
 # compiled output
 .build
 dist
+playground/dist
+.wrangler
 
 # IDEs and editors
 .idea
