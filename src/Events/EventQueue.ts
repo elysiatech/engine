@@ -1,5 +1,5 @@
-import { ElysiaEvent } from "./Event";
-import { Constructor } from "../Core/Utilities";
+import { ElysiaEvent } from "./Event.ts";
+import { Constructor } from "../Core/Utilities.ts";
 
 /**
  * A queue of events.

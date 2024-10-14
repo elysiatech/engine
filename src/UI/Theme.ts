@@ -1,6 +1,6 @@
-import { defineComponent, ElysiaElement, html } from "./UI";
-import { Colors } from "../Core/Colors";
-import { attribute } from "./UI";
+import { defineComponent, ElysiaElement, html } from "./UI.ts";
+import { Colors } from "../Core/Colors.ts";
+import { attribute } from "./UI.ts";
 
 export class ElysiaTheme extends ElysiaElement
 {

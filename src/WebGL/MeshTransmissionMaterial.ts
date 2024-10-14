@@ -6,8 +6,8 @@
 ************************************************************/
 
 import * as Three from 'three'
-import { Application } from "../Core/ApplicationEntry";
-import { Scene } from "../Scene/Scene";
+import { Application } from "../Core/ApplicationEntry.ts";
+import { Scene } from "../Scene/Scene.ts";
 
 interface Uniform<T>
 {

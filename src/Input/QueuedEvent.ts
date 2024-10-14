@@ -1,5 +1,5 @@
-import { KeyCode } from "./KeyCode";
-import { MouseCode } from "./MouseCode";
+import { KeyCode } from "./KeyCode.ts";
+import { MouseCode } from "./MouseCode.ts";
 
 export class QueuedEvent
 {

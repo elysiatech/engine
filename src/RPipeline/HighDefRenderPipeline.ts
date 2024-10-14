@@ -1,5 +1,5 @@
-import { RenderPipeline } from "./RenderPipeline";
-import { Scene } from "../Scene/Scene";
+import { RenderPipeline } from "./RenderPipeline.ts";
+import { Scene } from "../Scene/Scene.ts";
 import * as Three from "three";
 import {
 	BlendFunction,
@@ -12,10 +12,11 @@ import {
 	ToneMappingEffect,
 	ToneMappingMode
 } from "postprocessing";
-import { ELYSIA_LOGGER } from "../Core/Logger";
-import { N8AOPostPass } from "../WebGL/SSAO";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
+// @ts-ignore
+import { N8AOPostPass } from "../WebGL/SSAO.js";
 import { Vector2, WebGLRenderer } from "three";
-import { noop } from "../Core/Utilities";
+import { noop } from "../Core/Utilities.ts";
 
 type HighDefRenderPipelineConstructorArguments = {
 	alpha?: boolean;

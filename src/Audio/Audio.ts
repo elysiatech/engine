@@ -1,9 +1,9 @@
-import { AudioPlayer } from "./AudioPlayer";
-import { Queue } from "../Containers/Queue";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import * as Events from "./AudioEvents";
-import { ASSERT } from "../Core/Asserts";
-import { isBrowser } from "../Core/Asserts";
+import { AudioPlayer } from "./AudioPlayer.ts";
+import { Queue } from "../Containers/Queue.ts";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import * as Events from "./AudioEvents.ts";
+import { ASSERT } from "../Core/Asserts.ts";
+import { isBrowser } from "../Core/Asserts.ts";
 
 export interface AudioConstructorArguments {
 	bytes: ArrayBuffer;

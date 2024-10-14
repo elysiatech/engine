@@ -1,6 +1,5 @@
-import { isBrowser } from "../Core/Asserts";
-import { ASSERT } from "../Core/Asserts";
-import { Audio, AudioConstructorArguments } from "./Audio";
+import { ASSERT, isBrowser } from "../Core/Asserts.ts";
+import { Audio, AudioConstructorArguments } from "./Audio.ts";
 
 declare global
 {

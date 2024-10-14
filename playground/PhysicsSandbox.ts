@@ -1,5 +1,5 @@
 import { Application } from "../src/Core/ApplicationEntry.ts";
-import { Scene } from "../src/Scene/Scene";
+import { Scene } from "../src/Scene/Scene.ts";
 import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
 import { AmbientLightActor } from "../src/Actors/AmbientLightActor.ts";
 import { CubeActor, PlaneActor, SphereActor } from "../src/Actors/Primitives.ts";

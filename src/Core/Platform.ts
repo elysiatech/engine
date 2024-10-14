@@ -1,4 +1,4 @@
-import { hasTTY } from "./Asserts";
+import { hasTTY } from "./Asserts.ts";
 
 const toBoolean = (val: any) => val ? val !== "false" : false;
 

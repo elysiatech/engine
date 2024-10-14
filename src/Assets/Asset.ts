@@ -1,8 +1,8 @@
-import { Future } from "../Containers/Future";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { Maybe, MaybePromise } from "../Core/Utilities";
-import { clamp } from "../Math/Other";
-import { BeginLoadEvent, LoadedEvent, ErrorEvent, ProgressEvent } from "../Events/Event";
+import { Future } from "../Containers/Future.ts";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { Maybe, MaybePromise } from "../Core/Utilities.ts";
+import { clamp } from "../Math/Other.ts";
+import { BeginLoadEvent, LoadedEvent, ErrorEvent, ProgressEvent } from "../Events/Event.ts";
 
 export abstract class Asset<T> {
 

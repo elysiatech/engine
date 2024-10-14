@@ -1,5 +1,5 @@
-import { ElysiaElement, defineComponent, h, c, defaultScheduler } from "./UI";
-import { ELYSIA_VERSION } from "../Core/Constants";
+import { ElysiaElement, defineComponent, h, c, defaultScheduler } from "./UI.ts";
+import { ELYSIA_VERSION } from "../Core/Constants.ts";
 import { nothing } from "lit";
 
 export class ElysiaUiStats extends ElysiaElement

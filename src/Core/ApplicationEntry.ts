@@ -1,21 +1,21 @@
-import { LogLevel } from "../Logging/Levels";
-import { ASSERT, isDestroyable, isDev } from "./Asserts";
-import { MouseIntersections } from "../Input/MouseIntersections";
-import { ElysiaEventQueue } from "../Events/EventQueue";
-import { InputQueue } from "../Input/InputQueue";
-import { AssetLoader } from "../Assets/AssetLoader";
-import { Profiler } from "./Profiler";
-import { AudioPlayer } from "../Audio/AudioPlayer";
-import { MouseObserver } from "../Input/Mouse";
-import { Scene } from "../Scene/Scene";
-import { RenderPipeline } from "../RPipeline/RenderPipeline";
-import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline";
+import { LogLevel } from "../Logging/Levels.ts";
+import { ASSERT, isDestroyable, isDev } from "./Asserts.ts";
+import { MouseIntersections } from "../Input/MouseIntersections.ts";
+import { ElysiaEventQueue } from "../Events/EventQueue.ts";
+import { InputQueue } from "../Input/InputQueue.ts";
+import { AssetLoader } from "../Assets/AssetLoader.ts";
+import { Profiler } from "./Profiler.ts";
+import { AudioPlayer } from "../Audio/AudioPlayer.ts";
+import { MouseObserver } from "../Input/Mouse.ts";
+import { Scene } from "../Scene/Scene.ts";
+import { RenderPipeline } from "../RPipeline/RenderPipeline.ts";
+import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline.ts";
 import * as Three from "three";
-import { ELYSIA_LOGGER } from "./Logger";
-import { ResizeController, ResizeEvent } from "./Resize";
-import { defaultScheduler } from "../UI/Scheduler";
-import { ElysiaStats } from "../UI/ElysiaStats";
-import { Actor } from "../Scene/Actor";
+import { ELYSIA_LOGGER } from "./Logger.ts";
+import { ResizeController, ResizeEvent } from "./Resize.ts";
+import { defaultScheduler } from "../UI/Scheduler.ts";
+import { ElysiaStats } from "../UI/ElysiaStats.ts";
+import { Actor } from "../Scene/Actor.ts";
 import {
 	Internal,
 	OnCreate,
@@ -26,8 +26,8 @@ import {
 	OnStart,
 	OnUpdate,
 	SceneLoadPromise
-} from "./Internal";
-import { bound } from "./Utilities";
+} from "./Internal.ts";
+import { bound } from "./Utilities.ts";
 
 declare module 'three'
 {

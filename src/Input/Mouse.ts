@@ -1,4 +1,4 @@
-import { Destroyable } from "../Core/Lifecycle";
+import { Destroyable } from "../Core/Lifecycle.ts";
 
 export class MouseObserver implements Destroyable
 {

@@ -1,4 +1,4 @@
-import { Behavior } from "../Scene/Behavior";
+import { Behavior } from "../Scene/Behavior.ts";
 
 /**
  * A behavior that makes the parent object always face the camera.

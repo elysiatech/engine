@@ -20,7 +20,6 @@
     "lit": "^3.2.0",
     "postprocessing": "^6.35.4",
     "three": "^0.165.0",
-    "three-stdlib": "^2.32.2",
     "troika-three-text": "^0.49.1"
   },
   "peerDependenciesMeta": {
@@ -34,9 +33,6 @@
       "optional": true
     },
     "three": {
-      "optional": false
-    },
-    "three-stdlib": {
       "optional": false
     },
     "troika-three-text": {

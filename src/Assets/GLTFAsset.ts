@@ -1,5 +1,5 @@
-import { Asset } from './Asset';
-import { GLTF, GLTFLoader } from "three-stdlib";
+import { Asset } from './Asset.ts';
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 type GLTFAssetType = {
 	gltf: GLTF,

@@ -1,4 +1,4 @@
-import { ElysiaElement } from "./UI";
+import { ElysiaElement } from "./UI.ts";
 
 export class Scheduler
 {

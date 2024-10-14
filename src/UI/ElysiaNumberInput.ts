@@ -1,6 +1,6 @@
-import { attribute, css, defineComponent, ElysiaElement, html } from "./UI";
+import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
 import { query } from "lit/decorators.js";
-import { bound } from "../Core/Utilities";
+import { bound } from "../Core/Utilities.ts";
 
 export class ElysiaNumberInput extends ElysiaElement {
 	static override Tag = "elysia-number-input";

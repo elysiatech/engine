@@ -1,4 +1,4 @@
-import { createLogger, LogLevel } from "../Logging/Logger";
+import { createLogger, LogLevel } from "../Logging/Logger.ts";
 
 export const ELYSIA_LOGGER = createLogger({
 	level: LogLevel.Silent,

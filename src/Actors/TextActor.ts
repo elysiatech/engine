@@ -2,7 +2,7 @@ import * as Three from "three";
 // @ts-ignore
 import { Text, preloadFont } from 'troika-three-text'
 import { OverrideMaterialManager } from 'postprocessing'
-import { Actor } from "../Scene/Actor";
+import { Actor } from "../Scene/Actor.ts";
 
 export type TextActorConstructorArguments = {
 	text: string

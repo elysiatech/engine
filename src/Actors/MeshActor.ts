@@ -1,4 +1,4 @@
-import { Actor } from "../Scene/Actor";
+import { Actor } from "../Scene/Actor.ts";
 import * as Three from "three";
 
 export class MeshActor extends Actor<Three.Mesh>

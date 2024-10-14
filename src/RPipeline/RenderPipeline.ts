@@ -1,10 +1,10 @@
-import { Destroyable, RenderPipelineLifecycle } from "../Core/Lifecycle";
-import { Scene } from "../Scene/Scene";
+import { Destroyable, RenderPipelineLifecycle } from "../Core/Lifecycle.ts";
+import { Scene } from "../Scene/Scene.ts";
 import * as Three from "three";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ResizeEvent } from "../Core/Resize";
-import { ELYSIA_LOGGER } from "../Core/Logger";
-import { bound } from "../Core/Utilities";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ResizeEvent } from "../Core/Resize.ts";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
+import { bound } from "../Core/Utilities.ts";
 
 /**
  * A render pipeline is a class that is responsible for rendering a scene.

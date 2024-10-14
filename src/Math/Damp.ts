@@ -1,5 +1,5 @@
-import { lerp } from './Other';
-import { Vector2Like, Vector3Like, Vector4Like, VectorLike } from "./Vectors";
+import { lerp } from './Other.ts';
+import { Vector2Like, Vector3Like, Vector4Like, VectorLike } from "./Vectors.ts";
 
 /**
  * Improved lerp for smoothing that prevents overshoot and is frame rate independent.

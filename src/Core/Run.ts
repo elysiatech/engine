@@ -1,4 +1,4 @@
-import { toError } from "./Utilities";
+import { toError } from "./Utilities.ts";
 
 /**
  * Immediately runs the provided function, catching and returning all uncaught exceptions.

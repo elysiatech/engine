@@ -1,8 +1,8 @@
 import * as Three from "three";
 import Rapier from "@dimforge/rapier3d-compat";
-import { Behavior } from "../Scene/Behavior";
-import { Vector3Like } from "../Math/Vectors";
-import { findAncestorRigidbody } from "./FindAncestorRigidbody";
+import { Behavior } from "../Scene/Behavior.ts";
+import { Vector3Like } from "../Math/Vectors.ts";
+import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
 
 export const Colliders = {
     Box: (scale: Vector3Like) => (ws: Vector3Like) =>

@@ -1,8 +1,7 @@
 import * as esbuild from "esbuild"
 import * as fs from "node:fs/promises";
 import { copy } from "esbuild-plugin-copy";
-
-import { build } from "tsup";
+import * as child_process from "node:child_process";
 
 function parseCommand() { return process.argv[2]; }
 
@@ -94,17 +93,48 @@ async function generateModuleFiles()
 		// recurse and get the path of each file relative to it.
 		const files = await fs.readdir(`src/${module.name}`, { withFileTypes: true });
 		const paths: string[] = [];
-		for await (const file of files) if (file.isFile() && file.name.endsWith(".ts") && !file.name.endsWith(".d.ts")) paths.push(`./${file.name.replace(".ts", "")}`);
+		for await (const file of files) if (file.isFile() && file.name.endsWith(".ts") && !file.name.endsWith(".d.ts")) paths.push(`./${file.name}`);
 		await fs.writeFile(`src/${module.name}/mod.ts`, preamble + paths.map(p => `export * from "${p}";`).join("\n"));
 	}
 
-	await fs.writeFile("src/mod.ts", preamble + root.map(p => `export * from "./${p}/mod";`).join("\n"));
+	await fs.writeFile("src/mod.ts", preamble + root.map(p => `export * from "./${p}/mod.ts";`).join("\n"));
+}
+
+async function build()
+{
+	child_process.execSync(
+		"tsc --rewriteRelativeImportExtensions --outDir lib/es2020 --target ES2020",
+		{ stdio: "inherit" }
+	)
+	child_process.execSync(
+		"tsc --rewriteRelativeImportExtensions --outDir lib/esnext",
+		{ stdio: "inherit" }
+	)
+	child_process.execSync(
+		"tsc --rewriteRelativeImportExtensions --outDir lib/bundle --emitDeclarationOnly",
+		{ stdio: "inherit" }
+	)
+	await fs.rename("lib/bundle/mod.d.ts", "lib/bundle/elysia.d.ts")
+	await esbuild.build({
+		entryPoints: ["./src/mod.ts"],
+		outfile: "./lib/bundle/elysia.js",
+		bundle: true,
+		target: "ES2020",
+		minify: true,
+		format: "esm",
+		platform: "browser",
+		external: ["three", "postprocessing", "lit"],
+		keepNames: true,
+	})
 }
 
 function main()
 {
 	switch(parseCommand())
 	{
+		case "build":
+			build();
+			break;
 		case "gen:modfiles":
 			generateModuleFiles();
 			break;

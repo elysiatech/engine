@@ -1,8 +1,8 @@
-import { Actor } from "../Scene/Actor";
+import { Actor } from "../Scene/Actor.ts";
 import * as Three from "three";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ResizeEvent } from "../Core/Resize";
-import { ELYSIA_LOGGER } from "../Core/Logger";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ResizeEvent } from "../Core/Resize.ts";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
 
 export class PerspectiveCameraActor extends Actor<Three.PerspectiveCamera>
 {

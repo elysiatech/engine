@@ -1,5 +1,5 @@
-import { RenderPipeline } from "./RenderPipeline";
-import { Scene } from "../Scene/Scene";
+import { RenderPipeline } from "./RenderPipeline.ts";
+import { Scene } from "../Scene/Scene.ts";
 import * as Three from "three";
 
 type BasicRenderPipelineArguments = Three.WebGLRendererParameters & {

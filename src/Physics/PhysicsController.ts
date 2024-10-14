@@ -1,15 +1,15 @@
-import { Scene } from "../Scene/Scene";
+import { Scene } from "../Scene/Scene.ts";
 import * as Three from "three"
-import { ColliderBehavior } from "./ColliderBehavior";
-import { RigidBodyBehavior } from "./RigidBody";
-import { Destroyable, } from "../Core/Lifecycle";
+import { ColliderBehavior } from "./ColliderBehavior.ts";
+import { RigidBodyBehavior } from "./RigidBody.ts";
+import { Destroyable, } from "../Core/Lifecycle.ts";
 import Rapier from '@dimforge/rapier3d-compat'
-import { PhysicsDebugRenderer } from "./Debug";
-import { Actor } from "../Scene/Actor";
-import { ASSERT } from "../Core/Asserts";
-import { isActor } from "../Scene/Component";
-import { findAncestorRigidbody } from "./FindAncestorRigidbody";
-import { OnBeforePhysicsUpdate } from "../Core/Internal";
+import { PhysicsDebugRenderer } from "./Debug.ts";
+import { Actor } from "../Scene/Actor.ts";
+import { ASSERT } from "../Core/Asserts.ts";
+import { isActor } from "../Scene/Component.ts";
+import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
+import { OnBeforePhysicsUpdate } from "../Core/Internal.ts";
 
 export interface PhysicsControllerConstructorArguments
 {
@@ -85,7 +85,7 @@ export class PhysicsController implements Destroyable
 
 		if(!collider.colliderDescription) return;
 
-		collider.handle = this.world.createCollider(collider.colliderDescription, parent?.rBody).handle;
+		collider.handle = this.world?.createCollider(collider.colliderDescription, parent?.rBody).handle;
 
 		collider.hasParentRigidBody = !!parent?.rBody;
 
@@ -113,7 +113,7 @@ export class PhysicsController implements Destroyable
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
 		ASSERT(rigidBody.parent, "RigidBodyBehavior has no parent.");
 
-		rigidBody.handle = this.world.createRigidBody(rigidBody.rbodyDescription).handle;
+		rigidBody.handle = this.world?.createRigidBody(rigidBody.rbodyDescription).handle;
 
 		rigidBody.parent!.object3d.getWorldPosition(temp.v1);
 
@@ -175,7 +175,7 @@ export class PhysicsController implements Destroyable
 	addCharacterController(args: { offset: number }): string
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
-		const player = this.world.createCharacterController(0.01);
+		const player = this.world?.createCharacterController(0.01);
 		const uuid = Three.MathUtils.generateUUID();
 		this.characterControllers.set(uuid, { instance: player });
 		return uuid;

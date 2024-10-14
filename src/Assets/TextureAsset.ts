@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { Asset } from './Asset';
+import { Asset } from './Asset.ts';
 
 export class TextureAsset extends Asset<Three.Texture>
 {

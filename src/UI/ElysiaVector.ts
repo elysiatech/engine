@@ -1,5 +1,5 @@
-import { attribute, css, defineComponent, ElysiaElement, html } from "./UI";
-import { bound } from "../Core/Utilities";
+import { attribute, css, defineComponent, ElysiaElement, html } from "./UI.ts";
+import { bound } from "../Core/Utilities.ts";
 
 export class ElysiaVector extends ElysiaElement {
 	static override Tag = "elysia-vector";

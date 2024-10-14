@@ -1,5 +1,5 @@
 import * as Three from "three";
-import { Actor } from "../Scene/Actor";
+import { Actor } from "../Scene/Actor.ts";
 import {
 	BackSide,
 	BoxGeometry,
@@ -9,7 +9,7 @@ import {
 	PointLight,
 	Scene,
 } from 'three';
-import { Colors } from "../Core/Colors";
+import { Colors } from "../Core/Colors.ts";
 
 class RoomEnvironment extends Scene {
 	constructor()

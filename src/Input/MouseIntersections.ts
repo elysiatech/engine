@@ -1,6 +1,6 @@
-import { ActiveCameraTag } from "../Core/Tags";
+import { ActiveCameraTag } from "../Core/Tags.ts";
 import * as Three from "three";
-import { Scene } from "../Scene/Scene";
+import { Scene } from "../Scene/Scene.ts";
 
 /**
  * @internal

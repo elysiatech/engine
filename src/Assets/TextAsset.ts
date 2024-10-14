@@ -1,4 +1,4 @@
-import { Asset } from './Asset';
+import { Asset } from './Asset.ts';
 
 export class TextAsset extends Asset<string>
 {

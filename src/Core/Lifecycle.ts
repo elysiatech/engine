@@ -1,5 +1,5 @@
-import { Actor } from "../Scene/Actor";
-import { Scene } from "../Scene/Scene";
+import { Actor } from "../Scene/Actor.ts";
+import { Scene } from "../Scene/Scene.ts";
 import * as Three from "three";
 
 export interface Destroyable {

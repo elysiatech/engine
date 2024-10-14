@@ -1,11 +1,11 @@
-import { gradients, RGB } from "./Gradients";
-import { isColorSupported } from "../Core/Platform";
-import { LogLevel } from "./Levels";
-import { Writer } from "./Writer";
-import { BasicConsoleWriter } from "./BasicConsoleWriter";
-import { FancyConsoleWriter } from "./FancyConsoleWriter";
+import { gradients, RGB } from "./Gradients.ts";
+import { isColorSupported } from "../Core/Platform.ts";
+import { LogLevel } from "./Levels.ts";
+import { Writer } from "./Writer.ts";
+import { BasicConsoleWriter } from "./BasicConsoleWriter.ts";
+import { FancyConsoleWriter } from "./FancyConsoleWriter.ts";
 
-export { LogLevel } from "./Levels";
+export { LogLevel } from "./Levels.ts";
 export { Logger, type LogConfig, createLogger };
 
 declare global

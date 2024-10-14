@@ -19,8 +19,8 @@ import type {
 	Vector2,
 	Vector3,
 } from "three";
-import { env } from "./Platform";
-import { toBoolean } from "./Utilities";
+import { env } from "./Platform.ts";
+import { toBoolean } from "./Utilities.ts";
 
 export class AssertionError extends Error
 {

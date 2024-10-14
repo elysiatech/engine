@@ -1,5 +1,5 @@
-import { Asset } from "./Asset";
-import { Audio, type AudioConstructorArguments } from "../Audio/Audio";
+import { Asset } from "./Asset.ts";
+import { Audio, type AudioConstructorArguments } from "../Audio/Audio.ts";
 
 export class AudioAsset extends Asset<Audio>
 {

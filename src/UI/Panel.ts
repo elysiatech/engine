@@ -1,4 +1,4 @@
-import { css, defineComponent, ElysiaElement, html, track } from "./UI";
+import { css, defineComponent, ElysiaElement, html, track } from "./UI.ts";
 import { query } from "lit/decorators.js"
 import { ReactiveController, ReactiveControllerHost, TemplateResult } from "lit";
 import { ref, type Ref } from "lit/directives/ref.js"

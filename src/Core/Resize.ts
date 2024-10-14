@@ -1,7 +1,7 @@
-import { Destroyable } from "./Lifecycle";
-import { isBrowser } from "./Asserts";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ElysiaEvent } from "../Events/Event";
+import { Destroyable } from "./Lifecycle.ts";
+import { isBrowser } from "./Asserts.ts";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ElysiaEvent } from "../Events/Event.ts";
 
 export class ResizeEvent extends ElysiaEvent<{ x: number, y: number }> {}
 

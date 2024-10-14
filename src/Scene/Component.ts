@@ -1,5 +1,5 @@
-import { Actor, IsActor } from "./Actor";
-import { Behavior, IsBehavior } from "./Behavior";
+import { Actor, IsActor } from "./Actor.ts";
+import { Behavior, IsBehavior } from "./Behavior.ts";
 
 /**
  * A Component is an Actor or Behavior that satisfies the ActorLifecycle interface.

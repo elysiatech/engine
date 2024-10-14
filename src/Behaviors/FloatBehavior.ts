@@ -1,5 +1,5 @@
 import * as Three from "three";
-import { Behavior } from "../Scene/Behavior";
+import { Behavior } from "../Scene/Behavior.ts";
 
 type FloatArgs =
 	{

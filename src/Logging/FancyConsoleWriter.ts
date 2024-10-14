@@ -1,7 +1,7 @@
-import { gradients, RGB } from "./Gradients";
-import { format, stringGradient } from "./Formatting";
-import { LogLevel } from "./Levels";
-import { Writer } from "./Writer";
+import { gradients, RGB } from "./Gradients.ts";
+import { format, stringGradient } from "./Formatting.ts";
+import { LogLevel } from "./Levels.ts";
+import { Writer } from "./Writer.ts";
 
 export class FancyConsoleWriter implements Writer {
 

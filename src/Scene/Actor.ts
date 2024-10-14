@@ -1,14 +1,14 @@
 import * as Three from "three";
-import { ActorLifecycle, Destroyable } from "../Core/Lifecycle";
-import { ELYSIA_LOGGER } from "../Core/Logger";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent } from "../Core/ElysiaEvents";
-import { Component, isActor } from "./Component";
-import { Scene } from "./Scene";
-import { Application } from "../Core/ApplicationEntry";
-import { isDev } from "../Core/Asserts";
-import { bound, Constructor } from "../Core/Utilities";
-import { SparseSet } from "../Containers/SparseSet";
+import { ActorLifecycle, Destroyable } from "../Core/Lifecycle.ts";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent } from "../Core/ElysiaEvents.ts";
+import { Component, isActor } from "./Component.ts";
+import { Scene } from "./Scene.ts";
+import { Application } from "../Core/ApplicationEntry.ts";
+import { isDev } from "../Core/Asserts.ts";
+import { bound, Constructor } from "../Core/Utilities.ts";
+import { SparseSet } from "../Containers/SparseSet.ts";
 import {
 	Internal,
 	OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable,
@@ -17,8 +17,8 @@ import {
 	OnReparent, OnResize,
 	OnStart,
 	OnUpdate
-} from "../Core/Internal";
-import { reportLifecycleError } from "../Core/Error";
+} from "../Core/Internal.ts";
+import { reportLifecycleError } from "../Core/Error.ts";
 
 export const IsActor = Symbol.for("Elysia::IsActor");
 

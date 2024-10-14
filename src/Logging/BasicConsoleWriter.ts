@@ -1,5 +1,5 @@
-import { LogLevel } from "./Levels";
-import { Writer } from "./Writer";
+import { LogLevel } from "./Levels.ts";
+import { Writer } from "./Writer.ts";
 
 export class BasicConsoleWriter implements Writer
 {

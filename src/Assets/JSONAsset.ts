@@ -1,5 +1,5 @@
-import { Asset } from './Asset';
-import { Serializable } from "../Core/Utilities";
+import { Asset } from './Asset.ts';
+import { Serializable } from "../Core/Utilities.ts";
 
 export class JSONAsset extends Asset<Serializable>
 {

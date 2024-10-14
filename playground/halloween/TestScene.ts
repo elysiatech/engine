@@ -1,15 +1,15 @@
 import { Scene } from "../../src/Scene/Scene.ts";
 import { EnvironmentActor } from "../../src/Actors/EnvironmentActor.ts";
-import { Player } from "../../src/Actors/Player.ts";
-import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
-import { CubeActor } from "../../src/Actors/Primitives.ts";
-import { Colors } from "../../src/Core/Colors.ts";
+import { Player } from "../../src/Actors/Player.ts.ts";
+import { PhysicsController } from "../../src/Physics/PhysicsController.ts.ts";
+import { CubeActor } from "../../src/Actors/Primitives.ts.ts";
+import { Colors } from "../../src/Core/Colors.ts.ts";
 import * as Three from "three"
-import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
-import { Actor } from "../../src/Scene/Actor.ts";
+import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts.ts";
+import { Actor } from "../../src/Scene/Actor.ts.ts";
 import "../../src/UI/ElysiaCrossHair.ts";
-import { Assets } from "./Assets.ts";
-import { ModelActor } from "../../src/Actors/ModelActor.ts";
+import { Assets } from "./Assets.ts.ts";
+import { ModelActor } from "../../src/Actors/ModelActor.ts.ts";
 
 function getPositionAtDepth(camera: Three.PerspectiveCamera, depth: number, x: number, y: number) {
 	const nearPlanePoint = new Three.Vector3(x, y, -1).unproject(camera);

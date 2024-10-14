@@ -1,5 +1,5 @@
-import { Gradient, RGB } from "./Gradients";
-import { lerp } from "../Math/Other";
+import { Gradient, RGB } from "./Gradients.ts";
+import { lerp } from "../Math/Other.ts";
 
 export function interpolateRGB(startColor: RGB, endColor: RGB, t: number): RGB
 {

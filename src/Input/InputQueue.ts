@@ -1,9 +1,9 @@
-import { KeyCode } from "./KeyCode";
-import { ObjectPool } from "../Containers/ObjectPool";
-import { QueuedEvent } from "./QueuedEvent";
-import { Destroyable } from "../Core/Lifecycle";
-import { MouseObserver } from "./Mouse";
-import { MouseCode } from "./MouseCode";
+import { KeyCode } from "./KeyCode.ts";
+import { ObjectPool } from "../Containers/ObjectPool.ts";
+import { QueuedEvent } from "./QueuedEvent.ts";
+import { Destroyable } from "../Core/Lifecycle.ts";
+import { MouseObserver } from "./Mouse.ts";
+import { MouseCode } from "./MouseCode.ts";
 
 interface InputQueueConstructorArguments
 {

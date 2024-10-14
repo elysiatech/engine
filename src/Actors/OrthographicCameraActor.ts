@@ -1,7 +1,7 @@
-import { Actor } from "../Scene/Actor";
+import { Actor } from "../Scene/Actor.ts";
 import * as Three from "three";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ResizeEvent } from "../Core/Resize";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ResizeEvent } from "../Core/Resize.ts";
 
 export class OrthographicCameraActor extends Actor<Three.OrthographicCamera>
 {

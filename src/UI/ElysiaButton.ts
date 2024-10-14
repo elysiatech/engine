@@ -1,4 +1,4 @@
-import { css, defineComponent, ElysiaElement, html } from "./UI";
+import { css, defineComponent, ElysiaElement, html } from "./UI.ts";
 
 export class ElysiaButton extends ElysiaElement {
 	static override Tag = "elysia-button";

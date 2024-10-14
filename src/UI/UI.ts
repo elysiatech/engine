@@ -1,7 +1,7 @@
 import { css, html, LitElement, PropertyDeclaration, PropertyValueMap, svg, TemplateResult } from "lit";
-import { defaultScheduler, Scheduler } from "./Scheduler";
-import { Constructor, tick } from "../Core/Utilities";
-import { isFunction } from "../Core/Asserts";
+import { defaultScheduler, Scheduler } from "./Scheduler.ts";
+import { Constructor, tick } from "../Core/Utilities.ts";
+import { isFunction } from "../Core/Asserts.ts";
 import { property } from "lit/decorators/property.js";
 
 export {

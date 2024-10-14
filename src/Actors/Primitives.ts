@@ -1,4 +1,4 @@
-import { MeshActor } from "./MeshActor";
+import { MeshActor } from "./MeshActor.ts";
 import * as Three from "three";
 
 /**

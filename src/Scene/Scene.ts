@@ -1,19 +1,19 @@
-import { Actor } from "./Actor";
+import { Actor } from "./Actor.ts";
 import * as Three from "three";
-import { Destroyable, SceneLifecycle } from "../Core/Lifecycle";
-import { Future } from "../Containers/Future";
-import { bound, Constructor, noop } from "../Core/Utilities";
-import { Behavior } from "./Behavior";
-import { ElysiaEventDispatcher } from "../Events/EventDispatcher";
-import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents";
-import { ActiveCameraTag } from "../Core/Tags";
-import { Component, isActor } from "./Component";
-import { ELYSIA_LOGGER } from "../Core/Logger";
-import { GridActor } from "../Actors/GridActor";
-import { SparseSet } from "../Containers/SparseSet";
-import { PhysicsController } from "../Physics/PhysicsController";
-import { EnvironmentActor } from "../Actors/EnvironmentActor";
-import { ActiveCamera, Internal, OnLoad, SceneLoadPromise } from "../Core/Internal";
+import { Destroyable, SceneLifecycle } from "../Core/Lifecycle.ts";
+import { Future } from "../Containers/Future.ts";
+import { bound, Constructor, noop } from "../Core/Utilities.ts";
+import { Behavior } from "./Behavior.ts";
+import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
+import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEvent } from "../Core/ElysiaEvents.ts";
+import { ActiveCameraTag } from "../Core/Tags.ts";
+import { Component, isActor } from "./Component.ts";
+import { ELYSIA_LOGGER } from "../Core/Logger.ts";
+import { GridActor } from "../Actors/GridActor.ts";
+import { SparseSet } from "../Containers/SparseSet.ts";
+import { PhysicsController } from "../Physics/PhysicsController.ts";
+import { EnvironmentActor } from "../Actors/EnvironmentActor.ts";
+import { ActiveCamera, Internal, OnLoad, SceneLoadPromise } from "../Core/Internal.ts";
 
 export const IsScene = Symbol.for("Elysia::IsScene");
 

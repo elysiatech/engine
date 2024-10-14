@@ -1,6 +1,6 @@
-import { attribute, BooleanConverter, css, defineComponent, ElysiaElement, html } from "./UI";
+import { attribute, BooleanConverter, css, defineComponent, ElysiaElement, html } from "./UI.ts";
 import { query } from "lit/decorators.js";
-import { bound, toBoolean } from "../Core/Utilities";
+import { bound, toBoolean } from "../Core/Utilities.ts";
 
 export class ElysiaBoolean extends ElysiaElement {
 	static override Tag = "elysia-boolean";
