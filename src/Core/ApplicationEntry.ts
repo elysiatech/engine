@@ -205,7 +205,7 @@ export class Application {
 		for(const prop of Object.values(this)) if(isDestroyable(prop)) prop.destructor()
 	}
 
-	@bound private update()
+	@bound public update()
 	{
 		try {
 			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")

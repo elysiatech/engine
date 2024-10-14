@@ -67,6 +67,6 @@ export declare class Application {
     constructor(config?: ApplicationConstructorArguments);
     loadScene(scene: Scene): Promise<void>;
     destructor(): void;
-    private update;
+    update(): void;
 }
 export {};
