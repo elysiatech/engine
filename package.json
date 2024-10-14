@@ -3,7 +3,7 @@
   "version": "2024.1.1",
   "type": "module",
   "files": [
-    "dist"
+    "lib/es2020"
   ],
   "scripts": {
     "dev": "tsx cli.ts playground:dev",
@@ -13,7 +13,8 @@
     "playground:build": "tsx cli.ts playground:build",
     "playground:deploy": "tsx cli.ts playground:build && tsx cli.ts playground:deploy"
   },
-  "exports": {},
+  "module": "lib/es2020/mod.ts",
+  "types": "lib/es2020/mod.d.ts",
   "peerDependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",
     "corel-color-picker": "^0.2.3",

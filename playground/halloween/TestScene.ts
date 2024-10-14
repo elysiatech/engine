@@ -4,6 +4,7 @@ import { Scene } from "../../src/Scene/Scene.ts";
 import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
 import { Colors } from "../../src/Core/Colors.ts";
 import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
+import { FiniteStateMachine } from "../../src/Core/FiniteStateMachine.ts"
 import { Actor } from "../../src/Scene/Actor.ts";
 import { Assets } from "./Assets.ts";
 
@@ -56,6 +57,13 @@ class FirstPersonWeaponRig extends Actor
 		this.addComponent(this.modelRoot);
 
 		this.modelRoot.getAction("06 Walk")?.setEffectiveTimeScale(.3).play();
+	}
+
+	createStateMachine(): FiniteStateMachine
+	{
+		const fsm = new FiniteStateMachine()
+
+		return fsm;
 	}
 }
 

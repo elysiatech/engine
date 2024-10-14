@@ -9,17 +9,35 @@ const Actions = Symbol.for("Elysia::FiniteStateMachine::Actions");
 const To = Symbol.for("Elysia::FiniteStateMachine::To");
 const From = Symbol.for("Elysia::FiniteStateMachine::From");
 const Condition = Symbol.for("Elysia::FiniteStateMachine::Condition");
+const GetMatchingTransition = Symbol.for("Elysia::FiniteStateMachine::GetMatchingTransition");
+const RunTransition = Symbol.for("Elysia::FiniteStateMachine::RunTransition");
+const ProvidedUpdate = Symbol.for("Elysia::FiniteStateMachine::providedUpdate");
 
 interface StateConstructorArguments
 {
+	/**
+	 * Function to be called when the state is entered.
+	 */
 	onEnter?: () => void;
+	/**
+	 * Function to be called when the state is exited.
+	 */
 	onExit?: () => void;
+	/**
+	 * Function to be called when the state is updated.
+	 */
 	onUpdate?: (delta: number, elapsed: number) => void;
+	/**
+	 * Actions that can be called on the state.
+	 */
 	actions?: Record<string, Function>;
 }
 
-class State {
-
+/**
+ * Represents a state in a finite state machine.
+ */
+class State
+{
 	constructor(args: StateConstructorArguments)
 	{
 		this[onEnter] = args.onEnter;
@@ -28,6 +46,12 @@ class State {
 		this[Actions] = new Map(Object.entries(args.actions ?? {}));
 	}
 
+	/**
+	 * Adds an action to the state. This function will be triggered if the state is active
+	 * when `fsm.callAction` function is called with the same action name.
+	 * @param action
+	 * @param callback
+	 */
 	public addAction(action: string, callback: Function) { this[Actions].set(action, callback); }
 
 	/** @internal */
@@ -42,11 +66,23 @@ class State {
 
 interface TransitionConstructorArguments
 {
+	/**
+	 * The state to transition to.
+	 */
 	to: string;
+	/**
+	 * The state to transition from. If omitted, the transition will be considered global.
+	 */
 	from?: string;
+	/**
+	 * The condition to be met for the transition to occur. If a string is provided, it will be treated as an event.
+	 */
 	condition?: Function | string;
 }
 
+/**
+ * Represents a transition in a finite state machine.
+ */
 export class Transition
 {
 	constructor(to: string, from: string | undefined, condition?: Function | string)
@@ -71,15 +107,23 @@ export interface FiniteStateMachineConstructorArguments
 	onUpdate?: (delta: number, elapsed: number) => void;
 }
 
+/**
+ * Represents a finite state machine. Can be used to create complex hierarchical state.
+ * The machine can be used with both a polling approach by calling onUpdate(), and an event based approach
+ * by calling fireEvent().
+ */
 export class FiniteStateMachine
 {
 	constructor(args: FiniteStateMachineConstructorArguments = {})
 	{
 		this[onEnter] = args.onEnter;
 		this[onExit] = args.onExit;
-		this.providedUpdate = args.onUpdate;
+		this[ProvidedUpdate] = args.onUpdate;
 	}
 
+	/**
+	 * Initializes the state machine.
+	 */
 	public init(): this
 	{
 		if(!this.startingState)
@@ -97,11 +141,21 @@ export class FiniteStateMachine
 		return this;
 	}
 
+	/**
+	 * Updates the state machine and runs it's logic.
+	 * @param delta
+	 * @param elapsed
+	 */
 	public onUpdate(delta: number, elapsed: number)
 	{
 		this[onUpdate]?.(delta, elapsed);
 	}
 
+	/**
+	 * Adds a state to the state machine.
+	 * @param name
+	 * @param state
+	 */
 	public addState(name: string, state: State | FiniteStateMachine | StateConstructorArguments): this
 	{
 		if(!(state instanceof State) && !(state instanceof FiniteStateMachine))
@@ -113,6 +167,12 @@ export class FiniteStateMachine
 		return this;
 	}
 
+	/**
+	 * Adds a transition to the state machine.
+	 * If the from field is omitted the transition will be considered global, meaning
+	 * it can be triggered from any state and has a higher priority than transitions with a `from` field.
+	 * @param transition
+	 */
 	public addTransition(transition: Transition | TransitionConstructorArguments): this
 	{
 		if(!(transition instanceof Transition))
@@ -126,12 +186,55 @@ export class FiniteStateMachine
 		return this;
 	}
 
-	public setState(name: string): this
+	/**
+	 * Adds a two way transition to the state machine. This is a convenience method for adding two transitions at once,
+	 * with opposing conditions.
+	 * @param from
+	 * @param to
+	 * @param condition
+	 */
+	public addTwoWayTransition(from: string, to: string, condition?: Function | string): this
 	{
-		this.runTransition(this.states.getKey(this.currentState)!, name)
+		const conditionFunction = typeof condition === 'function' && condition;
+
+		this.addTransition({ to, from, condition: conditionFunction ? conditionFunction : condition });
+		this.addTransition({ to: from, from: to, condition: conditionFunction ? () => !conditionFunction() : condition });
 		return this;
 	}
 
+	/**
+	 * Get the active hierarchy path of the state machine.
+	 */
+	public getActiveHierarchyPath()
+	{
+		const path = [this.states.getKey(this.currentState)!];
+		let current = this.currentState;
+		while(current instanceof FiniteStateMachine)
+		{
+			const state = current.states.getKey(current.currentState)!;
+			path.push(state);
+			current = current.currentState;
+		}
+		return path;
+	}
+
+	/**
+	 * Set the state of the state machine directly.
+	 * @param name
+	 */
+	public setState(name: string): this
+	{
+		const to = this.states.get(name);
+		if(!to) ELYSIA_LOGGER.error("Invalid state.");
+		else this[RunTransition](this.states.getKey(this.currentState), name)
+		return this;
+	}
+
+	/**
+	 * Call an action on the current state.
+	 * @param action
+	 * @param recurse
+	 */
 	public callAction(action: string, recurse = true): this
 	{
 		if(this.currentState[Actions].has(action))
@@ -143,6 +246,10 @@ export class FiniteStateMachine
 		return this;
 	}
 
+	/**
+	 * Fire an event on the state machine.
+	 * @param event
+	 */
 	public fireEvent(event: string): this
 	{
 		if(this.eventTransitions.has(event))
@@ -154,7 +261,7 @@ export class FiniteStateMachine
 					|| typeof transition[Condition] === undefined
 				)
 				{
-					this.runTransition(transition[From], transition[To]);
+					this[RunTransition](transition[From], transition[To]);
 					break;
 				}
 			}
@@ -176,11 +283,29 @@ export class FiniteStateMachine
 
 	private transitions = new Set<Transition>();
 
+	private globalTransitions = new Set<Transition>();
+
 	private eventTransitions = new ReverseMap<string, Set<Transition>>;
 
-	private readonly providedUpdate?: (delta: number, elapsed: number) => void;
+	private readonly [ProvidedUpdate]?: (delta: number, elapsed: number) => void;
 
-	private runTransition(from: string | undefined, to: string)
+	/** @internal */
+	[Actions] = new Map<string, Function>();
+
+	/** @internal */
+	[onEnter]?: () => void;
+
+	/** @internal */
+	[onExit]?: () => void | Promise<void>;
+
+	/** @internal */
+	[ExitCurrentState](): void | Promise<void>
+	{
+		if(this.currentState instanceof FiniteStateMachine) this.currentState[ExitCurrentState]();
+		return this.currentState[onExit]?.();
+	}
+
+	private [RunTransition](from: string | undefined, to: string)
 	{
 		const toState = this.states.get(to);
 
@@ -194,50 +319,20 @@ export class FiniteStateMachine
 
 		if(this.transitionPending) return;
 
+		this.transitionPending = true;
+
 		const maybePromise = this[ExitCurrentState]()
 
-		if(maybePromise instanceof Promise)
-		{
-			maybePromise.then(() => {
-				this.currentState = this.nextState!;
-				this.nextState = undefined;
-				this.currentState[onEnter]?.();
-				if(this.currentState instanceof FiniteStateMachine) this.currentState.init();
-			})
-		}
-		else
-		{
+		const onComplete = () => {
 			this.currentState = this.nextState!;
 			this.nextState = undefined;
-			this.currentState[onEnter]?.();
+			this.transitionPending = false;
 			if(this.currentState instanceof FiniteStateMachine) this.currentState.init();
+			else this.currentState[onEnter]?.();
 		}
-	}
 
-	/** @internal */
-	[Actions] = new Map<string, Function>();
-
-	/** @internal */
-	[onEnter]?: () => void;
-
-	/** @internal */
-	[onExit]?: () => void | Promise<void>;
-
-	/** @internal */
-	[ExitCurrentState]()
-	{
-		if(this.currentState instanceof FiniteStateMachine) this.currentState[ExitCurrentState]();
-		this.transitionPending = true;
-		const maybePromise = this.currentState[onExit]?.();
-		if(maybePromise instanceof Promise)
-		{
-			return maybePromise.then(() => {
-				this.transitionPending = false;
-				this.currentState = this.states.get(this.startingState!)!;
-			})
-		}
-		this.transitionPending = false;
-		this.currentState = this.states.get(this.startingState!)!;
+		if(maybePromise instanceof Promise) maybePromise.then(onComplete)
+		else onComplete();
 	}
 
 	/** @internal */
@@ -245,32 +340,30 @@ export class FiniteStateMachine
 	{
 		if(!this.initialized) return;
 
+		const transition = this[GetMatchingTransition]();
+
+		if(transition) this[RunTransition](transition[From], transition[To]);
+
+		this[ProvidedUpdate]?.(delta, elapsed);
+		this.currentState[onUpdate]?.(delta, elapsed);
+	}
+
+	/** @internal */
+	[GetMatchingTransition](): Transition | undefined
+	{
+		for(const transition of this.globalTransitions)
+			if(typeof transition[Condition] === "function" && transition[Condition]()) return transition;
+
 		for(const transition of this.transitions)
 		{
-			let shouldTransition = false;
-
-			if(transition[From])
-			{
-				shouldTransition = this.states.getKey(this.nextState ?? this.currentState) === transition[From];
-			}
-			else if(typeof transition[From] === 'undefined')
-			{
-				shouldTransition = true;
-			}
-
-			if(!shouldTransition) continue;
-
 			if(
+				transition[From] &&
+				// if there is a next state, it means we are currently transitioning
+				// so we use that state for the from comparison
+				this.states.getKey(this.nextState ?? this.currentState) === transition[From] &&
 				(typeof transition[Condition] === "function" && transition[Condition]())
 				|| typeof transition[Condition] === undefined
-			)
-			{
-				this.runTransition(transition[From], transition[To]);
-				break;
-			}
+			) return transition;
 		}
-
-		this.providedUpdate?.(delta, elapsed);
-		this.currentState?.[onUpdate]?.(delta, elapsed);
 	}
 }
