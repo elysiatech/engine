@@ -8,6 +8,7 @@
 		"module": "NodeNext",
 		"skipLibCheck": true,
 	    "allowImportingTsExtensions": true,
+	  	"allowJs": true,
 
 		/* Bundler mode */
 		"moduleResolution": "NodeNext",

@@ -1,7 +1,7 @@
 import * as esbuild from "esbuild"
 import * as fs from "node:fs/promises";
-import { copy } from "esbuild-plugin-copy";
 import * as child_process from "node:child_process";
+import { copy } from "esbuild-plugin-copy";
 
 function parseCommand() { return process.argv[2]; }
 
@@ -84,20 +84,15 @@ async function generateModuleFiles()
 
 	const modules = await fs.readdir("src", { withFileTypes: true });
 
-	const root: string[] = []
-
 	for await (const module of modules)
 	{
 		if(module.isFile()) continue;
-		root.push(module.name);
 		// recurse and get the path of each file relative to it.
 		const files = await fs.readdir(`src/${module.name}`, { withFileTypes: true });
 		const paths: string[] = [];
 		for await (const file of files) if (file.isFile() && file.name.endsWith(".ts") && !file.name.endsWith(".d.ts")) paths.push(`./${file.name}`);
 		await fs.writeFile(`src/${module.name}/mod.ts`, preamble + paths.map(p => `export * from "${p}";`).join("\n"));
 	}
-
-	await fs.writeFile("src/mod.ts", preamble + root.map(p => `export * from "./${p}/mod.ts";`).join("\n"));
 }
 
 async function build()
@@ -128,29 +123,33 @@ async function build()
 	})
 }
 
-function main()
+async function main()
 {
 	switch(parseCommand())
 	{
 		case "build":
-			build();
+			await build();
 			break;
 		case "gen:modfiles":
-			generateModuleFiles();
+			await generateModuleFiles();
 			break;
 		case "playground:dev":
-			new Playground().dev();
+			 await new Playground().dev();
 			break;
 		case "playground:build":
-			new Playground().build();
+			await new Playground().build();
 			break;
 		case "playground:deploy":
 			console.log("Deploying playground to Cloudflare Pages");
+			child_process.execSync(
+				`pnpm playground:build && wrangler pages deploy playground/dist`,
+			)
 			break;
 		default:
 			console.log(
 				`Usage: cli <command>\n\n`,
-				`gen:modfiles        Generate modfiles`,
+				`build			    Build the library\n`,
+				`gen:modfiles       Generate modfiles`,
 				`playground:dev     Start playground development server\n`,
 				`playground:build   Build playground for production\n`,
 				`playground:deploy  Deploy playground to Cloudflare Pages\n`

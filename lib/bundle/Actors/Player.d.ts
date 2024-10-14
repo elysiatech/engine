@@ -19,7 +19,7 @@ export declare class Player extends Actor {
     rBody: RigidBodyBehavior;
     rotationRoot: Actor<Three.Object3D<Three.Object3DEventMap>>;
     camera: PerspectiveCameraActor;
-    get isDown(): (key: KeyCode | import("../mod.ts").MouseCode) => boolean;
+    get isDown(): (key: KeyCode | import("../Input/MouseCode.ts").MouseCode) => boolean;
     constructor();
     onCreate(): void;
     onBeforePhysicsUpdate(delta: number, elapsed: number): void;

@@ -1,38 +1,28 @@
 import * as Three from "three";
-import { Application } from "../src/Core/ApplicationEntry.ts";
-import { Scene } from "../src/Scene/Scene.ts";
-import { BasicRenderPipeline } from "../src/RPipeline/BasicRenderPipeline.ts";
-import { PerspectiveCameraActor } from "../src/Actors/PerspectiveCameraActor.ts";
-import { CameraOrbitBehavior } from "../src/Behaviors/CameraOrbitBehavior.ts";
-import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
-import { EnvironmentActor } from "../src/Actors/EnvironmentActor.ts";
-import { Colors } from "../src/Core/Colors.ts";
-import { TextActor } from "../src/Actors/TextActor.ts";
-import { MeshTransmissionMaterial } from "../src/WebGL/MeshTransmissionMaterial.ts";
-import { GLTFAsset } from "../src/Assets/GLTFAsset.ts";
-import { MeshActor } from "../src/Actors/MeshActor.ts";
-import { FloatBehavior } from "../src/Behaviors/FloatBehavior.ts";
+import * as Elysia from "../src/mod.ts";
+import { MeshTransmissionMaterial } from "../src/WebGL/MeshTransmissionMaterial.ts"
+
 
 // Create the application.
-const app = new Application({
-	renderPipeline: new BasicRenderPipeline,
+const app = new Elysia.Core.Application({
+	renderPipeline: new Elysia.RPipeline.BasicRenderPipeline,
 	stats: true,
 });
 
 // Create a scene
-const scene = new Scene;
+const scene = new Elysia.Scene.Scene;
 
-const camera = new PerspectiveCameraActor;
+const camera = new Elysia.Actors.PerspectiveCameraActor;
 camera.position.set(0, 0, 5);
 scene.activeCamera = camera;
 scene.addComponent(camera);
-camera.addComponent(new CameraOrbitBehavior)
+camera.addComponent(new Elysia.Behaviors.CameraOrbitBehavior)
 
-const text = new TextActor({ text: "Elysiatech", fontSize: 1 });
-text.color = new Three.Color(Colors.Pink);
+const text = new Elysia.Actors.TextActor({ text: "Elysiatech", fontSize: 1 });
+text.color = new Three.Color(Elysia.Core.Colors.Pink);
 scene.addComponent(text);
 
-const spring = await new GLTFAsset("/assets/spring.glb").load()
+const spring = await new Elysia.Assets.GLTFAsset("/assets/spring.glb").load()
 
 const geo = (spring!.clone().children[0] as Three.Mesh).geometry;
 
@@ -50,14 +40,14 @@ const material = new MeshTransmissionMaterial({
 
 material.clearcoat = .5;
 
-const obj = new class extends MeshActor
+const obj = new class extends Elysia.Actors.MeshActor
 {
 	constructor()
 	{
 		super(geo, material);
 		this.rotation.x = Math.PI / 3;
 		this.rotation.z = Math.PI / -1.1;
-		this.addComponent(new FloatBehavior())
+		this.addComponent(new Elysia.Behaviors.FloatBehavior())
 	}
 
 	override onUpdate(d: number, e: number)
@@ -71,12 +61,12 @@ const obj = new class extends MeshActor
 scene.addComponent(obj)
 
 // Create an actor that holds the environment map / scene
-const env = new EnvironmentActor;
+const env = new Elysia.Actors.EnvironmentActor;
 scene.addComponent(env);
 
-scene.object3d.background = new Three.Color(Colors.Aro);
+scene.object3d.background = new Three.Color(Elysia.Core.Colors.Aro);
 
-const dirLight = new DirectionalLightActor;
+const dirLight = new Elysia.Actors.DirectionalLightActor;
 dirLight.intensity = 1;
 dirLight.position.set(0, 1, 0);
 scene.addComponent(dirLight);

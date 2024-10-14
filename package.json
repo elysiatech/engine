@@ -6,12 +6,12 @@
     "dist"
   ],
   "scripts": {
-    "dev": "node cli dev",
+    "dev": "tsx cli.ts playground:dev",
     "genmod": "tsx cli.ts gen:modfiles",
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "playground:build": "node cli build",
-    "playground:deploy": "pnpm playground:build && npx wrangler pages deploy playground/dist"
+    "build": "tsx cli.ts build",
+    "playground:build": "tsx cli.ts playground:build",
+    "playground:deploy": "tsx cli.ts playground:deploy"
   },
   "exports": {},
   "peerDependencies": {

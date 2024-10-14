@@ -1,49 +1,40 @@
 import * as Three from "three";
-import { Application } from "../src/Core/ApplicationEntry.ts";
-import { Scene } from "../src/Scene/Scene.ts";
-import { BasicRenderPipeline } from "../src/RPipeline/BasicRenderPipeline.ts";
-import { CubeActor } from "../src/Actors/Primitives.ts";
-import { PerspectiveCameraActor } from "../src/Actors/PerspectiveCameraActor.ts";
-import { CameraOrbitBehavior } from "../src/Behaviors/CameraOrbitBehavior.ts";
-import { DirectionalLightActor } from "../src/Actors/DirectionalLightActor.ts";
-import { EnvironmentActor } from "../src/Actors/EnvironmentActor.ts";
-import { Colors } from "../src/Core/Colors.ts";
-import { Actor } from "../src/Scene/Actor.ts";
+import * as Elysia from "../src/mod.ts";
 
 // Create the application.
-const app = new Application({
-	renderPipeline: new BasicRenderPipeline,
+const app = new Elysia.Core.Application({
+	renderPipeline: new Elysia.RPipeline.BasicRenderPipeline,
 	stats: true,
 });
 
 // Create a scene
-const scene = new Scene;
+const scene = new Elysia.Scene.Scene;
 
-const floor = new CubeActor;
-floor.material.color = new Three.Color(Colors.VonCount)
+const floor = new Elysia.Actors.CubeActor;
+floor.material.color = new Three.Color(Elysia.Core.Colors.VonCount)
 floor.position.y = -1;
 floor.scale.x = 10;
 floor.scale.z = 10;
 scene.addComponent(floor)
 
-const cube = new CubeActor;
-cube.material.color = new Three.Color(Colors.Purple)
+const cube = new Elysia.Actors.CubeActor;
+cube.material.color = new Three.Color(Elysia.Core.Colors.Purple)
 scene.addComponent(cube)
 
-const camera = new PerspectiveCameraActor;
+const camera = new Elysia.Actors.PerspectiveCameraActor;
 camera.position.set(-2, 5, 15);
-camera.addComponent(new CameraOrbitBehavior);
+camera.addComponent(new Elysia.Behaviors.CameraOrbitBehavior);
 // set the camera as the active camera
 scene.activeCamera = camera;
 scene.addComponent(camera);
 
-const light = new DirectionalLightActor;
+const light = new Elysia.Actors.DirectionalLightActor;
 light.position.set(10, 10, 10);
 light.intensity = 1;
 scene.addComponent(light);
 
 // Create an actor that holds the environment map / scene
-const env = new EnvironmentActor;
+const env = new Elysia.Actors.EnvironmentActor;
 env.background = true;
 env.backgroundBlur = 4;
 env.backgroundIntensity = .2;

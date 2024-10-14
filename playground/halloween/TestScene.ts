@@ -1,15 +1,13 @@
-import { Scene } from "../../src/Scene/Scene.ts";
-import { EnvironmentActor } from "../../src/Actors/EnvironmentActor.ts";
-import { Player } from "../../src/Actors/Player.ts.ts";
-import { PhysicsController } from "../../src/Physics/PhysicsController.ts.ts";
-import { CubeActor } from "../../src/Actors/Primitives.ts.ts";
-import { Colors } from "../../src/Core/Colors.ts.ts";
 import * as Three from "three"
-import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts.ts";
-import { Actor } from "../../src/Scene/Actor.ts.ts";
+import * as Actors from "../../src/Actors/mod.ts"
+import { Scene } from "../../src/Scene/Scene.ts";
+import { PhysicsController } from "../../src/Physics/PhysicsController.ts";
+import { Colors } from "../../src/Core/Colors.ts";
+import { ColliderBehavior, Colliders } from "../../src/Physics/ColliderBehavior.ts";
+import { Actor } from "../../src/Scene/Actor.ts";
+import { Assets } from "./Assets.ts";
+
 import "../../src/UI/ElysiaCrossHair.ts";
-import { Assets } from "./Assets.ts.ts";
-import { ModelActor } from "../../src/Actors/ModelActor.ts.ts";
 
 function getPositionAtDepth(camera: Three.PerspectiveCamera, depth: number, x: number, y: number) {
 	const nearPlanePoint = new Three.Vector3(x, y, -1).unproject(camera);
@@ -43,13 +41,13 @@ function toNormalizedDeviceCoordinates(x: number, y: number, width: number, heig
 
 class FirstPersonWeaponRig extends Actor
 {
-	modelRoot!: ModelActor;
+	modelRoot!: Actors.ModelActor;
 
 	onCreate()
 	{
 		const magnum = Assets.unwrap("Magnum").gltf;
 
-		this.modelRoot = new ModelActor(magnum);
+		this.modelRoot = new Actors.ModelActor(magnum);
 
 		this.modelRoot.rotation.y = Math.PI / 1;
 		this.modelRoot.position.z = .5
@@ -63,13 +61,13 @@ class FirstPersonWeaponRig extends Actor
 
 export class TestScene extends Scene
 {
-	environment = new EnvironmentActor;
+	environment = new Actors.EnvironmentActor;
 
-	player = new Player;
+	player = new Actors.Player;
 
 	guns = new FirstPersonWeaponRig;
 
-	floor = new CubeActor(Colors.Cullen, new Three.Vector3(0, -.51, 0), undefined, new Three.Vector3(100, 1, 100));
+	floor = new Actors.CubeActor(Colors.Cullen, new Three.Vector3(0, -.51, 0), undefined, new Three.Vector3(100, 1, 100));
 
 	physics = new PhysicsController({
 		debug: false,
@@ -100,5 +98,4 @@ export class TestScene extends Scene
 	{
 		this.crosshair.remove();
 	}
-
 }

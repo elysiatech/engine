@@ -1,5 +1,4 @@
 import { HalloweenGame } from "./Game.ts";
-import { MainMenuScene } from "./MainMenu.ts";
 import { TestScene } from "./TestScene.ts";
 
 
