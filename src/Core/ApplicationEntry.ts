@@ -210,8 +210,10 @@ export class Application {
 		try {
 			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")
 
-			if(this.#errorCount <= this.maxErrorCount && !this.manualUpdate) requestAnimationFrame(this.update);
-
+			if(this.#errorCount <= this.maxErrorCount)
+			{
+				!this.manualUpdate && requestAnimationFrame(this.update);
+			}
 			else
 			{
 				ELYSIA_LOGGER.critical("Too many consecutive errors, stopping update loop.")
