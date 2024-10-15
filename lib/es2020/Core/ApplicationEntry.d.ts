@@ -63,6 +63,10 @@ export declare class Application {
      * The active render pipeline.
      */
     get renderPipeline(): RenderPipeline;
+    /**
+     * The active scene.
+    */
+    get scene(): Scene | undefined;
     get assets(): AssetLoader<any>;
     constructor(config?: ApplicationConstructorArguments);
     loadScene(scene: Scene): Promise<void>;

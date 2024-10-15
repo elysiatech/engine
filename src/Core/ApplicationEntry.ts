@@ -98,6 +98,11 @@ export class Application {
 	 */
 	public get renderPipeline() { return this.#renderPipeline!; }
 
+	/**
+	 * The active scene.
+	*/
+	public get scene() { return this.#scene; }
+
 	get assets() { return this.#assets; }
 
 	constructor(config: ApplicationConstructorArguments = {})
