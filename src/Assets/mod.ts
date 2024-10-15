@@ -8,6 +8,7 @@ export * from "./DataTextureAsset.ts";
 export * from "./GLTFAsset.ts";
 export * from "./ImageAsset.ts";
 export * from "./JSONAsset.ts";
+export * from "./RGBELoader.ts";
 export * from "./TextAsset.ts";
 export * from "./TextureAsset.ts";
 export * from "./mod.ts";
