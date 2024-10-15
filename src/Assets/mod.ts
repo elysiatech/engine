@@ -4,6 +4,7 @@ export * from "./ArrayBufferAsset.ts";
 export * from "./Asset.ts";
 export * from "./AssetLoader.ts";
 export * from "./AudioAsset.ts";
+export * from "./DataTextureAsset.ts";
 export * from "./GLTFAsset.ts";
 export * from "./ImageAsset.ts";
 export * from "./JSONAsset.ts";
