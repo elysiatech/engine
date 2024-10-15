@@ -192,14 +192,14 @@ export class Application {
 			this.#sizeHasChanged = false;
 
 			this.#rendering = true;
+
+			if(!this.manualUpdate) this.update();
 		}
 		catch(e)
 		{
 			ELYSIA_LOGGER.error(e)
 			return;
 		}
-
-		this.update();
 	}
 
 	@bound public destructor()
