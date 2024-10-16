@@ -10,7 +10,7 @@ import { ActiveCameraTag } from "../Core/Tags.ts";
 import { Component, isActor } from "./Component.ts";
 import { ELYSIA_LOGGER } from "../Core/Logger.ts";
 import { GridActor } from "../Actors/GridActor.ts";
-import { SparseSet } from "../Containers/SparseSet.ts";
+import { ComponentSet } from "../Containers/ComponentSet.ts";
 import { PhysicsController } from "../Physics/PhysicsController.ts";
 import { EnvironmentActor } from "../Actors/EnvironmentActor.ts";
 import { ActiveCamera, Internal, OnLoad, SceneLoadPromise } from "../Core/Internal.ts";
@@ -48,7 +48,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 			const type = e.child.constructor;
 
 			if(!this.#componentsByType.has(type))
-				this.#componentsByType.set(type, new SparseSet);
+				this.#componentsByType.set(type, new ComponentSet);
 
 			this.#componentsByType.get(type)!.add(e.child);
 
@@ -78,7 +78,7 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 		ElysiaEventDispatcher.addEventListener(TagAddedEvent, (event) => {
 			if(!this.#componentsByTag.has(event.tag))
-				this.#componentsByTag.set(event.tag, new SparseSet);
+				this.#componentsByTag.set(event.tag, new ComponentSet);
 
 			this.#componentsByTag.get(event.tag)!.add(event.target);
 		})
@@ -92,17 +92,31 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 	 * Returns all actors in the scene with the given tag.
 	 * @param tag
 	 */
-	@bound public override getComponentsByTag(tag: any): SparseSet<Component>
+	@bound public override getComponentsByTag(tag: any): ComponentSet<Component>
 	{
-		return this.#componentsByTag.get(tag) || new SparseSet<Component>;
+		const set = this.#componentsByTag.get(tag);
+		if(!set)
+		{
+			const newSet = new ComponentSet<Component>();
+			this.#componentsByTag.set(tag, newSet);
+			return newSet;
+		}
+		else return set;
 	}
 
 	/**
 	 * Returns all actors in the scene with the given type.
 	 */
-	@bound public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>
+	@bound public override getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): ComponentSet<T>
 	{
-		return (this.#componentsByType.get(type) as SparseSet<T>) || new SparseSet<T>;
+		const set = this.#componentsByType.get(type);
+		if(!set)
+		{
+			const newSet = new ComponentSet<T>();
+			this.#componentsByType.set(type, newSet);
+			return newSet;
+		}
+		else return set as ComponentSet<T>;
 	}
 
 	/**
@@ -152,8 +166,8 @@ export class Scene extends Actor<Three.Scene> implements SceneLifecycle, Destroy
 
 	#grid = new GridActor;
 	#ambientLight = new Three.AmbientLight(0xffffff, 0.5);
-	#componentsByTag = new Map<any, SparseSet<Component>>
-	#componentsByType = new Map<any, SparseSet<Component>>
-	#allActors = new SparseSet<Actor>
-	#allBehaviors = new SparseSet<Behavior>
+	#componentsByTag = new Map<any, ComponentSet<Component>>
+	#componentsByType = new Map<any, ComponentSet<Component>>
+	#allActors = new ComponentSet<Actor>
+	#allBehaviors = new ComponentSet<Behavior>
 }

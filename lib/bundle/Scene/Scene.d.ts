@@ -6,7 +6,7 @@ import { Constructor } from "../Core/Utilities.ts";
 import { Behavior } from "./Behavior.ts";
 import { Component } from "./Component.ts";
 import { GridActor } from "../Actors/GridActor.ts";
-import { SparseSet } from "../Containers/SparseSet.ts";
+import { ComponentSet } from "../Containers/ComponentSet.ts";
 import { PhysicsController } from "../Physics/PhysicsController.ts";
 import { ActiveCamera, OnLoad, SceneLoadPromise } from "../Core/Internal.ts";
 export declare const IsScene: unique symbol;
@@ -24,11 +24,11 @@ export declare class Scene extends Actor<Three.Scene> implements SceneLifecycle,
      * Returns all actors in the scene with the given tag.
      * @param tag
      */
-    getComponentsByTag(tag: any): SparseSet<Component>;
+    getComponentsByTag(tag: any): ComponentSet<Component>;
     /**
      * Returns all actors in the scene with the given type.
      */
-    getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): SparseSet<T>;
+    getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): ComponentSet<T>;
     /**
      * Returns the active camera in the scene (if one is set via ActiveCameraTag).
      * If multiple cameras are set as active, the first one found is returned.

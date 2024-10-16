@@ -6,7 +6,7 @@
  * This means it is possible to look up the index of a value in constant time.
  * However, the set does not guarantee the order of the values.
  */
-export declare class SparseSet<T> {
+export declare class ComponentSet<T> extends Set<T> {
     /**
      * Returns the first element in the set or undefined if the set is empty.
      */

@@ -1,0 +1,9 @@
+export declare const isDestroyed: unique symbol;
+export declare const isActive: unique symbol;
+export declare const onEntityAdded: unique symbol;
+export declare const onEntityRemoved: unique symbol;
+export declare const onComponentAdded: unique symbol;
+export declare const onComponentRemoved: unique symbol;
+export declare const onStart: unique symbol;
+export declare const onUpdate: unique symbol;
+export declare const onStop: unique symbol;

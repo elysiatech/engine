@@ -8,7 +8,7 @@ import { Scene } from "./Scene.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { isDev } from "../Core/Asserts.ts";
 import { bound, Constructor } from "../Core/Utilities.ts";
-import { SparseSet } from "../Containers/SparseSet.ts";
+import { ComponentSet } from "../Containers/ComponentSet.ts";
 import {
 	Internal,
 	OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable,
@@ -165,7 +165,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		this.components.add(component);
 		if(!this[Internal].componentsByType.has(component.constructor as Constructor<Component>))
 		{
-			this[Internal].componentsByType.set(component.constructor as Constructor<Component>, new SparseSet);
+			this[Internal].componentsByType.set(component.constructor as Constructor<Component>, new ComponentSet);
 		}
 		this[Internal].componentsByType.get(component.constructor as Constructor<Component>)!.add(component);
 		if(isActor(component))
@@ -174,7 +174,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 			{
 				if(!this[Internal].componentsByTag.has(tag))
 				{
-					this[Internal].componentsByTag.set(tag, new SparseSet);
+					this[Internal].componentsByTag.set(tag, new ComponentSet);
 				}
 				this[Internal].componentsByTag.get(tag)!.add(component);
 			}
@@ -293,17 +293,31 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	/**
 	 * Gets all components of a certain type directly attached to this actor.
 	 */
-	@bound getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>
+	@bound getComponentsByType<T extends Component>(type: Constructor<T>): ComponentSet<T>
 	{
-		return (this[Internal].componentsByType.get(type) as SparseSet<T>) ?? new SparseSet<T>;
+		const set = (this[Internal].componentsByType.get(type) as ComponentSet<T> | undefined);
+		if(!set)
+		{
+			const newSet = new ComponentSet<T>;
+			(this[Internal].componentsByType.set(type, newSet));
+			return newSet;
+		}
+		else return set;
 	}
 
 	/**
 	 * Gets all components with a certain tag directly attached to this actor.
 	 */
-	@bound getComponentsByTag(tag: any): SparseSet<Component>
+	@bound getComponentsByTag(tag: any): ComponentSet<Component>
 	{
-		return this[Internal].componentsByTag.get(tag) ?? new SparseSet;
+		const set = (this[Internal].componentsByTag.get(tag) as ComponentSet<Component> | undefined);
+		if(!set)
+		{
+			const newSet = new ComponentSet<Component>;
+			(this[Internal].componentsByTag.set(tag, newSet));
+			return newSet;
+		}
+		else return set;
 	}
 
 	/**
@@ -341,8 +355,8 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		enabled: true,
 		inScene: false,
 		destroyed: false,
-		componentsByType: new Map<Constructor<Component>, SparseSet<Component>>,
-		componentsByTag: new Map<any, SparseSet<Component>>,
+		componentsByType: new Map<Constructor<Component>, ComponentSet<Component>>,
+		componentsByTag: new Map<any, ComponentSet<Component>>,
 	};
 
 	@bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)

@@ -4,7 +4,7 @@ import { Component } from "./Component.ts";
 import { Scene } from "./Scene.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { Constructor } from "../Core/Utilities.ts";
-import { SparseSet } from "../Containers/SparseSet.ts";
+import { ComponentSet } from "../Containers/ComponentSet.ts";
 import { Internal, OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable, OnEnterScene, OnLeaveScene, OnReparent, OnResize, OnStart, OnUpdate } from "../Core/Internal.ts";
 export declare const IsActor: unique symbol;
 export declare class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable {
@@ -92,11 +92,11 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
     /**
      * Gets all components of a certain type directly attached to this actor.
      */
-    getComponentsByType<T extends Component>(type: Constructor<T>): SparseSet<T>;
+    getComponentsByType<T extends Component>(type: Constructor<T>): ComponentSet<T>;
     /**
      * Gets all components with a certain tag directly attached to this actor.
      */
-    getComponentsByTag(tag: any): SparseSet<Component>;
+    getComponentsByTag(tag: any): ComponentSet<Component>;
     /**
      * Destroys this actor and all its components.
      * Recursively destroys all children actors, starting from the deepest children.
@@ -112,8 +112,8 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
         enabled: boolean;
         inScene: boolean;
         destroyed: boolean;
-        componentsByType: Map<Constructor<Component>, SparseSet<Component>>;
-        componentsByTag: Map<any, SparseSet<Component>>;
+        componentsByType: Map<Constructor<Component>, ComponentSet<Component>>;
+        componentsByTag: Map<any, ComponentSet<Component>>;
     };
     [OnEnable](runEvenIfAlreadyEnabled?: boolean): void;
     [OnDisable](): void;

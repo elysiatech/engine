@@ -1,0 +1,30 @@
+import { Destroyable } from "../Core/Lifecycle.ts";
+import { Component } from "./Component.ts";
+import { Entity } from "./Entity.ts";
+import { World } from "./World.ts";
+import * as Internal from "./Internal.ts";
+export declare abstract class System implements Destroyable {
+    protected world: World;
+    constructor(world: World);
+    abstract readonly name: string;
+    get active(): boolean;
+    get destroyed(): boolean;
+    destructor(): void;
+    protected abstract query(): Component[];
+    protected onEntityAdded?(entity: Entity): void;
+    protected onEntityRemoved?(entity: Entity): void;
+    protected onComponentAdded?(entity: Entity, component: Component): void;
+    protected onComponentRemoved?(entity: Entity, component: Component): void;
+    protected onStart?(): void;
+    protected onUpdate?(delta: number, elapsed: number): void;
+    protected onStop?(): void;
+    [Internal.isDestroyed]: boolean;
+    [Internal.isActive]: boolean;
+    [Internal.onStart](): void;
+    [Internal.onUpdate](delta: number, elapsed: number): void;
+    [Internal.onStop](): void;
+    [Internal.onEntityAdded](entity: Entity): void;
+    [Internal.onEntityRemoved](entity: Entity): void;
+    [Internal.onComponentAdded](entity: Entity, component: Component): void;
+    [Internal.onComponentRemoved](entity: Entity, component: Component): void;
+}

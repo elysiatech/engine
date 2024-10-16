@@ -1,5 +1,6 @@
 import * as Three from "three";
 import * as Elysia from "../src/mod.ts";
+import { Actor } from "../src/Scene/Actor.ts";
 
 // Create the application.
 const app = new Elysia.Core.Application({
@@ -17,9 +18,22 @@ floor.scale.x = 10;
 floor.scale.z = 10;
 scene.addComponent(floor);
 
-const cube = new Elysia.Actors.CubeActor;
-cube.material.color = new Three.Color(Elysia.Core.Colors.Purple);
-scene.addComponent(cube);
+// const cube = new Elysia.Actors.CubeActor;
+// cube.material.color = new Three.Color(Elysia.Core.Colors.Purple);
+// scene.addComponent(cube);
+//
+class TestActor extends Actor
+{
+	onCreate(): void
+	{
+		this.object3d = new Three.Mesh(
+			new Three.BoxGeometry(1, 1, 1),
+			new Three.MeshBasicMaterial({ color: Elysia.Core.Colors.Purple })
+		);
+	}
+}
+
+scene.addComponent(new TestActor)
 
 const camera = new Elysia.Actors.PerspectiveCameraActor;
 camera.position.set(-2, 5, 15);
