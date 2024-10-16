@@ -101,12 +101,18 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	{
 		if(this[Internal].object3d === object3d) return;
 
+		const parent = this[Internal].object3d.parent;
+
 		this[Internal].object3d.parent?.remove(this[Internal].object3d);
 		this[Internal].object3d.actor = undefined;
 
 		// set this actor as the actor of the object3d
 		object3d.actor = this;
 		this[Internal].object3d = object3d;
+		if(parent)
+		{
+			parent.add(object3d);
+		}
 	}
 
 	/**
