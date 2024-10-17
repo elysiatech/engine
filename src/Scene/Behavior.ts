@@ -8,7 +8,7 @@ import { TagAddedEvent } from "../Core/ElysiaEvents.ts";
 import {
 	Internal,
 	OnBeforePhysicsUpdate,
-	OnCreate,
+	OnCreate, OnDestroy,
 	OnDisable,
 	OnEnable,
 	OnEnterScene, OnLeaveScene, OnReparent, OnResize,
@@ -16,6 +16,8 @@ import {
 } from "../Core/Internal.ts";
 import { bound } from "../Core/Utilities.ts";
 import { reportLifecycleError } from "../Core/Error.ts";
+import * as Three from "three";
+import { isDev } from "../Core/Asserts.ts";
 
 export const IsBehavior = Symbol.for("Elysia::IsBehavior");
 
@@ -90,11 +92,11 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	@bound onCreate() {}
 
+	@bound onEnterScene() {}
+
 	@bound onEnable() {}
 
 	@bound onStart() {}
-
-	@bound onEnterScene() {}
 
 	@bound onBeforePhysicsUpdate(delta: number, elapsed: number) {}
 
@@ -114,7 +116,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 	{
 		if(this[Internal].destroyed) return;
 		this[OnLeaveScene]();
-		this.onDestroy();
+		this[OnDisable]();
+		this[OnDestroy]();
 		this[Internal].parent = null;
 		this[Internal].scene = null;
 		this[Internal].app = null;
@@ -137,88 +140,108 @@ export class Behavior implements ActorLifecycle, Destroyable
 		destroyed: false,
 	};
 
-	@reportLifecycleError @bound [OnEnable](runEvenIfAlreadyEnabled: boolean = false)
+	@reportLifecycleError @bound [OnEnable](force = false)
 	{
-		if (this[Internal].enabled && !runEvenIfAlreadyEnabled) return;
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot enable a destroyed behavior:", this);
-			return;
-		}
+		if(!force && !this[Internal].enabled) return;
+		if(this[Internal].destroyed)  return;
 		this[Internal].enabled = true;
 		this.onEnable();
 	}
 
-	@reportLifecycleError @bound [OnDisable]() {
-		if (!this[Internal].enabled) return;
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot disable a destroyed behavior:", this);
-			return;
-		}
+	@reportLifecycleError @bound [OnDisable]()
+	{
+		if(!this[Internal].enabled || this[Internal].destroyed) return;
 		this[Internal].enabled = false;
 		this.onDisable();
 	}
 
-	@reportLifecycleError @bound [OnCreate]() {
-		if (this[Internal].created) return;
-		if(this.destroyed)
+	@reportLifecycleError @bound [OnCreate]()
+	{
+		if(this[Internal].created) return;
+		if(this[Internal].destroyed)
 		{
-			ELYSIA_LOGGER.warn("Cannot create a destroyed behavior:", this);
+			ELYSIA_LOGGER.warn(`Trying to create a destroyed behavior: ${this}`);
 			return;
 		}
-		this[Internal].created = true;
 		this.onCreate();
+		this.app!.renderPipeline.getRenderer().getSize(tempVec2)
+		this.onResize(tempVec2.x,tempVec2.y)
+		this[Internal].created = true;
 	}
 
-	@reportLifecycleError @bound [OnStart]() {
-		if (this[Internal].started) return;
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot start a destroyed behavior:", this);
-			return;
-		}
-		this[Internal].started = true;
-		this.onStart();
-	}
-
-	@reportLifecycleError @bound [OnEnterScene]() {
-		if(this.destroyed)
-		{
-			ELYSIA_LOGGER.warn("Cannot enter scene a destroyed behavior:", this);
-			return;
-		}
+	@reportLifecycleError @bound [OnEnterScene]()
+	{
 		if(this[Internal].inScene) return;
-		this[Internal].inScene = true;
-		this[OnEnable](true);
+		if(!this[Internal].created) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn(`Trying to add a destroyed behavior to actor: ${this}`);
+			return;
+		}
 		this.onEnterScene();
+		this[Internal].inScene = true;
 	}
 
-	@reportLifecycleError @bound [OnBeforePhysicsUpdate](delta: number, elapsed: number) {
-		if(this.destroyed) return;
+	@reportLifecycleError @bound [OnStart]()
+	{
+		if(this[Internal].started) return;
+		if(!this[Internal].inScene) return;
+		if(this[Internal].destroyed)
+		{
+			ELYSIA_LOGGER.warn(`Trying to start a destroyed behavior: ${this}`);
+			return;
+		}
+		this.onStart();
+		this[Internal].started = true;
+	}
+
+	@reportLifecycleError @bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
+	{
+		if(!this[Internal].enabled  || !this[Internal].inScene) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn(`Trying to update a destroyed behavior: ${this}`);
+			return;
+		}
+		if(!this[Internal].started) this[OnStart]();
 		this.onBeforePhysicsUpdate(delta, elapsed);
 	}
 
-	@reportLifecycleError @bound [OnUpdate](delta: number, elapsed: number) {
-		if(this.destroyed) return;
+	@reportLifecycleError @bound [OnUpdate](delta: number, elapsed: number)
+	{
+		if(!this[Internal].enabled || !this[Internal].inScene) return;
+		if(this.destroyed)
+		{
+			ELYSIA_LOGGER.warn(`Trying to update a destroyed behavior: ${this}`);
+			return;
+		}
+		if(!this[Internal].started) this[OnStart]();
 		this.onUpdate(delta, elapsed);
 	}
 
-	@reportLifecycleError @bound [OnLeaveScene]() {
-		if(this.destroyed) return;
+	@reportLifecycleError @bound [OnLeaveScene]()
+	{
+		if(this[Internal].destroyed) return;
 		if(!this[Internal].inScene) return;
-		this[Internal].inScene = false;
-		this[OnDisable]();
 		this.onLeaveScene();
+		this[Internal].inScene = false;
 	}
 
-	@reportLifecycleError @bound [OnReparent](parent: Actor | null) {
-		if(this.destroyed)
+	@reportLifecycleError @bound [OnDestroy]()
+	{
+		if(this[Internal].destroyed) return;
+		this.onDestroy()
+		this[Internal].destroyed = true;
+	}
+
+	@reportLifecycleError @bound [OnReparent](newParent: Actor | null)
+	{
+		if(newParent === this[Internal].parent)
 		{
-			ELYSIA_LOGGER.warn("Cannot reparent a destroyed behavior:", this);
-			return;
+			if(isDev()) ELYSIA_LOGGER.warn(`Trying to reparent actor to the same parent: ${this}`);
 		}
-		this.onReparent(parent);
+		this[Internal].parent = newParent;
+		this.onReparent(newParent);
 	}
 
 	@reportLifecycleError @bound [OnResize](width: number, height: number)
@@ -226,3 +249,5 @@ export class Behavior implements ActorLifecycle, Destroyable
 		this.onResize(width, height);
 	}
 }
+
+const tempVec2 = new Three.Vector2();

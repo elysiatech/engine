@@ -1,1 +1,1 @@
-export type Component = any;
+export type Component = Object | PropertyKey;

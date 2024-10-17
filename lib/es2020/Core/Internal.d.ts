@@ -13,3 +13,4 @@ export declare const OnLoad: unique symbol;
 export declare const SceneLoadPromise: unique symbol;
 export declare const ActiveCamera: unique symbol;
 export declare const OnResize: unique symbol;
+export declare const App: unique symbol;

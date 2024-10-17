@@ -7,7 +7,7 @@ import { AssetLoader } from "../Assets/AssetLoader.ts";
 import { Profiler } from "./Profiler.ts";
 import { AudioPlayer } from "../Audio/AudioPlayer.ts";
 import { MouseObserver } from "../Input/Mouse.ts";
-import { Scene } from "../Scene/Scene.ts";
+import { Root, Scene } from "../Scene/Scene.ts";
 import { RenderPipeline } from "../RPipeline/RenderPipeline.ts";
 import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline.ts";
 import * as Three from "three";
@@ -17,6 +17,7 @@ import { defaultScheduler } from "../UI/Scheduler.ts";
 import { ElysiaStats } from "../UI/ElysiaStats.ts";
 import { Actor } from "../Scene/Actor.ts";
 import {
+	App,
 	Internal,
 	OnCreate,
 	OnEnable,
@@ -34,6 +35,7 @@ declare module 'three'
 	export interface Object3D
 	{
 		actor?: Actor<any>;
+		hasElysiaEvents?: boolean;
 	}
 }
 
@@ -60,6 +62,7 @@ export class Application {
 
 	/**
 	 * The application instance's mouse observer.
+	 * The position of the mouse and intersecting objects are updated at the start of each frame.
 	 */
 	public readonly mouse: MouseObserver;
 
@@ -79,17 +82,20 @@ export class Application {
 	public readonly audio: AudioPlayer;
 
 	/**
-	 * If this App should call Elysia UI's `defaultScheduler.update()` in it's update loop.
+	 * If this App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
+	 * @default true
 	 */
 	public updateDefaultUiScheduler: boolean;
 
 	/**
 	 * The maximum number of consecutive errors that can occur inside update() before stopping.
+	 * If manualUpdate is enabled this will have no effect.
 	 */
 	public maxErrorCount = 10;
 
 	/**
 	 * If the application should not schedule updates automatically.
+	 * If true, you must call Application.update() manually.
 	*/
 	public manualUpdate: boolean;
 
@@ -103,6 +109,7 @@ export class Application {
 	*/
 	public get scene() { return this.#scene; }
 
+	/** The Application's AssetLoader instance */
 	get assets() { return this.#assets; }
 
 	constructor(config: ApplicationConstructorArguments = {})
@@ -150,6 +157,10 @@ export class Application {
 		}
 	}
 
+	/**
+	 * Load a scene into the application. This will unload the previous scene.
+	 * @param scene
+	 */
 	@bound public async loadScene(scene: Scene)
 	{
 		ASSERT(
@@ -160,8 +171,6 @@ export class Application {
 
 		try
 		{
-			scene[Internal].app = this;
-
 			this.#rendering = false;
 
 			if(this.#scene)
@@ -173,6 +182,7 @@ export class Application {
 
 			await this.#assets?.load();
 
+			scene[App] = this;
 			this.#scene = scene
 			await this.#scene[OnLoad]();
 
@@ -182,10 +192,8 @@ export class Application {
 			this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 
 			this.#scene[OnCreate]();
-			this.#scene[OnResize](this.#output.clientWidth, this.#output.clientHeight);
-			this.#scene[OnEnable]();
-			this.#scene[OnStart]();
-			this.#scene[OnEnterScene]();
+			this.#scene[Root][OnEnterScene]();
+			this.#scene[Root][OnEnable]();
 
 			ELYSIA_LOGGER.debug("Scene started", scene)
 
@@ -202,14 +210,20 @@ export class Application {
 		}
 	}
 
+	/** Destroy the application and all of it's resources. */
 	@bound public destructor()
 	{
 		ELYSIA_LOGGER.debug("Destroying application")
 		this.#rendering = false;
 
-		for(const prop of Object.values(this)) if(isDestroyable(prop)) prop.destructor()
+		for(const prop of Object.values(this)) if(isDestroyable(prop)) prop.destructor();
+
+		this.#scene?.destructor();
+		this.#renderPipeline?.destructor();
+		this.#output.remove();
 	}
 
+	/** The main update loop for the application. */
 	@bound public update()
 	{
 		try {
@@ -255,8 +269,7 @@ export class Application {
 
 			if(this.#sizeHasChanged)
 			{
-				console.log(this.#resizeController.width, this.#resizeController.height)
-				this.#scene[OnResize](this.#resizeController.width, this.#resizeController.height);
+				this.#scene[Root][OnResize](this.#resizeController.width, this.#resizeController.height);
 				this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 				this.#sizeHasChanged = false;
 			}

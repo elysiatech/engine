@@ -28,4 +28,6 @@ export const ActiveCamera = Symbol.for("Elysia::ActiveCamera");
 
 export const OnResize = Symbol.for("Elysia::OnResize");
 
+export const App = Symbol.for("Elysia::App");
+
 

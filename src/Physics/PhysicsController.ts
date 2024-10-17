@@ -1,4 +1,4 @@
-import { Scene } from "../Scene/Scene.ts";
+import { Root, Scene } from "../Scene/Scene.ts";
 import * as Three from "three"
 import { ColliderBehavior } from "./ColliderBehavior.ts";
 import { RigidBodyBehavior } from "./RigidBody.ts";
@@ -199,7 +199,7 @@ export class PhysicsController implements Destroyable
 	{
 		if(!this.world) return;
 
-		this.scene?.[OnBeforePhysicsUpdate](delta, elapsed);
+		this.scene?.[Root][OnBeforePhysicsUpdate](delta, elapsed);
 
 		this.world.timestep = delta;
 

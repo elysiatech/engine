@@ -5,7 +5,7 @@ import { Scene } from "./Scene.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { Constructor } from "../Core/Utilities.ts";
 import { ComponentSet } from "../Containers/ComponentSet.ts";
-import { Internal, OnBeforePhysicsUpdate, OnCreate, OnDisable, OnEnable, OnEnterScene, OnLeaveScene, OnReparent, OnResize, OnStart, OnUpdate } from "../Core/Internal.ts";
+import { Internal, OnBeforePhysicsUpdate, OnCreate, OnDestroy, OnDisable, OnEnable, OnEnterScene, OnLeaveScene, OnReparent, OnResize, OnStart, OnUpdate } from "../Core/Internal.ts";
 export declare const IsActor: unique symbol;
 export declare class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable {
     [IsActor]: boolean;
@@ -77,19 +77,6 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
      */
     removeComponent(component: Component): boolean;
     /**
-     * Reparents a component to this actor.
-     * @param component
-     * @returns `true` if the component was successfully reparented, `false` otherwise.
-     */
-    stealComponent(component: Component): boolean;
-    /**
-     * Reparents a component to another actor.
-     * @param component
-     * @param newParent
-     * @returns `true` if the component was successfully reparented, `false` otherwise.
-     */
-    giveComponent(component: Component, newParent: Actor): boolean;
-    /**
      * Gets all components of a certain type directly attached to this actor.
      */
     getComponentsByType<T extends Component>(type: Constructor<T>): ComponentSet<T>;
@@ -110,19 +97,21 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
         created: boolean;
         started: boolean;
         enabled: boolean;
+        _enabled: boolean;
         inScene: boolean;
         destroyed: boolean;
         componentsByType: Map<Constructor<Component>, ComponentSet<Component>>;
         componentsByTag: Map<any, ComponentSet<Component>>;
     };
-    [OnEnable](runEvenIfAlreadyEnabled?: boolean): void;
+    [OnEnable](force?: boolean): void;
     [OnDisable](): void;
     [OnCreate](): void;
-    [OnStart](): void;
     [OnEnterScene](): void;
+    [OnStart](): void;
     [OnBeforePhysicsUpdate](delta: number, elapsed: number): void;
     [OnUpdate](delta: number, elapsed: number): void;
     [OnLeaveScene](): void;
+    [OnDestroy](): void;
     [OnReparent](newParent: Actor | null): void;
     [OnResize](width: number, height: number): void;
 }

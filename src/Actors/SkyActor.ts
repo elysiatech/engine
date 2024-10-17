@@ -51,9 +51,14 @@ export class SkyActor extends Actor
 				}
 			}
 		})
+		this.sky.material.needsUpdate = true;
+		this.sky.matrixWorldNeedsUpdate = true;
 	}
 
-	onStart() { this.updateSunPosition(); }
+	onStart()
+	{
+		this.updateSunPosition();
+ 	}
 
 	private get sky() { return this.object3d as Sky; }
 	private get material() { return this.sky.material as Three.ShaderMaterial; }

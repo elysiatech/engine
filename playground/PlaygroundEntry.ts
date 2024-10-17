@@ -32,6 +32,9 @@ switch(location.search)
 	case "?halloween":
 		import("./halloween/Entry.ts");
 		break;
+	case "?lifecycle":
+		import("./Lifecycle.ts");
+		break;
 	default:
 		import("./HelloCube.ts");
 		document.body.appendChild(document.createElement("elysia-menu"))

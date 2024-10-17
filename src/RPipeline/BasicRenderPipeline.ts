@@ -36,7 +36,10 @@ export class BasicRenderPipeline extends RenderPipeline
 		this.renderer?.setPixelRatio(window.devicePixelRatio);
 	}
 
-	onRender(scene: Scene, camera: Three.Camera) { this.renderer!.render(scene.object3d, camera); }
+	onRender(scene: Scene, camera: Three.Camera)
+	{
+		this.renderer!.render(scene.object3d, camera);
+	}
 
 	getRenderer() { return this.renderer!; }
 

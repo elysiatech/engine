@@ -11,6 +11,7 @@ import { Actor } from "../Scene/Actor.ts";
 declare module 'three' {
     interface Object3D {
         actor?: Actor<any>;
+        hasElysiaEvents?: boolean;
     }
 }
 interface ApplicationConstructorArguments {
@@ -33,6 +34,7 @@ export declare class Application {
     readonly events: ElysiaEventQueue;
     /**
      * The application instance's mouse observer.
+     * The position of the mouse and intersecting objects are updated at the start of each frame.
      */
     readonly mouse: MouseObserver;
     /**
@@ -48,15 +50,18 @@ export declare class Application {
      */
     readonly audio: AudioPlayer;
     /**
-     * If this App should call Elysia UI's `defaultScheduler.update()` in it's update loop.
+     * If this App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
+     * @default true
      */
     updateDefaultUiScheduler: boolean;
     /**
      * The maximum number of consecutive errors that can occur inside update() before stopping.
+     * If manualUpdate is enabled this will have no effect.
      */
     maxErrorCount: number;
     /**
      * If the application should not schedule updates automatically.
+     * If true, you must call Application.update() manually.
     */
     manualUpdate: boolean;
     /**
@@ -67,10 +72,17 @@ export declare class Application {
      * The active scene.
     */
     get scene(): Scene | undefined;
+    /** The Application's AssetLoader instance */
     get assets(): AssetLoader<any>;
     constructor(config?: ApplicationConstructorArguments);
+    /**
+     * Load a scene into the application. This will unload the previous scene.
+     * @param scene
+     */
     loadScene(scene: Scene): Promise<void>;
+    /** Destroy the application and all of it's resources. */
     destructor(): void;
+    /** The main update loop for the application. */
     update(): void;
 }
 export {};
