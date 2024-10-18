@@ -21,6 +21,7 @@ import {
 	SceneLoadPromise
 } from "../Core/Internal.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
+import { reportLifecycleError } from "../Core/Error.ts";
 
 export const Root = Symbol.for("Elysia::Scene::Root");
 
@@ -187,6 +188,7 @@ export class Scene implements Destroyable
 		this[OnDestroy]();
 	}
 
+	@reportLifecycleError
 	@bound async [OnLoad]()
 	{
 		if(this[Internal].loaded || this[Internal].destroyed) return;
@@ -195,6 +197,7 @@ export class Scene implements Destroyable
 		this[SceneLoadPromise].resolve()
 	}
 
+	@reportLifecycleError
 	@bound [OnCreate]()
 	{
 		if(this[Internal].created || !this[Internal].loaded || this[Internal].destroyed) return;
@@ -214,6 +217,7 @@ export class Scene implements Destroyable
 		this[Root][OnCreate]();
 	}
 
+	@reportLifecycleError
 	@bound [OnStart]()
 	{
 		if(this[Internal].started || !this[Internal].created || this[Internal].destroyed) return;
@@ -223,6 +227,7 @@ export class Scene implements Destroyable
 		this[Root][OnStart]();
 	}
 
+	@reportLifecycleError
 	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
 		if(this[Internal].destroyed) return;
@@ -231,6 +236,7 @@ export class Scene implements Destroyable
 		this[Root][OnBeforePhysicsUpdate](delta, elapsed);
 	}
 
+	@reportLifecycleError
 	@bound [OnUpdate](delta: number, elapsed: number)
 	{
 		if(this[Internal].destroyed) return;
@@ -240,6 +246,7 @@ export class Scene implements Destroyable
 		this[Root][OnUpdate](delta, elapsed);
 	}
 
+	@reportLifecycleError
 	@bound [OnDestroy]()
 	{
 		if(this[Internal].destroyed) return;
@@ -282,9 +289,5 @@ export class SceneActor extends Actor<Three.Scene>
 	{
 		super();
 		this.object3d = new Three.Scene;
-	}
-
-	onCreate() {
-		console.log("huh?",this.object3d)
 	}
 }

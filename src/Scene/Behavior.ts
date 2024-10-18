@@ -143,7 +143,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 	@reportLifecycleError @bound [OnEnable](force = false)
 	{
 		if(!force && !this[Internal].enabled) return;
-		if(this[Internal].destroyed)  return;
+		if(this[Internal].enabled || this[Internal].destroyed)  return;
 		this[Internal].enabled = true;
 		this.onEnable();
 	}
@@ -160,7 +160,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		if(this[Internal].created) return;
 		if(this[Internal].destroyed)
 		{
-			ELYSIA_LOGGER.warn(`Trying to create a destroyed behavior: ${this}`);
+			ELYSIA_LOGGER.warn(`Trying to create a destroyed actor: ${this}`);
 			return;
 		}
 		this.onCreate();
@@ -171,11 +171,10 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	@reportLifecycleError @bound [OnEnterScene]()
 	{
-		if(this[Internal].inScene) return;
-		if(!this[Internal].created) return;
+		if(this[Internal].inScene || !this[Internal].created) return;
 		if(this.destroyed)
 		{
-			ELYSIA_LOGGER.warn(`Trying to add a destroyed behavior to actor: ${this}`);
+			ELYSIA_LOGGER.warn(`Trying to add a destroyed actor to scene: ${this}`);
 			return;
 		}
 		this.onEnterScene();
@@ -185,10 +184,10 @@ export class Behavior implements ActorLifecycle, Destroyable
 	@reportLifecycleError @bound [OnStart]()
 	{
 		if(this[Internal].started) return;
-		if(!this[Internal].inScene) return;
+		if(!this[Internal].inScene || !this.enabled) return;
 		if(this[Internal].destroyed)
 		{
-			ELYSIA_LOGGER.warn(`Trying to start a destroyed behavior: ${this}`);
+			ELYSIA_LOGGER.warn(`Trying to start a destroyed actor: ${this}`);
 			return;
 		}
 		this.onStart();
@@ -200,7 +199,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		if(!this[Internal].enabled  || !this[Internal].inScene) return;
 		if(this.destroyed)
 		{
-			ELYSIA_LOGGER.warn(`Trying to update a destroyed behavior: ${this}`);
+			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
 			return;
 		}
 		if(!this[Internal].started) this[OnStart]();
@@ -212,7 +211,7 @@ export class Behavior implements ActorLifecycle, Destroyable
 		if(!this[Internal].enabled || !this[Internal].inScene) return;
 		if(this.destroyed)
 		{
-			ELYSIA_LOGGER.warn(`Trying to update a destroyed behavior: ${this}`);
+			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
 			return;
 		}
 		if(!this[Internal].started) this[OnStart]();

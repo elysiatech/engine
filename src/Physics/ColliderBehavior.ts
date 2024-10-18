@@ -95,6 +95,7 @@ export class ColliderBehavior extends Behavior
     }
 
     onCollision?(component: ColliderBehavior, started: boolean): void;
+
     onContact?(
         component: ColliderBehavior,
         maxForceDir: Vector3Like,

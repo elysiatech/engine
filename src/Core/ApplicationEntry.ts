@@ -29,6 +29,7 @@ import {
 	SceneLoadPromise
 } from "./Internal.ts";
 import { bound } from "./Utilities.ts";
+import { GameClock } from "./GameClock.ts";
 
 declare module 'three'
 {
@@ -178,6 +179,7 @@ export class Application {
 				ELYSIA_LOGGER.debug("Unloading previous scene", this.#scene)
 				await this.#scene[SceneLoadPromise];
 				this.#scene.destructor?.();
+				this.#clock = new GameClock;
 			}
 
 			await this.#assets?.load();
@@ -239,8 +241,7 @@ export class Application {
 				return;
 			}
 
-			const delta = this.#clock.getDelta() || 0.016;
-			const elapsed = this.#clock.getElapsedTime();
+			this.#clock.capture();
 
 			// update mouse intersection
 			this.#mouseIntersectionController.cast(
@@ -258,7 +259,7 @@ export class Application {
 			if(this.#stats instanceof ElysiaStats)
 			{
 				this.renderPipeline!.getRenderer().info.autoReset = false;
-				this.#stats.stats.fps = Math.round(1 / delta);
+				this.#stats.stats.fps = Math.round(1 / this.#clock.delta);
 				this.#stats.stats.calls = this.renderPipeline!.getRenderer().info.render.calls;
 				this.#stats.stats.lines = this.renderPipeline!.getRenderer().info.render.lines;
 				this.#stats.stats.points = this.renderPipeline!.getRenderer().info.render.points;
@@ -275,7 +276,7 @@ export class Application {
 			}
 
 			// scene update
-			this.#scene[OnUpdate](delta, elapsed);
+			this.#scene[OnUpdate](this.#clock.delta, this.#clock.elapsed);
 
 			// scene render
 			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera());
@@ -302,7 +303,7 @@ export class Application {
 	#mouseIntersectionController = new MouseIntersections;
 	#errorCount = 0;
 	#stats: boolean | ElysiaStats = false;
-	#clock = new Three.Clock;
+	#clock = new GameClock;
 	#renderPipeline?: RenderPipeline;
 	#output: HTMLCanvasElement;
 	#scene?: Scene;

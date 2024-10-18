@@ -127,7 +127,6 @@ export class Player extends Actor
 
 	constructor() {
 		super();
-		this.camera.addTag(ActiveCameraTag)
 	}
 
 	onCreate()
@@ -139,14 +138,14 @@ export class Player extends Actor
 		this.controller = this.scene!.physics!.getCharacterController(
 			this.scene!.physics!.addCharacterController({ offset: 0.01 })
 		)
+
 		this.controller?.setApplyImpulsesToDynamicBodies(true)
 
 		this.camera.position.set(0, .8, 0)
+
 		this.rotationRoot.addComponent(this.camera)
 
 		this.rotationRoot.addComponent(new FPSController)
-
-		this.position.y = 2;
 
 		this.app!.input.onKeyDown(KeyCode.Space, (event) => {
 

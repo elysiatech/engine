@@ -7,6 +7,7 @@ export * from "./DisposeThreeObject.ts";
 export * from "./ElysiaEvents.ts";
 export * from "./Error.ts";
 export * from "./FiniteStateMachine.ts";
+export * from "./GameClock.ts";
 export * from "./HashKey.ts";
 export * from "./Internal.ts";
 export * from "./Lifecycle.ts";

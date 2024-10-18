@@ -80,5 +80,4 @@ export declare class Scene implements Destroyable {
 }
 export declare class SceneActor extends Actor<Three.Scene> {
     constructor();
-    onCreate(): void;
 }

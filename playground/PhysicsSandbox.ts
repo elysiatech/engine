@@ -16,6 +16,7 @@ import { Player } from "../src/Actors/Player.ts";
 import { MouseCode } from "../src/Input/MouseCode.ts";
 import { Colors } from "../src/Core/Colors.ts";
 import { ElysiaCrossHair } from "../src/UI/ElysiaCrossHair.ts";
+import { PerspectiveCameraActor } from  "../src/Actors/PerspectiveCameraActor.ts";
 
 const app = new Application({
 	renderPipeline: new HighDefRenderPipeline({
@@ -86,6 +87,8 @@ class ProjectileBehavior extends Behavior
 
 const scene = new Scene();
 
+scene.ambientLight.intensity = .8;
+
 scene.physics = new PhysicsController({ gravity: new Three.Vector3(0, -9.81, 0), debug: false });
 
 const randomColor = () => {
@@ -120,7 +123,7 @@ for(let i = 0; i < 4; i++)
 
 const floor = new PlaneActor()
 floor.scale.set(50, 50, 1);
-floor.material.color = new Three.Color(Colors.Cullen);
+// floor.material.color = new Three.Color(Colors.Cullen);
 floor.position.y = -0.01;
 floor.rotation.x = -Math.PI / 2;
 floor.addComponent(new ColliderBehavior({ type: Colliders.Box({ x: 50, y: 50, z: 0.01 }) }))
@@ -130,9 +133,6 @@ const dirLight = new DirectionalLightActor()
 scene.addComponent(dirLight);
 dirLight.addTag(SkyDirectionalLightTag)
 
-const ambLight = new AmbientLightActor()
-scene.addComponent(ambLight);
-
 const sky = new SkyActor
 sky.elevation = 25
 sky.turbidity = 1.1;
@@ -141,7 +141,7 @@ sky.mieDirectionalG = 0.99;
 sky.rayleigh = 0.6;
 scene.addComponent(sky)
 
-// scene.grid.enable();
+scene.grid.enable();
 
 const crosshair = document.createElement("elysia-crosshair") as ElysiaCrossHair;
 crosshair.color = Colors.Green;
@@ -155,4 +155,4 @@ p.position.set(10, 2, 10)
 p.addComponent(new ProjectileBehavior)
 scene.addComponent(p)
 
-app.loadScene(scene);
+await app.loadScene(scene);
