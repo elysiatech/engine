@@ -50,7 +50,7 @@ export declare class Application {
      */
     readonly audio: AudioPlayer;
     /**
-     * If this App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
+     * If this s_App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
      * @default true
      */
     updateDefaultUiScheduler: boolean;
@@ -69,14 +69,14 @@ export declare class Application {
      */
     get renderPipeline(): RenderPipeline;
     /**
-     * The active scene.
+     * The active s_Scene.
     */
     get scene(): Scene | undefined;
     /** The Application's AssetLoader instance */
     get assets(): AssetLoader<any>;
     constructor(config?: ApplicationConstructorArguments);
     /**
-     * Load a scene into the application. This will unload the previous scene.
+     * Load a s_Scene into the application. This will unload the previous s_Scene.
      * @param scene
      */
     loadScene(scene: Scene): Promise<void>;

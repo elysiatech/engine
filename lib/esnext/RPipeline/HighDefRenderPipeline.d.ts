@@ -37,7 +37,7 @@ type HighDefRenderPipelineConstructorArguments = {
     createEffectChain?(effectComposer: EffectComposer, scene: Scene, camera: Three.Camera): void;
 };
 /**
- * A high definition render pipeline that uses pmndr's Postprocessing to render the scene.
+ * A high definition render pipeline that uses pmndr's Postprocessing to render the s_Scene.
  */
 export declare class HighDefRenderPipeline extends RenderPipeline {
     #private;

@@ -36,6 +36,7 @@ export declare function hasKeys<K extends string | number | symbol>(value: any, 
     readonly [Key in K]: unknown;
 };
 export declare function isArray(value: any): value is Array<any>;
+export declare function isPropertyKey(value: any): value is PropertyKey;
 export declare function arrayContains<T>(value: any, type: (value: any) => value is T): value is Array<T>;
 export declare function isDate(value: any): value is Date;
 export declare function isError(value: any): value is Error;

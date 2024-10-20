@@ -136,6 +136,8 @@ export function isArray(value: any): value is Array<any> {
 	return Array.isArray(value);
 }
 
+export function isPropertyKey(value: any): value is PropertyKey { return isString(value) || isNumber(value) || isSymbol(value); }
+
 export function arrayContains<T>( value: any, type: (value: any) => value is T): value is Array<T>
 {
 	if (!isArray(value)) return false;

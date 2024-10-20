@@ -9,7 +9,7 @@ import { Actor } from "../Scene/Actor.ts";
 import { ASSERT } from "../Core/Asserts.ts";
 import { isActor } from "../Scene/Component.ts";
 import { findAncestorRigidbody } from "./FindAncestorRigidbody.ts";
-import { OnBeforePhysicsUpdate } from "../Core/Internal.ts";
+import { s_OnBeforePhysicsUpdate } from "../Scene/Internal.ts";
 
 export interface PhysicsControllerConstructorArguments
 {
@@ -67,7 +67,7 @@ export class PhysicsController implements Destroyable
 	start()
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
-		ASSERT(this.scene, "PhysicsController has not been initialized with a scene yet.");
+		ASSERT(this.scene, "PhysicsController has not been initialized with a s_Scene yet.");
 
 		this.#debugRenderer.start(this.scene.object3d, this.world);
 	}
@@ -75,7 +75,7 @@ export class PhysicsController implements Destroyable
 	addCollider(collider: ColliderBehavior)
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
-		ASSERT(collider.parent, "ColliderBehavior has no parent.");
+		ASSERT(collider.parent, "ColliderBehavior has no s_Parent.");
 		const parent = findAncestorRigidbody(collider.parent);
 
 		if(collider.collider)
@@ -111,7 +111,7 @@ export class PhysicsController implements Destroyable
 	addRigidBody(rigidBody: RigidBodyBehavior)
 	{
 		ASSERT(this.world, "PhysicsController has not been initialized with a world yet.");
-		ASSERT(rigidBody.parent, "RigidBodyBehavior has no parent.");
+		ASSERT(rigidBody.parent, "RigidBodyBehavior has no s_Parent.");
 
 		rigidBody.handle = this.world?.createRigidBody(rigidBody.rbodyDescription).handle;
 
@@ -199,7 +199,7 @@ export class PhysicsController implements Destroyable
 	{
 		if(!this.world) return;
 
-		this.scene?.[Root][OnBeforePhysicsUpdate](delta, elapsed);
+		this.scene?.[Root][s_OnBeforePhysicsUpdate](delta, elapsed);
 
 		this.world.timestep = delta;
 
@@ -219,7 +219,7 @@ export class PhysicsController implements Destroyable
 			{
 				if(r[1].component.parent.parent?.object3d)
 				{
-					// use parent space
+					// use s_Parent space
 					r[1].component.parent.parent.object3d.worldToLocal(transform);
 					r[1].component.parent.position.copy(transform);
 

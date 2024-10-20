@@ -9,7 +9,7 @@ const app = new Elysia.Core.Application({
 	stats: true,
 });
 
-// Create a scene
+// Create a s_Scene
 const scene = new Elysia.Scene.Scene;
 
 const camera = new Elysia.Actors.PerspectiveCameraActor;
@@ -60,7 +60,7 @@ const obj = new class extends Elysia.Actors.MeshActor
 
 scene.addComponent(obj)
 
-// Create an actor that holds the environment map / scene
+// Create an actor that holds the environment map / s_Scene
 const env = new Elysia.Actors.EnvironmentActor;
 scene.addComponent(env);
 
@@ -71,5 +71,5 @@ dirLight.intensity = 1;
 dirLight.position.set(0, 1, 0);
 scene.addComponent(dirLight);
 
-// Load the scene
+// Load the s_Scene
 await app.loadScene(scene);

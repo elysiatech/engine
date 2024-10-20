@@ -141,7 +141,7 @@ export class Player extends Actor
 
 		this.controller?.setApplyImpulsesToDynamicBodies(true)
 
-		this.camera.position.set(0, .8, 0)
+		this.camera.position.set(0, .65, 0)
 
 		this.rotationRoot.addComponent(this.camera)
 

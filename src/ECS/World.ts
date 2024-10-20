@@ -11,10 +11,9 @@ export class World implements Destroyable
 
 	public get destroyed() { return this[Internal.isDestroyed]; }
 
-	constructor(
-		systems: System[] = []
-	){
-		for (const system of systems) this.#systems.add(system);
+	constructor()
+	{
+
 	}
 
 	public addSystem<T extends System>(system: Constructor<T>): T

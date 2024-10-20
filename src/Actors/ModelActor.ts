@@ -14,7 +14,7 @@ export class ModelActor extends Actor
 	 * Should this model cast shadows?
 	 */
 	get castShadow() { return this.object3d.castShadow; }
-	set castShadow(value) { this.object3d.castShadow = value; }
+	set castShadow(value) { this.object3d.castShadow = value; this.object3d.traverse(x => x.castShadow = value ) }
 
 	/**
 	 * Should this model receive shadows?
@@ -59,7 +59,7 @@ export class ModelActor extends Actor
 		const clips = model.animations ?? [];
 		const scene = model.scene ?? model.scenes[0];
 
-		if(!scene) throw new Error("No scene found in model.");
+		if(!scene) throw new Error("No s_Scene found in model.");
 
 		this.object3d = scene;
 

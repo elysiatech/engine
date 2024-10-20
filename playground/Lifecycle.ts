@@ -16,7 +16,7 @@ class Child extends Scene.Actor
 	}
 
 	onEnterScene(): void {
-		console.log("Child entered scene")
+		console.log("Child entered s_Scene")
 	}
 
 	onStart(): void {
@@ -36,7 +36,7 @@ class Child extends Scene.Actor
 	}
 
 	onLeaveScene(): void {
-		console.log("Child exited scene")
+		console.log("Child exited s_Scene")
 	}
 
 	onDestroy(): void {

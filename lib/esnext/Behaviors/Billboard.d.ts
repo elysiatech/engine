@@ -1,6 +1,6 @@
 import { Behavior } from "../Scene/Behavior.ts";
 /**
- * A behavior that makes the parent object always face the camera.
+ * A behavior that makes the s_Parent object always face the camera.
  */
 export declare class BillboardBehavior extends Behavior {
     #private;

@@ -9,7 +9,7 @@ type FloatArgs =
 	floatIntensity?: number;
 	floatingRange?: [number, number];
 };
-
+/** A behavior that makes an object smoothly float and rotate. */
 export class FloatBehavior extends Behavior
 {
 	override type = 'FloatBehavior';

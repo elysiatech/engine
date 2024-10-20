@@ -8,7 +8,7 @@ export declare class World implements Destroyable {
     #private;
     get active(): boolean;
     get destroyed(): boolean;
-    constructor(systems?: System[]);
+    constructor();
     addSystem<T extends System>(system: Constructor<T>): T;
     removeSystem<T extends System>(system: T): void;
     addEntity(): Entity;

@@ -27,7 +27,7 @@ export class MouseIntersections
 
 		// this.raycaster.setFromCamera(this.vec2, camera)
 
-		// const intersects = this.raycaster.intersectObjects(scene.children, true)
+		// const intersects = this.raycaster.intersectObjects(s_Scene.children, true)
 
 		// for(const intersection of intersects)
 		// {

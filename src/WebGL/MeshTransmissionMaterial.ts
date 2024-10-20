@@ -367,7 +367,7 @@ export class MeshTransmissionMaterial extends Three.MeshPhysicalMaterial
 
 			// Switch off tonemapping lest it double tone maps
 			// Save the current background and set the HDR as the new BG
-			// Use discardMaterial, the parent will be invisible, but it's shadows will still be cast
+			// Use discardMaterial, the s_Parent will be invisible, but it's shadows will still be cast
 			gl.toneMapping = Three.NoToneMapping;
 			mesh.material = this.discardMat;
 

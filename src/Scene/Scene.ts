@@ -11,17 +11,19 @@ import { GridActor } from "../Actors/GridActor.ts";
 import { ComponentSet } from "../Containers/ComponentSet.ts";
 import { PhysicsController } from "../Physics/PhysicsController.ts";
 import {
-	ActiveCamera, App,
-	Internal, OnBeforePhysicsUpdate,
-	OnCreate,
-	OnDestroy,
-	OnLoad,
-	OnStart,
-	OnUpdate,
-	SceneLoadPromise
-} from "../Core/Internal.ts";
+	s_ActiveCamera,
+	s_App, s_Created, s_Destroyed,
+	s_Internal, s_Loaded,
+	s_OnBeforePhysicsUpdate,
+	s_OnCreate,
+	s_OnDestroy,
+	s_OnLoad,
+	s_OnStart,
+	s_OnUpdate, s_Parent, s_Scene,
+	s_SceneLoadPromise, s_Started
+} from "./Internal.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
-import { reportLifecycleError } from "../Core/Error.ts";
+import { LifeCycleError, reportLifecycleError } from "./Errors.ts";
 
 export const Root = Symbol.for("Elysia::Scene::Root");
 
@@ -39,21 +41,21 @@ export class Scene implements Destroyable
 	get object3d() { return this[Root].object3d; }
 
 	/** Get the owning Application */
-	get app() { return this[App]; }
+	get app() { return this[s_App]; }
 
-	/** Get the scene grid actor */
+	/** Get the s_Scene grid actor */
 	get grid() { return this.#grid; }
 
-	/** Get the scene's ambient light */
+	/** Get the s_Scene's ambient light */
 	get ambientLight() { return this.#ambientLight; }
 
-	/** The scene's active camera */
+	/** The s_Scene's active camera */
 	get activeCamera() { return this.getActiveCamera(); }
 
 	set activeCamera(camera: Three.Camera | Actor<Three.Camera>)
 	{
-		this[ActiveCamera] = camera instanceof Actor ? camera.object3d : camera;
-		this[App]?.renderPipeline.onCameraChange(this[ActiveCamera]);
+		this[s_ActiveCamera] = camera instanceof Actor ? camera.object3d : camera;
+		this[s_App]?.renderPipeline.onCameraChange(this[s_ActiveCamera]);
 	}
 
 	constructor()
@@ -108,7 +110,7 @@ export class Scene implements Destroyable
 	}
 
 	/**
-	 * Adds a component to this scene.
+	 * Adds a component to this s_Scene.
 	 * @param component
 	 */
 	@bound public addComponent(...components: Component[])
@@ -121,7 +123,7 @@ export class Scene implements Destroyable
 	}
 
 	/**
-	 * Removes a component to this scene.
+	 * Removes a component to this s_Scene.
 	 * @param component
 	 * @returns `true` if the component was successfully added, `false` otherwise.
 	 */
@@ -135,7 +137,7 @@ export class Scene implements Destroyable
 	}
 
 	/**
-	 * Returns all actors in the scene with the given tag.
+	 * Returns all actors in the s_Scene with the given tag.
 	 * @param tag
 	 */
 	@bound public getComponentsByTag(tag: any): ComponentSet<Component>
@@ -151,7 +153,7 @@ export class Scene implements Destroyable
 	}
 
 	/**
-	 * Returns all actors in the scene with the given type.
+	 * Returns all actors in the s_Scene with the given type.
 	 */
 	@bound public getComponentsByType<T extends Actor | Behavior>(type: Constructor<T>): ComponentSet<T>
 	{
@@ -166,10 +168,10 @@ export class Scene implements Destroyable
 	}
 
 	/**
-	 * Returns the active camera in the scene (if one is set via ActiveCameraTag).
+	 * Returns the active camera in the s_Scene (if one is set via ActiveCameraTag).
 	 * If multiple cameras are set as active, the first one found is returned.
 	 */
-	@bound public getActiveCamera(): Three.Camera { return this[ActiveCamera]; }
+	@bound public getActiveCamera(): Three.Camera { return this[s_ActiveCamera]; }
 
 	onLoad(): void | Promise<void> {}
 
@@ -185,95 +187,99 @@ export class Scene implements Destroyable
 
 	destructor()
 	{
-		this[OnDestroy]();
+		this[s_OnDestroy]();
 	}
 
-	@reportLifecycleError
-	@bound async [OnLoad]()
+	@bound async [s_OnLoad]()
 	{
-		if(this[Internal].loaded || this[Internal].destroyed) return;
-		await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
-		this[Internal].loaded = true;
-		this[SceneLoadPromise].resolve()
+		if(this[s_Loaded] || this[s_Destroyed]) return;
+
+		try
+		{
+			await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
+		}
+		catch(error)
+		{
+			throw new LifeCycleError("onLoad", this, error);
+		}
+
+		this[s_Loaded] = true;
+		this[s_SceneLoadPromise].resolve()
 	}
 
-	@reportLifecycleError
-	@bound [OnCreate]()
+	@bound [s_OnCreate]()
 	{
-		if(this[Internal].created || !this[Internal].loaded || this[Internal].destroyed) return;
+		if(this[s_Created] || !this[s_Loaded] || this[s_Destroyed]) return;
 
 		this.object3d.add(this.#ambientLight);
 		this.addComponent(this.#grid)
 		this.grid.disable();
 
-		this.onCreate();
+		reportLifecycleError(this, this.onCreate);
 
-		this[Root][Internal].app = this[App];
-		this[Root][Internal].scene = this;
-		this[Root][Internal].parent = null;
+		this[Root][s_App] = this[s_App];
+		this[Root][s_Scene] = this;
+		this[Root][s_Parent] = null;
 
-		this[Internal].created = true;
+		this[s_Created] = true;
 
-		this[Root][OnCreate]();
+		this[Root][s_OnCreate]();
 	}
 
-	@reportLifecycleError
-	@bound [OnStart]()
+	@bound [s_OnStart]()
 	{
-		if(this[Internal].started || !this[Internal].created || this[Internal].destroyed) return;
+		if(this[s_Started] || !this[s_Created] || this[s_Destroyed]) return;
 		this.physics?.start();
-		this.onStart();
-		this[Internal].started = true;
-		this[Root][OnStart]();
+		reportLifecycleError(this, this.onStart);
+		this[s_Started] = true;
+		this[Root][s_OnStart]();
 	}
 
-	@reportLifecycleError
-	@bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
+	@bound [s_OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
-		if(this[Internal].destroyed) return;
-		if(!this[Internal].started) this[OnStart]();
-		this.onBeforePhysicsUpdate(delta, elapsed);
-		this[Root][OnBeforePhysicsUpdate](delta, elapsed);
+		if(this[s_Destroyed]) return;
+		if(!this[s_Started]) this[s_OnStart]();
+		reportLifecycleError(this, this.onBeforePhysicsUpdate, delta, elapsed);
+		this[Root][s_OnBeforePhysicsUpdate](delta, elapsed);
 	}
 
-	@reportLifecycleError
-	@bound [OnUpdate](delta: number, elapsed: number)
+	@bound [s_OnUpdate](delta: number, elapsed: number)
 	{
-		if(this[Internal].destroyed) return;
-		if(!this[Internal].started) this[OnStart]();
+		if(this[s_Destroyed]) return;
+		if(!this[s_Started]) this[s_OnStart]();
 		this.physics?.updatePhysicsWorld(this, delta, elapsed)
-		this.onUpdate(delta, elapsed);
-		this[Root][OnUpdate](delta, elapsed);
+		reportLifecycleError(this, this.onUpdate, delta, elapsed);
+		this[Root][s_OnUpdate](delta, elapsed);
 	}
 
-	@reportLifecycleError
-	@bound [OnDestroy]()
+	@bound [s_OnDestroy]()
 	{
-		if(this[Internal].destroyed) return;
-		this[Root].destructor();
-		this.onDestroy();
+		if(this[s_Destroyed]) return;
+		reportLifecycleError(this, this[Root].destructor);
+		reportLifecycleError(this, this.onDestroy);
 		this.#grid.destructor();
 		this.ambientLight.dispose();
 		this.#componentsByTag.clear();
 		this.#componentsByType.clear();
-		this[App] = null;
-		this[Internal].destroyed = true;
+		this[s_App] = null;
+		this[s_Destroyed] = true;
 	}
 
-	[SceneLoadPromise] = new Future<void>(noop);
+	[s_SceneLoadPromise] = new Future<void>(noop);
 
-	[ActiveCamera]: Three.Camera = new Three.PerspectiveCamera();
+	[s_ActiveCamera]: Three.Camera = new Three.PerspectiveCamera();
 
 	[Root] = new SceneActor;
 
-	[App]: Application | null = null;
+	[s_App]: Application | null = null;
 
-	[Internal] = {
-		loaded: false,
-		created: false,
-		started: false,
-		destroyed: false,
-	};
+	[s_Loaded] = false;
+
+	[s_Created] = false;
+
+	[s_Started] = false;
+
+	[s_Destroyed] = false;
 
 	#grid = new GridActor;
 	#ambientLight = new Three.AmbientLight(0xffffff, 1);

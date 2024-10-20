@@ -2,7 +2,7 @@ import { ActorLifecycle, Destroyable } from "../Core/Lifecycle.ts";
 import { Actor } from "./Actor.ts";
 import { Scene } from "./Scene.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
-import { Internal, OnBeforePhysicsUpdate, OnCreate, OnDestroy, OnDisable, OnEnable, OnEnterScene, OnLeaveScene, OnReparent, OnResize, OnStart, OnUpdate } from "../Core/Internal.ts";
+import { s_App, s_Created, s_Destroyed, s_Enabled, s_InScene, s_OnBeforePhysicsUpdate, s_OnCreate, s_OnDestroy, s_OnDisable, s_OnEnable, s_OnEnterScene, s_OnLeaveScene, s_OnReparent, s_OnResize, s_OnStart, s_OnUpdate, s_Parent, s_Scene, s_Started, s_Tags } from "./Internal.ts";
 import * as Three from "three";
 export declare const IsBehavior: unique symbol;
 /**
@@ -12,26 +12,21 @@ export declare const IsBehavior: unique symbol;
 export declare class Behavior implements ActorLifecycle, Destroyable {
     [IsBehavior]: boolean;
     readonly type: string;
+    /** If this behavior has completed it's onCreate() lifecycle. */
     get created(): boolean;
+    /** If this behavior has completed it's onStart() lifecycle. */
     get started(): boolean;
+    /** If this behavior has been destroyed. */
     get destroyed(): boolean;
+    /** If this behavior is enabled. */
     get enabled(): boolean;
-    /**
-     * The parent actor of this behavior.
-     */
+    /** The parent actor of this behavior. */
     get parent(): Actor<Three.Object3D<Three.Object3DEventMap>>;
-    /**
-     * The scene this behavior belongs
-     * to, if any.
-     */
+    /** The scene this behavior belongs to. */
     get scene(): Scene;
-    /**
-     * The application this behavior belongs to.
-     */
+    /** The application this behavior belongs to. */
     get app(): Application;
-    /**
-     * The tags associated with this behavior.
-     */
+    /** The tags associated with this behavior. */
     get tags(): Set<any>;
     /** Enable this behavior. */
     enable(): void;
@@ -59,26 +54,24 @@ export declare class Behavior implements ActorLifecycle, Destroyable {
     onReparent(parent: Actor | null): void;
     onResize(width: number, height: number): void;
     destructor(): void;
-    [Internal]: {
-        app: Application | null;
-        scene: Scene | null;
-        parent: Actor | null;
-        tags: Set<any>;
-        enabled: boolean;
-        created: boolean;
-        started: boolean;
-        inScene: boolean;
-        destroyed: boolean;
-    };
-    [OnEnable](force?: boolean): void;
-    [OnDisable](): void;
-    [OnCreate](): void;
-    [OnEnterScene](): void;
-    [OnStart](): void;
-    [OnBeforePhysicsUpdate](delta: number, elapsed: number): void;
-    [OnUpdate](delta: number, elapsed: number): void;
-    [OnLeaveScene](): void;
-    [OnDestroy](): void;
-    [OnReparent](newParent: Actor | null): void;
-    [OnResize](width: number, height: number): void;
+    [s_App]: Application | null;
+    [s_Scene]: Scene | null;
+    [s_Parent]: Actor | null;
+    [s_Tags]: Set<any>;
+    [s_Enabled]: boolean;
+    [s_Created]: boolean;
+    [s_Started]: boolean;
+    [s_InScene]: boolean;
+    [s_Destroyed]: boolean;
+    [s_OnEnable](force?: boolean): void;
+    [s_OnDisable](): void;
+    [s_OnCreate](): void;
+    [s_OnEnterScene](): void;
+    [s_OnStart](): void;
+    [s_OnBeforePhysicsUpdate](delta: number, elapsed: number): void;
+    [s_OnUpdate](delta: number, elapsed: number): void;
+    [s_OnLeaveScene](): void;
+    [s_OnDestroy](): void;
+    [s_OnReparent](newParent: Actor | null): void;
+    [s_OnResize](width: number, height: number): void;
 }

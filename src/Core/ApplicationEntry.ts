@@ -17,17 +17,15 @@ import { defaultScheduler } from "../UI/Scheduler.ts";
 import { ElysiaStats } from "../UI/ElysiaStats.ts";
 import { Actor } from "../Scene/Actor.ts";
 import {
-	App,
-	Internal,
-	OnCreate,
-	OnEnable,
-	OnEnterScene,
-	OnLoad,
-	OnResize,
-	OnStart,
-	OnUpdate,
-	SceneLoadPromise
-} from "./Internal.ts";
+	s_App,
+	s_OnCreate,
+	s_OnEnable,
+	s_OnEnterScene,
+	s_OnLoad,
+	s_OnResize,
+	s_OnUpdate,
+	s_SceneLoadPromise
+} from "../Scene/Internal.ts";
 import { bound } from "./Utilities.ts";
 import { GameClock } from "./GameClock.ts";
 
@@ -83,7 +81,7 @@ export class Application {
 	public readonly audio: AudioPlayer;
 
 	/**
-	 * If this App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
+	 * If this s_App should call Elysia UIs `defaultScheduler.update()` in it's update loop.
 	 * @default true
 	 */
 	public updateDefaultUiScheduler: boolean;
@@ -106,7 +104,7 @@ export class Application {
 	public get renderPipeline() { return this.#renderPipeline!; }
 
 	/**
-	 * The active scene.
+	 * The active s_Scene.
 	*/
 	public get scene() { return this.#scene; }
 
@@ -159,7 +157,7 @@ export class Application {
 	}
 
 	/**
-	 * Load a scene into the application. This will unload the previous scene.
+	 * Load a s_Scene into the application. This will unload the previous s_Scene.
 	 * @param scene
 	 */
 	@bound public async loadScene(scene: Scene)
@@ -176,26 +174,26 @@ export class Application {
 
 			if(this.#scene)
 			{
-				ELYSIA_LOGGER.debug("Unloading previous scene", this.#scene)
-				await this.#scene[SceneLoadPromise];
+				ELYSIA_LOGGER.debug("Unloading previous s_Scene", this.#scene)
+				await this.#scene[s_SceneLoadPromise];
 				this.#scene.destructor?.();
 				this.#clock = new GameClock;
 			}
 
 			await this.#assets?.load();
 
-			scene[App] = this;
+			scene[s_App] = this;
 			this.#scene = scene
-			await this.#scene[OnLoad]();
+			await this.#scene[s_OnLoad]();
 
 			ELYSIA_LOGGER.debug("Scene loaded", scene)
 
 			this.#renderPipeline!.onCreate(this.#scene, this.#output);
 			this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 
-			this.#scene[OnCreate]();
-			this.#scene[Root][OnEnterScene]();
-			this.#scene[Root][OnEnable]();
+			this.#scene[s_OnCreate]();
+			this.#scene[Root][s_OnEnterScene]();
+			this.#scene[Root][s_OnEnable]();
 
 			ELYSIA_LOGGER.debug("Scene started", scene)
 
@@ -229,7 +227,7 @@ export class Application {
 	@bound public update()
 	{
 		try {
-			if(!this.#scene || !this.#rendering) throw Error("No scene loaded")
+			if(!this.#scene || !this.#rendering) throw Error("No s_Scene loaded")
 
 			if(this.#errorCount <= this.maxErrorCount)
 			{
@@ -270,15 +268,15 @@ export class Application {
 
 			if(this.#sizeHasChanged)
 			{
-				this.#scene[Root][OnResize](this.#resizeController.width, this.#resizeController.height);
+				this.#scene[Root][s_OnResize](this.#resizeController.width, this.#resizeController.height);
 				this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 				this.#sizeHasChanged = false;
 			}
 
-			// scene update
-			this.#scene[OnUpdate](this.#clock.delta, this.#clock.elapsed);
+			// s_Scene update
+			this.#scene[s_OnUpdate](this.#clock.delta, this.#clock.elapsed);
 
-			// scene render
+			// s_Scene render
 			this.#renderPipeline?.onRender(this.#scene, this.#scene.getActiveCamera());
 
 			// update default UI scheduler

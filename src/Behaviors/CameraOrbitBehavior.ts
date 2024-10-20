@@ -10,7 +10,6 @@ import { OrthographicCameraActor } from "../Actors/OrthographicCameraActor.ts";
  */
 export class CameraOrbitBehavior extends Behavior
 {
-
 	override type = 'CameraOrbitBehavior';
 
 	controls?: OrbitControls;

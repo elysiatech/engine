@@ -10,7 +10,7 @@ type BasicRenderPipelineArguments = Three.WebGLRendererParameters & {
 };
 
 /**
- * A basic render pipeline that uses Three.js to render the scene with the default WebGLRenderer.
+ * A basic render pipeline that uses Three.js to render the s_Scene with the default WebGLRenderer.
  */
 export class BasicRenderPipeline extends RenderPipeline
 {
@@ -23,6 +23,7 @@ export class BasicRenderPipeline extends RenderPipeline
 	onCreate(scene: Scene, output: HTMLCanvasElement) {
 		this.renderer = new Three.WebGLRenderer({ ...this.args, canvas: output });
 		this.renderer.shadowMap.enabled = this.args.shadows ?? true;
+		this.renderer.shadowMap.type = Three.PCFSoftShadowMap;
 		if (this.args.devicePixelRatio) { this.renderer.setPixelRatio(this.args.devicePixelRatio); }
 		else { this.renderer.setPixelRatio(window.devicePixelRatio); }
 		if (this.args.toneMapping) { this.renderer.toneMapping = this.args.toneMapping ?? Three.ACESFilmicToneMapping; }

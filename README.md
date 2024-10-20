@@ -36,13 +36,13 @@ Otherwise, ensure that experimental decorators are disabled in your Typescript c
 These are the best way to get a feel for how the engine works and what it can do.
 
 The core gameplay unit in Elysia is the `Actor`, an object that participates in the lifecycle of the engine and is backed by an underlying instance of a
-`Three.Object3d` that is managed by the engine. Actors can include other Actors as components, which can in turn include other Actors forming a scene graph.
+`Three.Object3d` that is managed by the engine. Actors can include other Actors as components, which can in turn include other Actors forming a s_Scene graph.
 `Behaviors` can also be added to Actors as components, which are logic-only components that can be used to add functionality to Actors without participating
 in the `Three` universe.
 
 If you are familiar with Unity and Unreal engine, you will find that the Actor/Component model is very similar to the GameObject / Actor / Component model in those engines.
 Actors are similar to Actors in Unreal, and behaviors are similar to MonoBehavior's in Unity. Since Elysia is built on top of Three.js, the underlying Three.js object
-backing the Actor is available at `Actor.object3d`, and it's possible to directly manipulate the object3d if necessary for integrating other libraries and complex effects.
+backing the Actor is available at `Actor.s_Object3D`, and it's possible to directly manipulate the s_Object3D if necessary for integrating other libraries and complex effects.
 
 The `Scene` is the top-level container for actors, which is loaded by the `Application` class, the entry point for the engine which is responsible for managing lifecycle.
 

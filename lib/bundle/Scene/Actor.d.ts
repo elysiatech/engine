@@ -5,8 +5,10 @@ import { Scene } from "./Scene.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { Constructor } from "../Core/Utilities.ts";
 import { ComponentSet } from "../Containers/ComponentSet.ts";
-import { Internal, OnBeforePhysicsUpdate, OnCreate, OnDestroy, OnDisable, OnEnable, OnEnterScene, OnLeaveScene, OnReparent, OnResize, OnStart, OnUpdate } from "../Core/Internal.ts";
+import { s_App, s_Created, s_Destroyed, s_Enabled, s_InScene, s_Internal, s_Object3D, s_OnBeforePhysicsUpdate, s_OnCreate, s_OnDestroy, s_OnDisable, s_OnEnable, s_OnEnterScene, s_OnLeaveScene, s_OnReparent, s_OnResize, s_OnStart, s_OnUpdate, s_Parent, s_Scene, s_Started } from "./Internal.ts";
 export declare const IsActor: unique symbol;
+export declare const s_ComponentsByType: unique symbol;
+export declare const s_ComponentsByTag: unique symbol;
 export declare class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLifecycle, Destroyable {
     [IsActor]: boolean;
     readonly type: string;
@@ -16,23 +18,37 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
      */
     get object3d(): T;
     set object3d(object3d: T);
+    /** Whether this actor has finished it's onCreate() lifecycle. */
     get created(): boolean;
+    /** If the actor is enabled. */
     get enabled(): boolean;
+    /** Whether this actor has finished it's onStart() lifecycle. */
     get started(): boolean;
+    /** Whether this actor is in the scene. */
     get inScene(): boolean;
+    /** Whether this actor is destroyed */
     get destroyed(): boolean;
+    /** The Application instance of this actor. */
     get app(): Application;
+    /** The Scene instance of this actor. */
     get scene(): Scene;
+    /** The parent actor of this actor. */
     get parent(): Actor<Three.Object3D<Three.Object3DEventMap>>;
+    /** The position of this actor. */
     get position(): Three.Vector3;
     set position(position: Three.Vector3);
+    /** The rotation of this actor. */
     get rotation(): Three.Euler;
     set rotation(rotation: Three.Euler);
+    /** The scale of this actor. */
     get scale(): Three.Vector3;
     set scale(scale: Three.Vector3);
+    /** The quaternion of this actor. */
     get quaternion(): Three.Quaternion;
     set quaternion(quaternion: Three.Quaternion);
+    /** The child components of this actor. */
     readonly components: Set<Component>;
+    /** The tags of this actor. */
     readonly tags: Set<any>;
     onCreate(): void;
     onEnable(): void;
@@ -45,7 +61,7 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
     onDestroy(): void;
     onReparent(parent: Actor | null): void;
     onResize(width: number, height: number): void;
-    updateObject3d(object3d: T): void;
+    updateObject3d(newObject3d: T): void;
     /**
      * Enables this actor. This means it receives updates and is visible.
      */
@@ -89,29 +105,29 @@ export declare class Actor<T extends Three.Object3D = Three.Object3D> implements
      * Recursively destroys all children actors, starting from the deepest children.
      */
     destructor(): void;
-    [Internal]: {
-        object3d: T;
-        parent: Actor | null;
-        scene: Scene | null;
-        app: Application | null;
-        created: boolean;
-        started: boolean;
-        enabled: boolean;
+    [s_Object3D]: T;
+    [s_Parent]: Actor | null;
+    [s_Scene]: Scene | null;
+    [s_App]: Application | null;
+    [s_Created]: boolean;
+    [s_Started]: boolean;
+    [s_Enabled]: boolean;
+    [s_Internal]: {
         _enabled: boolean;
-        inScene: boolean;
-        destroyed: boolean;
-        componentsByType: Map<Constructor<Component>, ComponentSet<Component>>;
-        componentsByTag: Map<any, ComponentSet<Component>>;
     };
-    [OnEnable](force?: boolean): void;
-    [OnDisable](): void;
-    [OnCreate](): void;
-    [OnEnterScene](): void;
-    [OnStart](): void;
-    [OnBeforePhysicsUpdate](delta: number, elapsed: number): void;
-    [OnUpdate](delta: number, elapsed: number): void;
-    [OnLeaveScene](): void;
-    [OnDestroy](): void;
-    [OnReparent](newParent: Actor | null): void;
-    [OnResize](width: number, height: number): void;
+    [s_InScene]: boolean;
+    [s_Destroyed]: boolean;
+    [s_ComponentsByType]: Map<Constructor<Component>, ComponentSet<Component>>;
+    [s_ComponentsByTag]: Map<any, ComponentSet<Component>>;
+    [s_OnEnable](force?: boolean): void;
+    [s_OnDisable](): void;
+    [s_OnCreate](): void;
+    [s_OnEnterScene](): void;
+    [s_OnStart](): void;
+    [s_OnBeforePhysicsUpdate](delta: number, elapsed: number): void;
+    [s_OnUpdate](delta: number, elapsed: number): void;
+    [s_OnLeaveScene](): void;
+    [s_OnDestroy](): void;
+    [s_OnReparent](newParent: Actor | null): void;
+    [s_OnResize](width: number, height: number): void;
 }

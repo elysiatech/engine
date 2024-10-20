@@ -234,7 +234,7 @@ export class ColliderBehavior extends Behavior
                 temp.v2.set(1, 1, 1), // Assuming no scale
             );
 
-            // Get collider parent's world transform
+            // Get collider s_Parent's world transform
             this.parent!.object3d.updateWorldMatrix(true, false);
             parentWorldMatrix.copy(this.parent!.object3d.matrixWorld);
 
@@ -254,7 +254,7 @@ export class ColliderBehavior extends Behavior
                 relativeScale,
             );
 
-            // Set collider's position and rotation relative to the parent rigid body
+            // Set collider's position and rotation relative to the s_Parent rigid body
             c.setTranslationWrtParent(relativePosition);
             c.setRotationWrtParent(relativeQuaternion);
         } else {

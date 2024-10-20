@@ -1,8 +1,10 @@
 import { Actor } from "../Scene/Actor.ts";
 import * as Three from "three";
 
+/** An actor that renders a debug bounding box and axis for its parent actor. */
 export class DebugActor extends Actor
 {
+	/** Adds a debug helper to an Actor. */
 	static Debug(a: Actor)
 	{
 		const d = new DebugActor;

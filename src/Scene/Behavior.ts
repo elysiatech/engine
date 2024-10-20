@@ -6,16 +6,11 @@ import { ELYSIA_LOGGER } from "../Core/Logger.ts";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
 import { TagAddedEvent } from "../Core/ElysiaEvents.ts";
 import {
-	Internal,
-	OnBeforePhysicsUpdate,
-	OnCreate, OnDestroy,
-	OnDisable,
-	OnEnable,
-	OnEnterScene, OnLeaveScene, OnReparent, OnResize,
-	OnStart, OnUpdate
-} from "../Core/Internal.ts";
-import { bound } from "../Core/Utilities.ts";
-import { reportLifecycleError } from "../Core/Error.ts";
+	s_App, s_Created, s_Destroyed, s_Enabled, s_InScene, s_OnBeforePhysicsUpdate,
+	s_OnCreate, s_OnDestroy, s_OnDisable, s_OnEnable, s_OnEnterScene, s_OnLeaveScene,
+	s_OnReparent, s_OnResize, s_OnStart, s_OnUpdate, s_Parent, s_Scene, s_Started, s_Tags
+} from "./Internal.ts";
+import { reportLifecycleError } from "./Errors.ts";
 import * as Three from "three";
 import { isDev } from "../Core/Asserts.ts";
 
@@ -31,40 +26,35 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	readonly type: string = "Behavior";
 
-	get created() { return this[Internal].created; }
+	/** If this behavior has completed it's onCreate() lifecycle. */
+	get created() { return this[s_Created]; }
 
-	get started() { return this[Internal].started; }
+	/** If this behavior has completed it's onStart() lifecycle. */
+	get started() { return this[s_Started]; }
 
-	get destroyed() { return this[Internal].destroyed; }
+	/** If this behavior has been destroyed. */
+	get destroyed() { return this[s_Destroyed]; }
 
-	get enabled() { return this[Internal].enabled; }
+	/** If this behavior is enabled. */
+	get enabled() { return this[s_Enabled]; }
 
-	/**
-	 * The parent actor of this behavior.
-	 */
-	get parent() { return this[Internal].parent!; }
+	/** The parent actor of this behavior. */
+	get parent() { return this[s_Parent]!; }
 
-	/**
-	 * The scene this behavior belongs
-	 * to, if any.
-	 */
-	get scene() { return this[Internal].scene!; }
+	/** The scene this behavior belongs to. */
+	get scene() { return this[s_Scene]!; }
 
-	/**
-	 * The application this behavior belongs to.
-	 */
-	get app() { return this[Internal].app!; }
+	/** The application this behavior belongs to. */
+	get app() { return this[s_App]!; }
 
-	/**
-	 * The tags associated with this behavior.
-	 */
-	get tags() { return this[Internal].tags; }
+	/** The tags associated with this behavior. */
+	get tags() { return this[s_Tags]; }
 
 	/** Enable this behavior. */
-	enable() { this[OnEnable]() }
+	enable() { this[s_OnEnable]() }
 
 	/** Disable this behavior. */
-	disable() { this[OnDisable]() }
+	disable() { this[s_OnDisable]() }
 
 	/**
 	 * Adds a tag to this behavior
@@ -90,162 +80,168 @@ export class Behavior implements ActorLifecycle, Destroyable
 	    Lifecycle methods
 	************************************************************/
 
-	@bound onCreate() {}
+	onCreate() {}
 
-	@bound onEnterScene() {}
+	onEnterScene() {}
 
-	@bound onEnable() {}
+	onEnable() {}
 
-	@bound onStart() {}
+	onStart() {}
 
-	@bound onBeforePhysicsUpdate(delta: number, elapsed: number) {}
+	onBeforePhysicsUpdate(delta: number, elapsed: number) {}
 
-	@bound onUpdate(delta: number, elapsed: number) {}
+	onUpdate(delta: number, elapsed: number) {}
 
-	@bound onDisable() {}
+	onDisable() {}
 
-	@bound onLeaveScene() {}
+	onLeaveScene() {}
 
-	@bound onDestroy() {}
+	onDestroy() {}
 
-	@bound onReparent(parent: Actor | null) {}
+	onReparent(parent: Actor | null) {}
 
-	@bound onResize(width: number, height: number) {}
+	onResize(width: number, height: number) {}
 
 	destructor()
 	{
-		if(this[Internal].destroyed) return;
-		this[OnLeaveScene]();
-		this[OnDisable]();
-		this[OnDestroy]();
-		this[Internal].parent = null;
-		this[Internal].scene = null;
-		this[Internal].app = null;
-		this[Internal].destroyed = true;
+		if(this[s_Destroyed]) return;
+		this[s_OnLeaveScene]();
+		this[s_OnDisable]();
+		this[s_OnDestroy]();
+		this[s_Parent] = null;
+		this[s_Scene] = null;
+		this[s_App] = null;
+		this[s_Destroyed] = true;
 	}
 
 	/* **********************************************************
-	    Internal
+	    s_Internal
 	************************************************************/
 
-	[Internal] = {
-		app: null as Application | null,
-		scene: null as Scene | null,
-		parent: null as Actor | null,
-		tags: new Set<any>(),
-		enabled: true,
-		created: false,
-		started: false,
-		inScene: false,
-		destroyed: false,
-	};
+	[s_App]: Application | null = null;
 
-	@reportLifecycleError @bound [OnEnable](force = false)
+	[s_Scene]: Scene | null = null;
+
+	[s_Parent] : Actor | null = null;
+
+	[s_Tags] = new Set<any>();
+
+	[s_Enabled] = true;
+
+	[s_Created] = false;
+
+	[s_Started] = false;
+
+	[s_InScene] = false;
+
+	[s_Destroyed] = false;
+
+	[s_OnEnable](force = false)
 	{
-		if(!force && !this[Internal].enabled) return;
-		if(this[Internal].enabled || this[Internal].destroyed)  return;
-		this[Internal].enabled = true;
-		this.onEnable();
+		if(!force && !this[s_Enabled]) return;
+		if(this[s_Enabled] || this[s_Destroyed])  return;
+		this[s_Enabled] = true;
+		reportLifecycleError(this, this.onEnable);
 	}
 
-	@reportLifecycleError @bound [OnDisable]()
+	[s_OnDisable]()
 	{
-		if(!this[Internal].enabled || this[Internal].destroyed) return;
-		this[Internal].enabled = false;
-		this.onDisable();
+		if(!this[s_Enabled] || this[s_Destroyed]) return;
+		this[s_Enabled] = false;
+		reportLifecycleError(this, this.onDisable);
 	}
 
-	@reportLifecycleError @bound [OnCreate]()
+	[s_OnCreate]()
 	{
-		if(this[Internal].created) return;
-		if(this[Internal].destroyed)
+		if(this[s_Created]) return;
+		if(this[s_Destroyed])
 		{
 			ELYSIA_LOGGER.warn(`Trying to create a destroyed actor: ${this}`);
 			return;
 		}
-		this.onCreate();
+		reportLifecycleError(this, this.onCreate);
 		this.app!.renderPipeline.getRenderer().getSize(tempVec2)
 		this.onResize(tempVec2.x,tempVec2.y)
-		this[Internal].created = true;
+		this[s_Created] = true;
 	}
 
-	@reportLifecycleError @bound [OnEnterScene]()
+	[s_OnEnterScene]()
 	{
-		if(this[Internal].inScene || !this[Internal].created) return;
+		if(this[s_InScene] || !this[s_Created]) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to add a destroyed actor to scene: ${this}`);
 			return;
 		}
-		this.onEnterScene();
-		this[Internal].inScene = true;
+		reportLifecycleError(this, this.onEnterScene);
+		this[s_InScene] = true;
 	}
 
-	@reportLifecycleError @bound [OnStart]()
+	[s_OnStart]()
 	{
-		if(this[Internal].started) return;
-		if(!this[Internal].inScene || !this.enabled) return;
-		if(this[Internal].destroyed)
+		if(this[s_Started]) return;
+		if(!this[s_InScene] || !this.enabled) return;
+		if(this[s_Destroyed])
 		{
 			ELYSIA_LOGGER.warn(`Trying to start a destroyed actor: ${this}`);
 			return;
 		}
-		this.onStart();
-		this[Internal].started = true;
+		reportLifecycleError(this, this.onStart);
+		this[s_Started] = true;
 	}
 
-	@reportLifecycleError @bound [OnBeforePhysicsUpdate](delta: number, elapsed: number)
+	[s_OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
-		if(!this[Internal].enabled  || !this[Internal].inScene) return;
+		if(!this[s_Enabled]  || !this[s_InScene]) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
 			return;
 		}
-		if(!this[Internal].started) this[OnStart]();
-		this.onBeforePhysicsUpdate(delta, elapsed);
+		if(!this[s_Started]) this[s_OnStart]();
+		reportLifecycleError(this, this.onBeforePhysicsUpdate, delta, elapsed);
 	}
 
-	@reportLifecycleError @bound [OnUpdate](delta: number, elapsed: number)
+	[s_OnUpdate](delta: number, elapsed: number)
 	{
-		if(!this[Internal].enabled || !this[Internal].inScene) return;
+		if(!this[s_Enabled] || !this[s_InScene]) return;
 		if(this.destroyed)
 		{
 			ELYSIA_LOGGER.warn(`Trying to update a destroyed actor: ${this}`);
 			return;
 		}
-		if(!this[Internal].started) this[OnStart]();
-		this.onUpdate(delta, elapsed);
+		if(!this[s_Started]) this[s_OnStart]();
+		reportLifecycleError(this, this.onUpdate, delta, elapsed);
 	}
 
-	@reportLifecycleError @bound [OnLeaveScene]()
+	[s_OnLeaveScene]()
 	{
-		if(this[Internal].destroyed) return;
-		if(!this[Internal].inScene) return;
-		this.onLeaveScene();
-		this[Internal].inScene = false;
+		if(this[s_Destroyed]) return;
+		if(!this[s_InScene]) return;
+		reportLifecycleError(this, this.onLeaveScene);
+		this[s_InScene] = false;
 	}
 
-	@reportLifecycleError @bound [OnDestroy]()
+	[s_OnDestroy]()
 	{
-		if(this[Internal].destroyed) return;
-		this.onDestroy()
-		this[Internal].destroyed = true;
+		if(this[s_Destroyed]) return;
+		reportLifecycleError(this, this.onDestroy)
+		this[s_Destroyed] = true;
 	}
 
-	@reportLifecycleError @bound [OnReparent](newParent: Actor | null)
+	[s_OnReparent](newParent: Actor | null)
 	{
-		if(newParent === this[Internal].parent)
+		if(newParent === this[s_Parent])
 		{
 			if(isDev()) ELYSIA_LOGGER.warn(`Trying to reparent actor to the same parent: ${this}`);
 		}
-		this[Internal].parent = newParent;
-		this.onReparent(newParent);
+		this[s_Parent] = newParent;
+		reportLifecycleError(this, this.onReparent, newParent);
 	}
 
-	@reportLifecycleError @bound [OnResize](width: number, height: number)
+	[s_OnResize](width: number, height: number)
 	{
-		this.onResize(width, height);
+		reportLifecycleError(this, this.onResize, width, height);
 	}
 }
 

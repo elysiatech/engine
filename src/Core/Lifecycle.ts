@@ -11,12 +11,12 @@ export interface ActorLifecycle
 	/**
 	 * Called once when the actor is created.
 	 * This is the first method called in the actor's lifecycle and will only be called once.
-	 * The actor's App, Scene, and Parent reference will be defined by the time this is called.
+	 * The actor's s_App, Scene, and Parent reference will be defined by the time this is called.
 	 */
 	onCreate(): void;
 
 	/**
-	 * Called when the actor is enabled. This occurs when the actor is added to the scene
+	 * Called when the actor is enabled. This occurs when the actor is added to the s_Scene
 	 * and when the actor is enabled after being disabled. This may be called multiple times.
 	 */
 	onEnable(): void;
@@ -27,8 +27,8 @@ export interface ActorLifecycle
 	onStart(): void;
 
 	/**
-	 * Called when the actor enters the scene. It can be called multiple times if the actor is
-	 * removed from the scene and added again.
+	 * Called when the actor enters the s_Scene. It can be called multiple times if the actor is
+	 * removed from the s_Scene and added again.
 	 */
 	onEnterScene(): void;
 
@@ -47,14 +47,14 @@ export interface ActorLifecycle
 	onUpdate(delta: number, elapsed: number): void;
 
 	/**
-	 * Called when the actor is disabled. This occurs when the actor leaves the scene, or when
+	 * Called when the actor is disabled. This occurs when the actor leaves the s_Scene, or when
 	 * actor.disable() is called and may be called multiple times.
 	 */
 	onDisable(): void;
 
 	/**
-	 * Called when the actor leaves the scene. It can be called multiple times if the actor is
-	 * removed from the scene and added again.
+	 * Called when the actor leaves the s_Scene. It can be called multiple times if the actor is
+	 * removed from the s_Scene and added again.
 	 */
 	onLeaveScene(): void;
 
@@ -68,30 +68,35 @@ export interface ActorLifecycle
 	 * @param parent
 	 */
 	onReparent(parent: Actor | null): void;
+
+	/**
+	 * Called when the output canvas is resized.
+	 */
+	onResize(width: number, height: number): void;
 }
 
 export interface SceneLifecycle
 {
 	/**
-	 * Called when the scene is loaded. This is the first method called in the scene's lifecycle.
+	 * Called when the s_Scene is loaded. This is the first method called in the s_Scene's lifecycle.
 	 */
 	onLoad(): void | Promise<void>;
 
 	/**
-	 * Called when the scene is started.
+	 * Called when the s_Scene is started.
 	 */
 	onStart(): void;
 
 	/**
-	 * Called every frame when the scene is updated.
+	 * Called every frame when the s_Scene is updated.
 	 * @param delta The time in seconds since the last frame.
 	 * @param elapsed The time in seconds since the application was instantiated.
 	 */
 	onUpdate(delta: number, elapsed: number): void;
 
 	/**
-	 * Called when the scene is stopped. Will be called when the scene is removed from the application or another
-	 * scene is loaded.
+	 * Called when the s_Scene is stopped. Will be called when the s_Scene is removed from the application or another
+	 * s_Scene is loaded.
 	 */
 	onEnd(): void;
 }
@@ -120,7 +125,7 @@ export interface RenderPipelineLifecycle
 	onResize(width: number, height: number): void;
 
 	/**
-	 * Called when the scene is rendered.
+	 * Called when the s_Scene is rendered.
 	 * @param scene
 	 * @param camera
 	 */

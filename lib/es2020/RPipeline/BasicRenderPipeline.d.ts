@@ -8,7 +8,7 @@ type BasicRenderPipelineArguments = Three.WebGLRendererParameters & {
     shadows?: boolean;
 };
 /**
- * A basic render pipeline that uses Three.js to render the scene with the default WebGLRenderer.
+ * A basic render pipeline that uses Three.js to render the s_Scene with the default WebGLRenderer.
  */
 export declare class BasicRenderPipeline extends RenderPipeline {
     constructor(args?: BasicRenderPipelineArguments);

@@ -8,7 +8,7 @@ const app = new Elysia.Core.Application({
 	stats: true,
 });
 
-// Create a scene
+// Create a s_Scene
 const scene = new Elysia.Scene.Scene;
 
 const floor = new Elysia.Actors.CubeActor;
@@ -20,7 +20,7 @@ scene.addComponent(floor);
 
 // const cube = new Elysia.Actors.CubeActor;
 // cube.material.color = new Three.Color(Elysia.Core.Colors.Purple);
-// scene.addComponent(cube);
+// s_Scene.addComponent(cube);
 //
 class TestActor extends Actor
 {
@@ -47,20 +47,20 @@ light.position.set(10, 10, 10);
 light.intensity = 1;
 scene.addComponent(light);
 
-// Create an actor that holds the environment map / scene
+// Create an actor that holds the environment map / s_Scene
 const env = new Elysia.Actors.EnvironmentActor;
 env.background = true;
 env.backgroundBlur = 4;
 env.backgroundIntensity = .2;
 scene.addComponent(env);
 
-// enable the scene grid in dev mode
+// enable the s_Scene grid in dev mode
 ELYSIA_DEV && scene.grid.enable();
 
 // set the default ambient light intensity
 scene.ambientLight.intensity = 0.1;
 
-// Load the scene
+// Load the s_Scene
 await app.loadScene(scene);
 
 console.log("Hello, Cube!");
