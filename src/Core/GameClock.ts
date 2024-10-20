@@ -1,4 +1,4 @@
-export class GameClock
+/** @internal */ export class GameClock
 {
 	public get elapsed() { return this.#elapsed; }
 
