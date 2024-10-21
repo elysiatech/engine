@@ -9,7 +9,6 @@ import { ComponentAddedEvent, ComponentRemovedEvent, TagAddedEvent, TagRemovedEv
 import { Component, isActor } from "./Component.ts";
 import { GridActor } from "../Actors/GridActor.ts";
 import { ComponentSet } from "../Containers/ComponentSet.ts";
-import { PhysicsController } from "../Physics/PhysicsController.ts";
 import {
 	s_ActiveCamera,
 	s_App, s_Created, s_Destroyed,
@@ -24,6 +23,7 @@ import {
 } from "./Internal.ts";
 import { Application } from "../Core/ApplicationEntry.ts";
 import { LifeCycleError, reportLifecycleError } from "./Errors.ts";
+import { PhysicsWorld } from "../Physics/PhysicsWorld.ts";
 
 export const Root = Symbol.for("Elysia::Scene::Root");
 
@@ -35,7 +35,7 @@ export class Scene implements Destroyable
 
 	public readonly type = "Scene";
 
-	public physics?: PhysicsController;
+	public physics?: PhysicsWorld;
 
 	/** Get the root Three.Scene */
 	get object3d() { return this[Root].object3d; }
@@ -196,7 +196,7 @@ export class Scene implements Destroyable
 
 		try
 		{
-			await Promise.all([this.onLoad(), this.physics?.init(this) ?? Promise.resolve()]);
+			await Promise.all([this.onLoad(), this.physics?.[s_OnLoad](this) ?? Promise.resolve()]);
 		}
 		catch(error)
 		{
@@ -229,7 +229,7 @@ export class Scene implements Destroyable
 	@bound [s_OnStart]()
 	{
 		if(this[s_Started] || !this[s_Created] || this[s_Destroyed]) return;
-		this.physics?.start();
+		this.physics?.[s_OnStart]()
 		reportLifecycleError(this, this.onStart);
 		this[s_Started] = true;
 		this[Root][s_OnStart]();
@@ -237,17 +237,18 @@ export class Scene implements Destroyable
 
 	@bound [s_OnBeforePhysicsUpdate](delta: number, elapsed: number)
 	{
+		if(!this.physics) return;
 		if(this[s_Destroyed]) return;
 		if(!this[s_Started]) this[s_OnStart]();
 		reportLifecycleError(this, this.onBeforePhysicsUpdate, delta, elapsed);
 		this[Root][s_OnBeforePhysicsUpdate](delta, elapsed);
+		this.physics[s_OnUpdate](delta, elapsed);
 	}
 
 	@bound [s_OnUpdate](delta: number, elapsed: number)
 	{
 		if(this[s_Destroyed]) return;
 		if(!this[s_Started]) this[s_OnStart]();
-		this.physics?.updatePhysicsWorld(this, delta, elapsed)
 		reportLifecycleError(this, this.onUpdate, delta, elapsed);
 		this[Root][s_OnUpdate](delta, elapsed);
 	}

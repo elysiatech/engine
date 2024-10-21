@@ -7,6 +7,7 @@ export * from "./ElysiaCrossHair.ts";
 export * from "./ElysiaEnum.ts";
 export * from "./ElysiaNumberInput.ts";
 export * from "./ElysiaRange.ts";
+export * from "./ElysiaSplash.ts";
 export * from "./ElysiaStats.ts";
 export * from "./ElysiaTextInput.ts";
 export * from "./ElysiaUiStats.ts";

@@ -1,5 +1,6 @@
 export const Colors = {
 	Cullen: "#f8f8f2",
+	Background: "#EBEAEC",
 	Nosferatu: "#282a36",
 	Aro: "#44475A",
 	VonCount: "#6272A4",

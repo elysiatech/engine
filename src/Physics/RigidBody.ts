@@ -1,135 +1,117 @@
 import { Behavior } from "../Scene/Behavior.ts";
-import Rapier from "@dimforge/rapier3d-compat"
 import { Vector3Like } from "../Math/Vectors.ts";
-import { ASSERT } from "../Core/Asserts.ts";
-import * as Three from "three";
+import * as Rapier from "@dimforge/rapier3d-compat";
 
-const temp = {
-	vec3: new Three.Vector3,
+export enum RigidbodyType {
+	Static,
+	Dynamic,
+	KinematicVelocity,
+	KinematicPosition,
 }
 
-export class RigidBodyBehavior extends Behavior
+export class RigidBody extends Behavior
 {
-	override type = "RigidBodyBehavior";
+	override type = "RigidBody";
 
-	handle?: number;
+	description: Rapier.RigidBodyDesc;
 
-	get rBody(): Rapier.RigidBody | undefined { return this.scene?.physics?.getRigidBody(this.handle) };
-
-	rbodyType: Rapier.RigidBodyType;
-
-	rbodyDescription: Rapier.RigidBodyDesc;
-
-	get mass() { return this.rBody ? this.rBody.mass() : this.rbodyDescription.mass }
-
-	get linvel() { return this.rBody ? this.rBody.linvel() : this.rbodyDescription.linvel }
-
-	get angvel() { return this.rBody ? this.rBody.angvel() : this.rbodyDescription.angvel }
-
-	get linDamping() { return this.rBody ? this.rBody.linearDamping() : this.rbodyDescription.linearDamping }
-
-	get angDamping() { return this.rBody ? this.rBody.angularDamping() : this.rbodyDescription.angularDamping }
-
-	get ccdEnabled() { return this.rBody ? this.rBody.isCcdEnabled() : this.rbodyDescription.ccdEnabled }
-
-	constructor(args: { type: Rapier.RigidBodyType })
+	get mass()
 	{
+		return this.scene?.physics?.getRigidBody(this)?.mass() ?? this.description.mass;
+	}
+	set mass(mass: number)
+	{
+		this.description.setAdditionalMass(mass);
+		this.scene?.physics?.getRigidBody(this)?.setAdditionalMass(mass, true);
+	}
+
+	get linearDamping()
+	{
+		return this.scene?.physics?.getRigidBody(this)?.linearDamping() ?? this.description.linearDamping;
+	}
+	set linearDamping(damping: number)
+	{
+		this.description.setLinearDamping(damping);
+		this.scene?.physics?.getRigidBody(this)?.setLinearDamping(damping);
+	}
+
+	get angularDamping()
+	{
+		return this.scene?.physics?.getRigidBody(this)?.angularDamping() ?? this.description.angularDamping;
+	}
+	set angularDamping(damping: number)
+	{
+		this.description.setAngularDamping(damping);
+		this.scene?.physics?.getRigidBody(this)?.setAngularDamping(damping);
+	}
+
+	get linearVelocity()
+	{
+		return this.scene?.physics?.getRigidBody(this)?.linvel() ?? this.#linearVelocity;
+	}
+	set linearVelocity(velocity: Vector3Like)
+	{
+		this.#linearVelocity = velocity;
+		this.scene?.physics?.getRigidBody(this)?.setLinvel(velocity, true);
+	}
+
+	get angularVelocity()
+	{
+		return this.scene?.physics?.getRigidBody(this)?.angvel() ?? this.#angularVelocity;
+	}
+	set angularVelocity(velocity: Vector3Like)
+	{
+		this.#angularVelocity = velocity;
+		this.scene.physics?.getRigidBody(this)?.setAngvel(velocity, true);
+	}
+
+	get ccdEnabled()
+	{
+		return this.scene?.physics?.getRigidBody(this)?.isCcdEnabled() ?? this.description.ccdEnabled
+	}
+	set ccdEnabled(enabled: boolean)
+	{
+		this.description.setCcdEnabled(enabled);
+		this.scene?.physics?.getRigidBody(this)?.enableCcd(enabled)
+	}
+
+	constructor(type: RigidbodyType) {
 		super();
-		this.rbodyType = args.type ?? Rapier.RigidBodyType.Dynamic;
-		this.rbodyDescription = new Rapier.RigidBodyDesc(this.rbodyType);
+		this.#rigidBodyType = type;
+		this.description = new Rapier.RigidBodyDesc(
+			this.#rigidBodyType === RigidbodyType.Static
+				? Rapier.RigidBodyType.Fixed
+				: this.#rigidBodyType === RigidbodyType.Dynamic
+					? Rapier.RigidBodyType.Dynamic
+					: this.#rigidBodyType === RigidbodyType.KinematicVelocity
+						? Rapier.RigidBodyType.KinematicVelocityBased
+						: Rapier.RigidBodyType.KinematicPositionBased
+
+		);
 	}
 
-	onEnterScene()
-	{
-		ASSERT(this.scene?.physics, "PhysicsController has not been initialized with a world yet.");
-		this.scene?.physics?.addRigidBody(this)
-		this.rBody!.addForce(this.forceToApply, true);
-		this.forceToApply.set(0, 0, 0);
-		this.rBody!.addTorque(this.torqueToApply, true);
-		this.torqueToApply.set(0, 0, 0);
-		this.rBody!.applyImpulse(this.impulseToApply, true);
-		this.impulseToApply.set(0, 0, 0);
+
+	override onEnable() {
+		this.scene.physics?.addRigidBody(this);
 	}
 
-	setAdditionalMass(mass: number)
-	{
-		if(this.rBody) this.rBody.setAdditionalMass(mass, true);
-		this.rbodyDescription.setAdditionalMass(mass);
+	override onDisable() {
+		this.scene.physics?.removeRigidBody(this);
 	}
 
-	setLinearVelocity(velocity: Vector3Like)
-	{
-		if(this.rBody) this.rBody.setLinvel(velocity, true);
-		this.rbodyDescription.setLinvel(velocity.x, velocity.y, velocity.z);
+	applyImpulse(impulse: Vector3Like) {
+		this.scene?.physics?.getRigidBody(this)?.applyImpulse(impulse, true);
 	}
 
-	setAngularVelocity(velocity: Vector3Like)
-	{
-		if(this.rBody) this.rBody.setAngvel(velocity, true);
-		this.rbodyDescription.setAngvel(velocity);
+	applyForce(force: Vector3Like) {
+		this.scene?.physics?.getRigidBody(this)?.addForce(force, true);
 	}
 
-	setLinearDamping(damping: number)
-	{
-		if(this.rBody) this.rBody.setLinearDamping(damping);
-		this.rbodyDescription.setLinearDamping(damping);
+	applyTorque(torque: Vector3Like) {
+		this.scene?.physics?.getRigidBody(this)?.addTorque(torque, true);
 	}
 
-	setAngularDamping(damping: number)
-	{
-		if(this.rBody) this.rBody.setAngularDamping(damping);
-		this.rbodyDescription.setAngularDamping(damping);
-	}
-
-	resetForces(){ if(this.rBody) this.rBody.resetForces(true) }
-
-	resetTorques(){ if(this.rBody) this.rBody.resetTorques(true) }
-
-	addForce(force: Vector3Like)
-	{
-		if(this.rBody) this.rBody.addForce(force, true);
-		else this.forceToApply.set(force.x, force.y, force.z);
-	}
-
-	addTorque(torque: Vector3Like)
-	{
-		if(this.rBody) this.rBody.addTorque(torque, true);
-		else this.torqueToApply.set(torque.x, torque.y, torque.z);
-	};
-
-	applyTorqueImpulse(impulse: Vector3Like) { if(this.rBody) this.rBody.applyTorqueImpulse(impulse, true); };
-
-	addForceAtPoint(force: Vector3Like, point: Vector3Like) { if(this.rBody) this.rBody.addForceAtPoint(force, point, true); };
-
-	applyImpulse(impulse: Vector3Like)
-	{
-		if(this.rBody) this.rBody.applyImpulse(impulse, true);
-		else this.impulseToApply.set(impulse.x, impulse.y, impulse.z);
-	};
-
-	applyImpulseAtPoint(impulse: Vector3Like, point: Vector3Like) { if(this.rBody) this.rBody.applyImpulseAtPoint(impulse, point, true); };
-
-	lockTranslation(x: boolean, y: boolean, z: boolean)
-	{
-		if(this.rBody) this.rBody.setEnabledTranslations(x, y, z, true);
-		this.rbodyDescription.enabledTranslations(x, y, z);
-	}
-
-	lockRotation(x: boolean, y: boolean, z: boolean)
-	{
-		if(this.rBody) this.rBody.setEnabledRotations(x, y, z, true);
-		this.rbodyDescription.enabledRotations(x, y, z);
-	}
-
-	enableContinuousCollisionDetection(cond: boolean)
-	{
-		if(this.rBody) this.rBody.enableCcd(cond);
-		this.rbodyDescription.setCcdEnabled(cond);
-	}
-
-	onLeaveScene() { this.scene?.physics?.destroyRigidBody(this) }
-
-	private forceToApply = new Three.Vector3;
-	private torqueToApply = new Three.Vector3;
-	private impulseToApply = new Three.Vector3;
+	#rigidBodyType: RigidbodyType = RigidbodyType.Dynamic;
+	#linearVelocity = { x: 0, y: 0, z: 0 };
+	#angularVelocity = { x: 0, y: 0, z: 0 };
 }

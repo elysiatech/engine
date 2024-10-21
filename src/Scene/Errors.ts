@@ -4,7 +4,7 @@ export class LifeCycleError extends Error
 {
 	constructor(method: string, target: any, cause: any)
 	{
-		super(`Lifecycle error in component: ${String(target.constructor.name)} during ${stripSymbolAndElysia(String(method))}: \n${cause.message}`, {cause});
+		super(`Lifecycle error in component: ${String(target?.name)} during ${stripSymbolAndElysia(String(method))}: \n${cause.message}`, {cause});
 	}
 }
 

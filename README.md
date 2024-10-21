@@ -2,7 +2,7 @@
 
 <br />
 
-![elysiatech](/.github/banner.jpg)
+![elysiatech](/assets/banner.jpg)
 
 <h1>elysia/engine</h3>
 
@@ -48,7 +48,7 @@ The `Scene` is the top-level container for actors, which is loaded by the `Appli
 
 ### Lifecycle
 
-![lifecycle](/.github/lifecycle.png)
+![lifecycle](/assets/lifecycle.png)
 
 ### License
 

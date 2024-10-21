@@ -6,7 +6,7 @@ import { ELYSIA_LOGGER } from "../Core/Logger.ts";
 import { ElysiaEventDispatcher } from "../Events/EventDispatcher.ts";
 import { TagAddedEvent } from "../Core/ElysiaEvents.ts";
 import {
-	s_App, s_Created, s_Destroyed, s_Enabled, s_InScene, s_OnBeforePhysicsUpdate,
+	s_App, s_Created, s_Destroyed, s_Enabled, s_InScene, s_Internal, s_OnBeforePhysicsUpdate,
 	s_OnCreate, s_OnDestroy, s_OnDisable, s_OnEnable, s_OnEnterScene, s_OnLeaveScene,
 	s_OnReparent, s_OnResize, s_OnStart, s_OnUpdate, s_Parent, s_Scene, s_Started, s_Tags
 } from "./Internal.ts";
@@ -128,6 +128,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 
 	[s_Enabled] = true;
 
+	[s_Internal] = { _enabled: false };
+
 	[s_Created] = false;
 
 	[s_Started] = false;
@@ -139,8 +141,9 @@ export class Behavior implements ActorLifecycle, Destroyable
 	[s_OnEnable](force = false)
 	{
 		if(!force && !this[s_Enabled]) return;
-		if(this[s_Enabled] || this[s_Destroyed])  return;
+		if(this[s_Internal]._enabled || this[s_Destroyed])  return;
 		this[s_Enabled] = true;
+		this[s_Internal]._enabled = true;
 		reportLifecycleError(this, this.onEnable);
 	}
 
@@ -159,7 +162,8 @@ export class Behavior implements ActorLifecycle, Destroyable
 			ELYSIA_LOGGER.warn(`Trying to create a destroyed actor: ${this}`);
 			return;
 		}
-		reportLifecycleError(this, this.onCreate);
+		// reportLifecycleError(this, this.onCreate);
+		this.onCreate();
 		this.app!.renderPipeline.getRenderer().getSize(tempVec2)
 		this.onResize(tempVec2.x,tempVec2.y)
 		this[s_Created] = true;

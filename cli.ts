@@ -107,7 +107,7 @@ async function build()
 		"tsc --rewriteRelativeImportExtensions --outDir lib/bundle --emitDeclarationOnly",
 		{ stdio: "inherit" }
 	)
-	await fs.rename("lib/bundle/mod.d.ts", "lib/bundle/elysia.d.ts")
+	await fs.rename("lib/bundle/src/mod.d.ts", "lib/bundle/src/elysia.d.ts")
 	await esbuild.build({
 		entryPoints: ["./src/mod.ts"],
 		outfile: "./lib/bundle/elysia.js",

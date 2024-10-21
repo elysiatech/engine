@@ -168,7 +168,7 @@ export class TestScene extends Scene
 {
 	environment = new Actors.EnvironmentActor;
 
-	player = new Actors.Player;
+	player = new Actors.FirstPersonActor;
 
 	guns = new FirstPersonWeaponRig;
 

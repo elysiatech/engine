@@ -54,14 +54,12 @@ export class ModelActor extends Actor
 		return this.mixer?.clipAction(clip);
 	}
 
-	@bound loadModel(model: GLTF)
+	@bound loadModel(model?: GLTF)
 	{
-		const clips = model.animations ?? [];
-		const scene = model.scene ?? model.scenes[0];
+		const clips = model?.animations ?? [];
+		const scene = model?.scene ?? model?.scenes[0];
 
-		if(!scene) throw new Error("No s_Scene found in model.");
-
-		this.object3d = scene;
+		this.object3d = scene ?? new Three.Group();
 
 		this.clips = clips;
 
@@ -71,7 +69,10 @@ export class ModelActor extends Actor
 			this.mixer = undefined;
 		}
 
-		this.mixer = new Three.AnimationMixer(scene);
+		if(clips.length > 0)
+		{
+			this.mixer = new Three.AnimationMixer(this.object3d);
+		}
 	}
 
 	@bound onUpdate(delta: number, elapsed: number)

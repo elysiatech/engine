@@ -10,14 +10,13 @@ import { MouseObserver } from "../Input/Mouse.ts";
 import { Root, Scene } from "../Scene/Scene.ts";
 import { RenderPipeline } from "../RPipeline/RenderPipeline.ts";
 import { BasicRenderPipeline } from "../RPipeline/BasicRenderPipeline.ts";
-import * as Three from "three";
 import { ELYSIA_LOGGER } from "./Logger.ts";
 import { ResizeController, ResizeEvent } from "./Resize.ts";
 import { defaultScheduler } from "../UI/Scheduler.ts";
 import { ElysiaStats } from "../UI/ElysiaStats.ts";
 import { Actor } from "../Scene/Actor.ts";
 import {
-	s_App,
+	s_App, s_OnBeforePhysicsUpdate,
 	s_OnCreate,
 	s_OnEnable,
 	s_OnEnterScene,
@@ -272,6 +271,8 @@ export class Application {
 				this.#renderPipeline!.onResize(this.#resizeController.width, this.#resizeController.height);
 				this.#sizeHasChanged = false;
 			}
+
+			this.#scene[s_OnBeforePhysicsUpdate](this.#clock.delta, this.#clock.elapsed);
 
 			// s_Scene update
 			this.#scene[s_OnUpdate](this.#clock.delta, this.#clock.elapsed);

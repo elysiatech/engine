@@ -394,7 +394,7 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 		}
 		reportLifecycleError(this, this.onCreate);
 		this.app!.renderPipeline.getRenderer().getSize(tempVec2)
-		this.onResize(tempVec2.x,tempVec2.y)
+		this[s_OnResize](tempVec2.x,tempVec2.y)
 		this[s_Created] = true;
 		for(const component of this.components)
 		{
@@ -505,7 +505,10 @@ export class Actor<T extends Three.Object3D = Three.Object3D> implements ActorLi
 	[s_OnResize](width: number, height: number)
 	{
 		reportLifecycleError(this, this.onResize, width, height);
-		for(const component of this.components) component[s_OnResize](width, height);
+		for(const component of this.components)
+		{
+			component[s_OnResize](width, height);
+		}
 	}
 }
 
